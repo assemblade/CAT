@@ -1,0 +1,125 @@
+dn: dc=assemblade,dc=com
+changetype: add
+dc: assemblade
+objectClass: extensibleObject
+objectClass: top
+objectClass: domain
+aci: (targetcontrol="1.2.840.113556.1.4.805")(version 3.0; acl "Give everyone access to the subtree delete control"; allow(read) userdn="ldap:///anyone";)
+aci: (target="ldap:///dc=assemblade,dc=com")(targetattr="* || +")(version 3.0; acl "Admin Access"; allow(all,import,export) groupdn="ldap:///cn=globaladmin,ou=groups,dc=assemblade,dc=com";)
+aci: (target="ldap:///cn=globaladmin,ou=groups,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop admin group being deleted"; deny(delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///cn=user,ou=groups,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop user group being deleted"; deny(delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///uid=admin,ou=users,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop admin user being deleted"; deny(delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///ou=groups,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || member || isMemberOf || aclRights")(targetfilter="(!(cn=globaladmin))")(version 3.0; acl "Allow everyone to see into the group tree"; allow(read,search,compare) userdn="ldap:///anyone";)
+aci: (target="ldap:///ou=users,dc=assemblade,dc=com")(targetscope="subordinate")(targetattr="objectclass || entryUUID || uid || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Allow groupadmin to see into the user tree"; allow(read,search,compare) groupdn="ldap:///cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com";)
+aci: (target="ldap:///cn=views,*,ou=users,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || aclRights")(version 3.0; acl "Allow users to see their views"; allow(all) userdn="ldap:///parent";)
+aci: (targetattr="objectclass || uid || entryUUID || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Self entry read"; allow (read,search,compare) userdn="ldap:///self";)
+aci: (target="ldap:///cn=properties,dc=assemblade,dc=com")(targetscope="base")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights || asb-no-inheritance")(version 3.0; acl "Allow anyone to read and search properties"; allow(read,search) userdn="ldap:///anyone";)
+aci: (target="ldap:///cn=properties,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop root properties folder being edited or deleted"; deny(write,delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///cn=views,dc=assemblade,dc=com")(targetscope="subtree")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights")(version 3.0; acl "Allow anyone to read, search and add views"; allow(read,search,add) userdn="ldap:///anyone";)
+aci: (target="ldap:///cn=views,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop root views folder being deleted"; deny(write,delete,export) userdn="ldap:///anyone";)
+
+dn: cn=config,dc=assemblade,dc=com
+changetype: add
+cn: config
+objectClass: top
+objectClass: asb-cfg-root-cfg
+
+dn: ou=users,dc=assemblade,dc=com
+changetype: add
+ou: users
+objectClass: top
+objectClass: organizationalUnit
+
+dn: uid=admin,ou=users,dc=assemblade,dc=com
+changetype: add
+uid: admin
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Assemblade Administrator
+sn: Administrator
+userPassword: password
+
+dn: ou=groups,dc=assemblade,dc=com
+changetype: add
+ou: groups
+objectClass: top
+objectClass: organizationalUnit
+
+dn: cn=globaladmin,ou=groups,dc=assemblade,dc=com
+changetype: add
+cn: globaladmin
+description: This is the application administrator group. Members of this group have complete access to all aspects of the system.
+objectClass: top
+objectClass: groupOfNames
+member: uid=admin,ou=users,dc=assemblade,dc=com
+
+dn: cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com
+changetype: add
+cn: groupadmin
+objectClass: top
+objectClass: groupOfNames
+member: uid=admin,ou=users,dc=assemblade,dc=com
+
+dn: cn=user,ou=groups,dc=assemblade,dc=com
+changetype: add
+cn: user
+objectClass: top
+objectClass: groupOfNames
+member: uid=admin,ou=users,dc=assemblade,dc=com
+
+dn: cn=Application Administrators Privilege,dc=assemblade,dc=com
+changetype: add
+objectClass: extensibleObject
+objectClass: collectiveAttributeSubentry
+objectClass: top
+objectClass: subentry
+cn: Application Administrators Privilege
+ds-privilege-name;collective: config-read
+ds-privilege-name;collective: config-write
+ds-privilege-name;collective: ldif-export
+ds-privilege-name;collective: modify-acl
+ds-privilege-name;collective: password-reset
+ds-privilege-name;collective: proxied-auth
+subtreeSpecification: {base "ou=users", specificationFilter "(isMemberOf=cn=globaladmin,ou=groups,dc=assemblade,dc=com)" }
+
+dn: cn=Users Privilege,dc=assemblade,dc=com
+changetype: add
+objectClass: extensibleObject
+objectClass: collectiveAttributeSubentry
+objectClass: top
+objectClass: subentry
+cn: Users Acl Privilege
+ds-privilege-name;collective: modify-acl
+subtreeSpecification: {base "ou=users" , specificationFilter "(isMemberOf=cn=user,ou=groups,dc=assemblade,dc=com)" }
+
+dn: ou=remembermetokens,dc=assemblade,dc=com
+changetype: add
+ou: remembermetokens
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=accesstokens,dc=assemblade,dc=com
+changetype: add
+ou: accesstokens
+objectClass: top
+objectClass: organizationalUnit
+
+dn: cn=properties,dc=assemblade,dc=com
+changetype: add
+cn: properties
+objectClass: top
+objectClass: extensibleObject
+objectClass: assemblade-object
+objectClass: assemblade-folder
+description: The base folder for properties
+
+dn: cn=views,dc=assemblade,dc=com
+changetype: add
+cn: views
+objectClass: top
+objectClass: extensibleObject
+objectClass: assemblade-object
+objectClass: assemblade-views
+description: The base entry for views

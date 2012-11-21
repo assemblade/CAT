@@ -1,0 +1,163 @@
+/*
+ * Copyright 2012 Mike Adamson
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ext {
+    openDJVersion = "2.5.0-Xpress1"
+    openDJDownloadURL = "http://download.forgerock.org/downloads/opendj/${openDJVersion}/OpenDJ-${openDJVersion}.zip"
+    openDJZipDestination = "${buildDir}/OpenDJ-${openDJVersion}.zip"
+    openDJHome = "${buildDir}/OpenDJ-${openDJVersion}"
+    openDJZipFile = new File("${openDJZipDestination}")
+}
+
+dependencies {
+    compile files("${openDJHome}/lib/OpenDJ.jar", "${openDJHome}/lib/je.jar")
+    compile "commons-lang:commons-lang:2.6"
+    compile "commons-collections:commons-collections:3.2.1"
+    compile "commons-io:commons-io:2.0.1"
+    compile "org.apache.tomcat:tomcat-juli:7.0.5"
+    compile "org.springframework:spring-web:${springVersion}"
+}
+
+task fetchOpenDJ {
+    doLast {
+        if (!new File("${buildDir}").exists())  {
+            new File("${buildDir}").mkdirs();
+        }
+        if (!openDJZipFile.exists()) {
+            ant.get(src : "${openDJDownloadURL}", dest: "${openDJZipDestination}")
+        }
+    }
+}
+
+task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
+    inputs.file "${openDJZipDestination}"
+    outputs.file "${openDJHome}/bin"
+}
+
+initialiseOpenDJ << {
+    ant.exec (executable: '/bin/bash', spawn: 'false') {
+        ant.arg (value: '-c')
+        ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$4}' | xargs -I {} kill -9 {}")
+    }
+    delete "${openDJHome}"
+    copy {
+        from zipTree("${openDJZipDestination}")
+        into "${buildDir}"
+        setIncludeEmptyDirs true
+    }
+    ant.chmod (dir: "${openDJHome}", includes: '**/setup', perm: '755', verbose: 'true')
+    ant.chmod (dir: "${openDJHome}/bin", includes: '**/*', perm: '755', verbose: 'true')
+    ant.chmod (dir: "${openDJHome}/lib", includes: '**/*.sh', perm: '755', verbose: 'true')
+
+    ant.exec (executable: '/bin/bash', spawn: 'false') {
+        ant.arg (value: '-c')
+        ant.arg (value: "${openDJHome}/setup --cli --baseDN dc=example,dc=com --addBaseEntry --ldapPort 1389 --adminConnectorPort 4444 --rootUserDN cn=AdminUser --rootUserPassword password --doNotStart --no-prompt --noPropertiesFile")
+    }
+
+    ant.parallel {
+        ant.sequential {
+            ant.exec (executable: '/bin/bash', spawn: 'true') {
+                ant.arg (value: '-c')
+                ant.arg (value: "${openDJHome}/bin/start-ds")
+            }
+        }
+        ant.sequential {
+            ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
+                ant.socket ( server: 'localhost', port: 1389 )
+            }
+        }
+    }
+
+    ant.exec (executable: '/bin/bash', spawn: 'false') {
+        ant.arg (value: '-c')
+        ant.arg (value: "${openDJHome}/bin/import-ldif -h localhost -p 4444 -D cn=AdminUser -w password -n userRoot -l ${projectDir}/src/test/resources/test-users.ldif")
+    }
+}
+
+task restartOpenDJ {
+    doLast {
+        ant.exec (executable: '/bin/bash', spawn: 'false') {
+            ant.arg (value: '-c')
+            ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$4}' | xargs -I {} kill -9 {}")
+        }
+        ant.parallel {
+            ant.sequential {
+                ant.exec (executable: '/bin/bash', spawn: 'true') {
+                    ant.arg (value: '-c')
+                    ant.arg (value: "${openDJHome}/bin/start-ds")
+                }
+            }
+            ant.sequential {
+                ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
+                    ant.socket ( server: 'localhost', port: 1389 )
+                }
+            }
+        }
+    }
+}
+
+task startOpenDJ(dependsOn: initialiseOpenDJ) {
+    doLast {
+        ant.exec (executable: '/bin/bash', spawn: 'false', outputProperty: 'openDJConfig') {
+            ant.arg (value: '-c')
+            ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$22}'")
+        }
+        if (!ant.properties.openDJConfig.startsWith("${openDJHome}")) {
+            println("Starting OpenDJ")
+            ant.parallel {
+                ant.sequential {
+                    ant.exec (executable: '/bin/bash', spawn: 'true') {
+                        ant.arg (value: '-c')
+                        ant.arg (value: "${openDJHome}/bin/start-ds")
+                    }
+                }
+                ant.sequential {
+                    ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
+                        ant.socket ( server: 'localhost', port: 1389 )
+                    }
+                }
+            }
+        }
+    }
+}
+
+idea.module.excludeDirs = [ file('.gradle') ]
+
+sourceSets {
+    main {
+        resources {
+            srcDir "${openDJHome}/config"
+            include "wordlist.txt"
+            include "admin-backend.ldif"
+        }
+        resources {
+            srcDir "${openDJHome}/config/schema"
+            include "**"
+        }
+        resources {
+            srcDir "${openDJHome}/config/upgrade"
+            include "**"
+        }
+    }
+}
+
+//processResources {
+//    from (openDJHome) {
+//        include "config/schema/**"
+//        include "config/upgrade/**"
+//    }
+//}
+
+compileJava.dependsOn startOpenDJ

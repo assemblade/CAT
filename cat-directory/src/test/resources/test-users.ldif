@@ -1,0 +1,31 @@
+dn: dc=example,dc=com
+dc: example
+objectClass: extensibleObject
+objectClass: top
+objectClass: domain
+
+dn: ou=users,dc=example,dc=com
+ou: users
+objectClass: organizationalUnit
+objectClass: extensibleObject
+objectClass: top
+
+dn: uid=test1,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: test1
+cn: Test1 User
+sn: User
+userPassword: password
+
+dn: uid=test2,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: test2
+cn: Test2 User
+sn: User
+userPassword: password
