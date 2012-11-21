@@ -17,11 +17,16 @@ package com.assemblade.opendj.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.schema.GeneralizedTimeSyntax;
-import org.opends.server.types.*;
+import org.opends.server.types.Attribute;
+import org.opends.server.types.AttributeType;
+import org.opends.server.types.ByteString;
+import org.opends.server.types.DirectoryException;
+import org.opends.server.types.Entry;
+import org.opends.server.types.ObjectClass;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

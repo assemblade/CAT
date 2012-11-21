@@ -15,8 +15,8 @@
  */
 package com.assemblade.opendj;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.opends.server.config.ConfigException;
 import org.opends.server.controls.PasswordPolicyErrorType;
 import org.opends.server.controls.PasswordPolicyRequestControl;

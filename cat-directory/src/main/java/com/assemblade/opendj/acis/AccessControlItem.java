@@ -32,7 +32,7 @@ public class AccessControlItem {
 		return name;
 	}
 	
-	public List<Permission> getBindRules() {
+	public List<Permission> getPermissions() {
 		return permissions;
 	}
 	

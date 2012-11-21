@@ -22,11 +22,11 @@ ext {
 }
 
 dependencies {
+    compile project(':cat-utils')
     compile files("${openDJHome}/lib/OpenDJ.jar", "${openDJHome}/lib/je.jar")
     compile "commons-lang:commons-lang:2.6"
     compile "commons-collections:commons-collections:3.2.1"
     compile "commons-io:commons-io:2.0.1"
-    compile "org.apache.tomcat:tomcat-juli:7.0.5"
     compile "org.springframework:spring-web:${springVersion}"
 }
 
