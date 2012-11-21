@@ -44,54 +44,27 @@ task fetchOpenDJ {
 task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
     inputs.file "${openDJZipDestination}"
     outputs.file "${openDJHome}/bin"
-}
 
-initialiseOpenDJ << {
-    ant.exec (executable: '/bin/bash', spawn: 'false') {
-        ant.arg (value: '-c')
-        ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$4}' | xargs -I {} kill -9 {}")
-    }
-    delete "${openDJHome}"
-    copy {
-        from zipTree("${openDJZipDestination}")
-        into "${buildDir}"
-        setIncludeEmptyDirs true
-    }
-    ant.chmod (dir: "${openDJHome}", includes: '**/setup', perm: '755', verbose: 'true')
-    ant.chmod (dir: "${openDJHome}/bin", includes: '**/*', perm: '755', verbose: 'true')
-    ant.chmod (dir: "${openDJHome}/lib", includes: '**/*.sh', perm: '755', verbose: 'true')
-
-    ant.exec (executable: '/bin/bash', spawn: 'false') {
-        ant.arg (value: '-c')
-        ant.arg (value: "${openDJHome}/setup --cli --baseDN dc=example,dc=com --addBaseEntry --ldapPort 1389 --adminConnectorPort 4444 --rootUserDN cn=AdminUser --rootUserPassword password --doNotStart --no-prompt --noPropertiesFile")
-    }
-
-    ant.parallel {
-        ant.sequential {
-            ant.exec (executable: '/bin/bash', spawn: 'true') {
-                ant.arg (value: '-c')
-                ant.arg (value: "${openDJHome}/bin/start-ds")
-            }
-        }
-        ant.sequential {
-            ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
-                ant.socket ( server: 'localhost', port: 1389 )
-            }
-        }
-    }
-
-    ant.exec (executable: '/bin/bash', spawn: 'false') {
-        ant.arg (value: '-c')
-        ant.arg (value: "${openDJHome}/bin/import-ldif -h localhost -p 4444 -D cn=AdminUser -w password -n userRoot -l ${projectDir}/src/test/resources/test-users.ldif")
-    }
-}
-
-task restartOpenDJ {
     doLast {
         ant.exec (executable: '/bin/bash', spawn: 'false') {
             ant.arg (value: '-c')
             ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$4}' | xargs -I {} kill -9 {}")
         }
+        delete "${openDJHome}"
+        copy {
+            from zipTree("${openDJZipDestination}")
+            into "${buildDir}"
+            setIncludeEmptyDirs true
+        }
+        ant.chmod (dir: "${openDJHome}", includes: '**/setup', perm: '755', verbose: 'true')
+        ant.chmod (dir: "${openDJHome}/bin", includes: '**/*', perm: '755', verbose: 'true')
+        ant.chmod (dir: "${openDJHome}/lib", includes: '**/*.sh', perm: '755', verbose: 'true')
+
+        ant.exec (executable: '/bin/bash', spawn: 'false') {
+            ant.arg (value: '-c')
+            ant.arg (value: "${openDJHome}/setup --cli --baseDN dc=example,dc=com --addBaseEntry --ldapPort 1389 --adminConnectorPort 4444 --rootUserDN cn=AdminUser --rootUserPassword password --doNotStart --no-prompt --noPropertiesFile")
+        }
+
         ant.parallel {
             ant.sequential {
                 ant.exec (executable: '/bin/bash', spawn: 'true') {
@@ -104,6 +77,11 @@ task restartOpenDJ {
                     ant.socket ( server: 'localhost', port: 1389 )
                 }
             }
+        }
+
+        ant.exec (executable: '/bin/bash', spawn: 'false') {
+            ant.arg (value: '-c')
+            ant.arg (value: "${openDJHome}/bin/import-ldif -h localhost -p 4444 -D cn=AdminUser -w password -n userRoot -l ${projectDir}/src/test/resources/test-users.ldif")
         }
     }
 }
@@ -152,12 +130,5 @@ sourceSets {
         }
     }
 }
-
-//processResources {
-//    from (openDJHome) {
-//        include "config/schema/**"
-//        include "config/upgrade/**"
-//    }
-//}
 
 compileJava.dependsOn startOpenDJ
