@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    compile project(':cat-client-model')
+package com.assemblade.client;
 
-    compile 'org.scribe:scribe:1.3.0'
-    compile 'commons-httpclient:commons-httpclient:3.1'
-    compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
-    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
+public class ClientException extends Exception {
+    public ClientException() {
+    }
+
+    public ClientException(String message) {
+        super(message);
+    }
+
+    public ClientException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
-
-assemble.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble'

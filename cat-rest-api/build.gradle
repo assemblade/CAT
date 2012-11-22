@@ -175,5 +175,7 @@ task startTomcat(dependsOn: deployApplication) {
     }
 }
 
+idea.module.excludeDirs = [ file('.gradle') ]
+
 startTomcat.dependsOn war
 assemble.dependsOn startTomcat

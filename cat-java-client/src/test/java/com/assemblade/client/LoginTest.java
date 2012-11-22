@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    compile project(':cat-client-model')
+package com.assemblade.client;
 
-    compile 'org.scribe:scribe:1.3.0'
-    compile 'commons-httpclient:commons-httpclient:3.1'
-    compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
-    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
+import com.assemblade.client.model.Authentication;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+
+public class LoginTest extends AbstractApiTest {
+
+    @Test
+    public void adminCanLogin() throws Exception {
+        Authentication authentication = login.login("admin", "password");
+
+        assertNotNull(authentication);
+    }
 }
-
-assemble.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble'
