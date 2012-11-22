@@ -41,15 +41,22 @@ task fetchOpenDJ {
     }
 }
 
-task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
-    inputs.file "${openDJZipDestination}"
-    outputs.file "${openDJHome}/bin"
-
+task stopOpenDJ {
     doLast {
         ant.exec (executable: '/bin/bash', spawn: 'false') {
             ant.arg (value: '-c')
             ant.arg (value: "ps -efl | grep java | grep ${openDJHome} | awk '{print \$4}' | xargs -I {} kill -9 {}")
         }
+    }
+}
+
+task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
+    inputs.file "${openDJZipDestination}"
+    outputs.file "${openDJHome}/bin"
+
+    doLast {
+        stopOpenDJ.execute()
+
         delete "${openDJHome}"
         copy {
             from zipTree("${openDJZipDestination}")
@@ -84,19 +91,7 @@ task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
             into "${buildDir}/opendj-resources"
         }
 
-        ant.parallel {
-            ant.sequential {
-                ant.exec (executable: '/bin/bash', spawn: 'true') {
-                    ant.arg (value: '-c')
-                    ant.arg (value: "${openDJHome}/bin/start-ds")
-                }
-            }
-            ant.sequential {
-                ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
-                    ant.socket ( server: 'localhost', port: 1389 )
-                }
-            }
-        }
+        startOpenDJ.execute()
 
         ant.exec (executable: '/bin/bash', spawn: 'false') {
             ant.arg (value: '-c')
