@@ -65,6 +65,25 @@ task initialiseOpenDJ(dependsOn: fetchOpenDJ) {
             ant.arg (value: "${openDJHome}/setup --cli --baseDN dc=example,dc=com --addBaseEntry --ldapPort 1389 --adminConnectorPort 4444 --rootUserDN cn=AdminUser --rootUserPassword password --doNotStart --no-prompt --noPropertiesFile")
         }
 
+        new File("${buildDir}/opendj-resources").mkdirs()
+
+        copy {
+            from "${openDJHome}/config"
+            into "${buildDir}/opendj-resources"
+            include "wordlist.txt"
+            include "admin-backend.ldif"
+        }
+
+        copy {
+            from "${openDJHome}/config/schema"
+            into "${buildDir}/opendj-resources"
+        }
+
+        copy {
+            from "${openDJHome}/config/upgrade"
+            into "${buildDir}/opendj-resources"
+        }
+
         ant.parallel {
             ant.sequential {
                 ant.exec (executable: '/bin/bash', spawn: 'true') {
@@ -116,17 +135,7 @@ idea.module.excludeDirs = [ file('.gradle') ]
 sourceSets {
     main {
         resources {
-            srcDir "${openDJHome}/config"
-            include "wordlist.txt"
-            include "admin-backend.ldif"
-        }
-        resources {
-            srcDir "${openDJHome}/config/schema"
-            include "**"
-        }
-        resources {
-            srcDir "${openDJHome}/config/upgrade"
-            include "**"
+            srcDir "${buildDir}/opendj-resources"
         }
     }
 }
