@@ -38,11 +38,15 @@ public class Policies extends AbstractClient {
 
     public List<AuthenticationPolicy> getAuthenticationPolicies() {
         GetMethod get = new GetMethod(baseUrl + "/policies");
-        if (executeMethod(get) == 200) {
-            try {
-                return mapper.readValue(get.getResponseBodyAsStream(), new TypeReference<List<AuthenticationPolicy>>(){});
-            } catch (IOException e) {
+        try {
+            if (executeMethod(get) == 200) {
+                try {
+                    return mapper.readValue(get.getResponseBodyAsStream(), new TypeReference<List<AuthenticationPolicy>>(){});
+                } catch (IOException e) {
+                }
             }
+        } finally {
+            get.releaseConnection();
         }
         return new ArrayList<AuthenticationPolicy>();
     }
@@ -50,11 +54,15 @@ public class Policies extends AbstractClient {
     public AuthenticationPolicy addAuthenticationPolicy(AuthenticationPolicy policy) {
         PostMethod post = new PostMethod(baseUrl + "/policies");
         try {
-            post.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
-            if (executeMethod(post) == 200) {
-                return mapper.readValue(post.getResponseBodyAsStream(), AuthenticationPolicy.class);
+            try {
+                post.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
+                if (executeMethod(post) == 200) {
+                    return mapper.readValue(post.getResponseBodyAsStream(), AuthenticationPolicy.class);
+                }
+            } catch (IOException e) {
             }
-        } catch (IOException e) {
+        } finally {
+            post.releaseConnection();
         }
         return null;
     }
@@ -62,11 +70,15 @@ public class Policies extends AbstractClient {
     public AuthenticationPolicy updateAuthenticationPolicy(AuthenticationPolicy policy) {
         PutMethod put = new PutMethod(baseUrl + "/policies");
         try {
-            put.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
-            if (executeMethod(put) == 200) {
-                return mapper.readValue(put.getResponseBodyAsStream(), AuthenticationPolicy.class);
+            try {
+                put.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
+                if (executeMethod(put) == 200) {
+                    return mapper.readValue(put.getResponseBodyAsStream(), AuthenticationPolicy.class);
+                }
+            } catch (IOException e) {
             }
-        } catch (IOException e) {
+        } finally {
+            put.releaseConnection();
         }
         return null;
     }
@@ -74,7 +86,11 @@ public class Policies extends AbstractClient {
     public boolean deleteAuthenticationPolicy(String policyName) {
         try {
             DeleteMethod delete = new DeleteMethod(baseUrl + "/policies/" + URIUtil.encode(policyName, URI.allowed_fragment));
-            return executeMethod(delete) == 204;
+            try {
+                return executeMethod(delete) == 204;
+            } finally {
+                delete.releaseConnection();
+            }
         } catch (URIException e) {
         }
         return false;
