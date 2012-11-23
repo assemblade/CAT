@@ -26,7 +26,7 @@ public class Login extends AbstractClient {
         super(baseUrl);
     }
 
-    public Authentication login(String username, String password) throws ChangePasswordException {
+    public Authentication login(String username, String password) throws ChangePasswordException, CallFailedException {
         PostMethod method = new PostMethod(baseUrl + "/login");
         try {
             method.setQueryString(new NameValuePair[]{new NameValuePair("username", username), new NameValuePair("password", password)});
@@ -45,7 +45,7 @@ public class Login extends AbstractClient {
         return null;
     }
 
-    public boolean changePassword(String username, String password, String newPassword) {
+    public boolean changePassword(String username, String password, String newPassword) throws CallFailedException {
         PostMethod method = new PostMethod(baseUrl + "/login/changepassword");
         try {
             method.setQueryString(new NameValuePair[]{new NameValuePair("username", username), new NameValuePair("password", password), new NameValuePair("newpassword", newPassword)});

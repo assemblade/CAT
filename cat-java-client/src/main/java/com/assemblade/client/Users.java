@@ -36,78 +36,31 @@ public class Users extends AbstractClient {
         super(authentication);
     }
 
-    public List<User> getAllUsers() {
-        GetMethod get = new GetMethod(baseUrl + "/users");
-        try {
-            if (executeMethod(get) == 200) {
-                try {
-                    return mapper.readValue(get.getResponseBodyAsStream(), new TypeReference<List<User>>(){});
-                } catch (IOException e) {
-                }
-            }
-        } finally {
-            get.releaseConnection();
-        }
-        return new ArrayList<User>();
+    public List<User> getAllUsers() throws ClientException {
+        return get("/users", new TypeReference<List<User>>(){});
     }
 
-    public User getAuthenticatedUser() {
-        GetMethod get = new GetMethod(baseUrl + "/users/current");
-        try {
-            if (executeMethod(get) == 200) {
-                try {
-                    return mapper.readValue(get.getResponseBodyAsStream(), User.class);
-                } catch (IOException e) {
-                }
-            }
-        } finally {
-            get.releaseConnection();
-        }
-        return null;
+    public User getAuthenticatedUser() throws ClientException {
+        return get("/users/current", new TypeReference<User>() {});
     }
 
-    public User addUser(User user) {
-        PostMethod post = new PostMethod(baseUrl + "/users");
-        try {
-            try {
-                post.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(user), "application/json", null));
-                if (executeMethod(post) == 200) {
-                    return mapper.readValue(post.getResponseBodyAsStream(), User.class);
-                }
-            } catch (IOException e) {
-            }
-        } finally {
-            post.releaseConnection();
-        }
-        return null;
+    public User addUser(User user) throws ClientException {
+        return add("/users", user, new TypeReference<User>() {});
     }
 
-    public User updateUser(User user) {
-        PutMethod put = new PutMethod(baseUrl + "/users");
+    public User updateUser(User user) throws ClientException {
         try {
-            try {
-                put.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(user), "application/json", null));
-                if (executeMethod(put) == 200) {
-                    return mapper.readValue(put.getResponseBodyAsStream(), User.class);
-                }
-            } catch (IOException e) {
-            }
-        } finally {
-            put.releaseConnection();
-        }
-        return null;
-    }
-
-    public boolean deleteUser(String userId) {
-        try {
-            DeleteMethod delete = new DeleteMethod(baseUrl + "/users/" + URIUtil.encode(userId, URI.allowed_fragment));
-            try {
-                return executeMethod(delete) == 204;
-            } finally {
-                delete.releaseConnection();
-            }
+            return add("/users/" + URIUtil.encode(user.getUserId(), URI.allowed_fragment), user, new TypeReference<User>() {});
         } catch (URIException e) {
+            throw new CallFailedException("Failed to encode request path", e);
         }
-        return false;
+    }
+
+    public void deleteUser(User user) throws ClientException {
+        try {
+            delete("/users/" + URIUtil.encode(user.getUserId(), URI.allowed_fragment));
+        } catch (URIException e) {
+            throw new CallFailedException("Failed to encode request path", e);
+        }
     }
 }

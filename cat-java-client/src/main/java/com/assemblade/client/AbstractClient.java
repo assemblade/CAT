@@ -16,12 +16,19 @@
 package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
+import com.assemblade.client.model.Folder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.scribe.model.OAuthConstants;
 import org.scribe.services.HMACSha1SignatureService;
 import org.scribe.services.SignatureService;
@@ -29,6 +36,7 @@ import org.scribe.services.TimestampService;
 import org.scribe.services.TimestampServiceImpl;
 import org.scribe.utils.OAuthEncoder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,13 +58,89 @@ public abstract class AbstractClient {
         this.authentication = authentication;
     }
 
-    protected int executeMethod(HttpMethodBase method) {
+    protected <T> T get(String path, TypeReference<T> type) throws ClientException {
+        GetMethod get = new GetMethod(baseUrl + path);
+        try {
+            int statusCode = executeMethod(get);
+            if (statusCode == 200) {
+                try {
+                    return mapper.readValue(get.getResponseBodyAsStream(), type);
+                } catch (IOException e) {
+                    throw new CallFailedException("Failed to deserialize a response object", e);
+                }
+            } else {
+                throw new InvalidStatusException(200, statusCode);
+            }
+        } finally {
+            get.releaseConnection();
+        }
+    }
+
+    protected <T> T add(String path, T object, TypeReference<T> type) throws ClientException {
+        PostMethod post = new PostMethod(baseUrl + path);
+        try {
+            try {
+                post.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(object), "application/json", null));
+            } catch (IOException e) {
+                throw new CallFailedException("Failed to serialize a request object", e);
+            }
+            int statusCode = executeMethod(post);
+            if (statusCode == 200) {
+                try {
+                    return mapper.readValue(post.getResponseBodyAsStream(), type);
+                } catch (IOException e) {
+                    throw new CallFailedException("Failed to deserialize a response object", e);
+                }
+            } else {
+                throw new InvalidStatusException(200, statusCode);
+            }
+        } finally {
+            post.releaseConnection();
+        }
+    }
+
+    protected <T> T update(String path, T object, TypeReference<T> type) throws ClientException {
+        PutMethod put = new PutMethod(baseUrl + path);
+        try {
+            try {
+                put.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(object), "application/json", null));
+            } catch (IOException e) {
+                throw new CallFailedException("Failed to serialize a request object", e);
+            }
+            int statusCode = executeMethod(put);
+            if (statusCode == 200) {
+                try {
+                    return mapper.readValue(put.getResponseBodyAsStream(), type);
+                } catch (IOException e) {
+                    throw new CallFailedException("Failed to deserialize a response object", e);
+                }
+            } else {
+                throw new InvalidStatusException(200, statusCode);
+            }
+        } finally {
+            put.releaseConnection();
+        }
+    }
+
+    protected void delete(String path) throws ClientException {
+        DeleteMethod delete = new DeleteMethod(baseUrl + path);
+        try {
+            int statusCode = executeMethod(delete);
+            if (statusCode != 204) {
+                throw new InvalidStatusException(204, statusCode);
+            }
+        } finally {
+            delete.releaseConnection();
+        }
+    }
+
+    protected int executeMethod(HttpMethodBase method) throws CallFailedException {
         try {
             generateSignature(method);
             client.executeMethod(method);
             return method.getStatusCode();
         } catch (Exception e) {
-            return 500;
+            throw new CallFailedException("Method execution failed", e);
         }
     }
 

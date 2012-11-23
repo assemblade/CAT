@@ -17,6 +17,7 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.AuthenticationPolicy;
+import com.assemblade.client.model.User;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -36,63 +37,27 @@ public class Policies extends AbstractClient {
         super(authentication);
     }
 
-    public List<AuthenticationPolicy> getAuthenticationPolicies() {
-        GetMethod get = new GetMethod(baseUrl + "/policies");
-        try {
-            if (executeMethod(get) == 200) {
-                try {
-                    return mapper.readValue(get.getResponseBodyAsStream(), new TypeReference<List<AuthenticationPolicy>>(){});
-                } catch (IOException e) {
-                }
-            }
-        } finally {
-            get.releaseConnection();
-        }
-        return new ArrayList<AuthenticationPolicy>();
+    public List<AuthenticationPolicy> getAuthenticationPolicies() throws ClientException {
+        return get("/policies", new TypeReference<List<AuthenticationPolicy>>() {});
     }
 
-    public AuthenticationPolicy addAuthenticationPolicy(AuthenticationPolicy policy) {
-        PostMethod post = new PostMethod(baseUrl + "/policies");
-        try {
-            try {
-                post.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
-                if (executeMethod(post) == 200) {
-                    return mapper.readValue(post.getResponseBodyAsStream(), AuthenticationPolicy.class);
-                }
-            } catch (IOException e) {
-            }
-        } finally {
-            post.releaseConnection();
-        }
-        return null;
+    public AuthenticationPolicy addAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
+        return add("/policies", policy, new TypeReference<AuthenticationPolicy>() {});
     }
 
-    public AuthenticationPolicy updateAuthenticationPolicy(AuthenticationPolicy policy) {
-        PutMethod put = new PutMethod(baseUrl + "/policies");
+    public AuthenticationPolicy updateAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
         try {
-            try {
-                put.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(policy), "application/json", null));
-                if (executeMethod(put) == 200) {
-                    return mapper.readValue(put.getResponseBodyAsStream(), AuthenticationPolicy.class);
-                }
-            } catch (IOException e) {
-            }
-        } finally {
-            put.releaseConnection();
-        }
-        return null;
-    }
-
-    public boolean deleteAuthenticationPolicy(String policyName) {
-        try {
-            DeleteMethod delete = new DeleteMethod(baseUrl + "/policies/" + URIUtil.encode(policyName, URI.allowed_fragment));
-            try {
-                return executeMethod(delete) == 204;
-            } finally {
-                delete.releaseConnection();
-            }
+            return add("/policies/" + URIUtil.encode(policy.getName(), URI.allowed_fragment), policy, new TypeReference<AuthenticationPolicy>() {});
         } catch (URIException e) {
+            throw new CallFailedException("Failed to encode request path", e);
         }
-        return false;
+    }
+
+    public void deleteAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
+        try {
+            delete("/policies/" + URIUtil.encode(policy.getName(), URI.allowed_fragment));
+        } catch (URIException e) {
+            throw new CallFailedException("Failed to encode request path", e);
+        }
     }
 }

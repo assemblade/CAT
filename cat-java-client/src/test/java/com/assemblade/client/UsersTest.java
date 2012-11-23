@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -35,17 +36,25 @@ public class UsersTest extends AbstractApiTest {
     }
 
     @Test
-    public void getAuthenticatedUserTest() {
+    public void getAuthenticatedUserTest() throws ClientException {
         User user = test.getAuthenticatedUser();
 
         assertNotNull(user);
     }
 
     @Test
-    public void getAllUsers() {
+    public void getAllUsers() throws ClientException {
         List<User> users = test.getAllUsers();
 
         assertTrue(users.size() > 0);
+    }
+
+    @Test
+    public void getAuthenticatedUser() throws ClientException {
+        User user = test.getAuthenticatedUser();
+
+        assertNotNull(user);
+        assertEquals("admin", user.getUserId());
     }
 
 

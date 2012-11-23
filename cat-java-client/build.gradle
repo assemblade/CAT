@@ -13,6 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+configurations {
+    jarIncludes
+}
+
+version = '0.0.1'
+ext.packaging = 'jar'
+
+def isDevBuild
+def isReleaseBuild
+
+def sonatypeRepositoryUrl
+
+if (hasProperty("release")) {
+    isReleaseBuild = true
+    sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+} else if (hasProperty("ci")) {
+    version += "-SNAPSHOT"
+    sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+} else {
+    isDevBuild = true
+}
+
 dependencies {
     compile project(':cat-client-model')
 
@@ -20,6 +45,97 @@ dependencies {
     compile 'commons-httpclient:commons-httpclient:3.1'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
+
+    jarIncludes (project(':cat-client-model')) {
+        exclude group: 'org.codehaus.jackson'
+    }
+}
+
+jar {
+    dependsOn configurations.jarIncludes
+    from { configurations.jarIncludes.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+if(isReleaseBuild) {
+    signing {
+        sign configurations.archives
+    }
+} else {
+    task signArchives {
+    }
+}
+
+def configurePom(pom) {
+    pom.whenConfigured { p ->
+        p.dependencies = p.dependencies.findAll {it.scope != 'test'}
+        p.dependencies.removeAll { dep -> dep.artifactId == 'cat-client-model' }
+    }
+
+    pom.project {
+        name 'CAT Java Client'
+        description 'The java client for the CAT rest api'
+        inceptionYear '2012'
+        developers {
+            developer {
+                id 'mike-tr-adamson'
+                name 'Mike Adamson'
+                email 'mikeatdot@gmail.com'
+            }
+        }
+        url 'https://github.com/assemblade/CAT'
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+        scm {
+            url 'git@github.com:assemblade/CAT.git'
+            connection 'scm:git:git@github.com:assemblade/CAT.git'
+            developerConnection 'scm:git:git@github.com:assemblade/CAT.git'
+        }
+    }
+}
+
+configure(install.repositories.mavenInstaller) {
+    configurePom(pom);
+}
+
+uploadArchives {
+    repositories {
+        if (isDevBuild) {
+            mavenLocal()
+        }
+        else {
+            mavenDeployer {
+                if(isReleaseBuild) {
+                    beforeDeployment { deployment -> signing.signPom(deployment) }
+                }
+
+                repository(url: sonatypeRepositoryUrl) {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+                configurePom(pom);
+            }
+        }
+    }
 }
 
 assemble.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble'

@@ -36,14 +36,14 @@ public class FoldersTest extends AbstractApiTest {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws ClientException {
         for (Folder folder : test.getRootFolders()) {
             test.deleteFolder(folder);
         }
     }
 
     @Test
-    public void addRootFolderTest() {
+    public void addRootFolderTest() throws ClientException {
         Folder folder = createFolder("folder1", "folder1 description");
         folder = test.addRootFolder(folder);
         assertNotNull(folder);
@@ -51,14 +51,14 @@ public class FoldersTest extends AbstractApiTest {
     }
 
     @Test
-    public void getRootFoldersTest() {
+    public void getRootFoldersTest() throws ClientException {
         test.addRootFolder(createFolder("folder1", "folder1 description"));
         List<Folder> folders = test.getRootFolders();
         assertEquals(1, folders.size());
     }
 
     @Test
-    public void deleteFolderTest() {
+    public void deleteFolderTest() throws ClientException {
         Folder folder = test.addRootFolder(createFolder("folder1", "folder1 description"));
         assertEquals(1, test.getRootFolders().size());
         test.deleteFolder(folder);

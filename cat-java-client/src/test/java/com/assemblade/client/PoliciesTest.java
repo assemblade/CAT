@@ -23,6 +23,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 public class PoliciesTest extends AbstractApiTest {
     private Policies test;
 
@@ -33,17 +35,17 @@ public class PoliciesTest extends AbstractApiTest {
     }
 
     @Test
-    public void getAuthenticationPoliciesTest() {
+    public void getAuthenticationPoliciesTest() throws ClientException {
         List<AuthenticationPolicy> policies = test.getAuthenticationPolicies();
 
-        System.out.println();
+        assertTrue(policies.size() > 0);
     }
 
     @Test
-    public void deleteAuthenticationPolicy() {
+    public void deleteAuthenticationPolicy() throws ClientException {
         PasswordPolicy policy = new PasswordPolicy();
         policy.setName("Change on reset");
         test.addAuthenticationPolicy(policy);
-        test.deleteAuthenticationPolicy("Change on reset");
+        test.deleteAuthenticationPolicy(policy);
     }
 }

@@ -38,7 +38,7 @@ public class ChangePasswordTest extends AbstractApiTest {
 
         for (AuthenticationPolicy policy : policies.getAuthenticationPolicies()) {
             if (!policy.getName().startsWith("Default")) {
-                policies.deleteAuthenticationPolicy(policy.getName());
+                policies.deleteAuthenticationPolicy(policy);
             }
         }
 
@@ -46,7 +46,7 @@ public class ChangePasswordTest extends AbstractApiTest {
 
         for (User user: users.getAllUsers()) {
             if (user.isDeletable()) {
-                users.deleteUser(user.getUserId());
+                users.deleteUser(user);
             }
         }
     }
@@ -55,18 +55,18 @@ public class ChangePasswordTest extends AbstractApiTest {
     public void teardown() throws Exception {
         for (User user: users.getAllUsers()) {
             if (user.isDeletable()) {
-                users.deleteUser(user.getUserId());
+                users.deleteUser(user);
             }
         }
         for (AuthenticationPolicy policy : policies.getAuthenticationPolicies()) {
             if (!policy.getName().startsWith("Default")) {
-                policies.deleteAuthenticationPolicy(policy.getName());
+                policies.deleteAuthenticationPolicy(policy);
             }
         }
     }
 
     @Test
-    public void userCanChangeTheirPassword() {
+    public void userCanChangeTheirPassword() throws ClientException {
         PasswordPolicy policy = new PasswordPolicy();
         policy.setName("Change on reset");
         policy.setForceChangeOnReset(true);

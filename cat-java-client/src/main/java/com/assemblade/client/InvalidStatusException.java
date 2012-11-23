@@ -13,28 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-allprojects {
-    apply plugin: 'eclipse'
+package com.assemblade.client;
 
-    group = 'com.assemblade.cat'
-    ext {
-        springVersion = '3.1.1.RELEASE'
+public class InvalidStatusException extends ClientException {
+    public InvalidStatusException(int expected, int actual) {
+        super("Call failed because we expected [" + expected + "] but got [" + actual +"]");
     }
 }
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'idea'
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        testCompile "junit:junit:4.8.1"
-        testCompile "org.mockito:mockito-all:1.8.5"
-        testCompile "org.springframework:spring-test:${springVersion}"
-    }
-}
-
-task stop(dependsOn: [':cat-rest-api:stopTomcat', ':cat-directory:stopOpenDJ'])
