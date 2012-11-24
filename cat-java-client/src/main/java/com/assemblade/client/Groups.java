@@ -17,17 +17,10 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.Group;
-import com.assemblade.client.model.GroupUser;
+import com.assemblade.client.model.GroupMember;
 import com.assemblade.client.model.User;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.codehaus.jackson.type.TypeReference;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Groups extends AbstractClient {
@@ -39,8 +32,8 @@ public class Groups extends AbstractClient {
         return get("/groups", new TypeReference<List<Group>>() {});
     }
 
-    public List<GroupUser> getUsersInGroup(Group group) throws ClientException {
-        return get("/groups/" + group.getId() + "/members", new TypeReference<List<GroupUser>>() {});
+    public List<GroupMember> getUsersInGroup(Group group) throws ClientException {
+        return get("/groups/" + group.getId() + "/members", new TypeReference<List<GroupMember>>() {});
     }
 
     public List<User> getUsersNotInGroup(Group group) throws ClientException {

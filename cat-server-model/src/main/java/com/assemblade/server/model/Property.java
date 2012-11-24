@@ -18,10 +18,13 @@ package com.assemblade.server.model;
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
 import org.opends.server.types.Entry;
+import org.opends.server.types.Modification;
 import org.opends.server.types.ObjectClass;
 
 import java.io.Serializable;
@@ -72,7 +75,11 @@ public class Property extends AbstractStorable implements Serializable {
 	}
 	
 	public Collection<String> getAttributeNames() {
-		return Arrays.asList("cn", "assemblade-value", "description", "aclRights");
+        Collection<String> attributeNames = super.getAttributeNames();
+
+        attributeNames.addAll(Arrays.asList("cn", "assemblade-value", "description", "aclRights"));
+
+        return attributeNames;
 	}
 
 	public Map<ObjectClass, String> getObjectClasses() {
@@ -91,6 +98,23 @@ public class Property extends AbstractStorable implements Serializable {
 	public StorableDecorator getDecorator() {
         return new Decorator();
 	}
+
+    public boolean requiresRename(Entry currentEntry) {
+        return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
+    }
+
+    @Override
+    public boolean requiresUpdate(Entry currentEntry) {
+        Property currentProperty = (Property)getDecorator().decorate(currentEntry);
+        return !StringUtils.equals(description, currentProperty.getDescription()) || !StringUtils.equals(value, currentProperty.getValue());
+    }
+
+    public List<Modification> getModifications(Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(currentEntry);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "assemblade-value", value);
+        return modifications;
+    }
 
     public String getName() {
 		return name;

@@ -16,6 +16,8 @@
 package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
+import com.assemblade.client.model.Folder;
+import com.assemblade.client.model.Property;
 import org.junit.Before;
 
 public class AbstractApiTest {
@@ -26,4 +28,22 @@ public class AbstractApiTest {
     public void initialise_login() throws Exception {
         login = new Login(baseUrl);
     }
+
+    protected Folder createFolder(String name, String description) {
+        Folder folder = new Folder();
+        folder.setName(name);
+        folder.setDescription(description);
+        return folder;
+    }
+
+    protected Property createProperty(Folder folder, String name, String description, String value) {
+        Property property = new Property();
+        property.setFolder(folder);
+        property.setName(name);
+        property.setDescription(description);
+        property.setValue(value);
+
+        return property;
+    }
+
 }

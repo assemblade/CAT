@@ -126,7 +126,7 @@ public abstract class AbstractFolder extends AbstractStorable {
     public List<Modification> getModifications(Entry currentEntry) {
         List<Modification> modifications = super.getModifications(currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
-        LdapUtils.createMultipleEntryReplaceModification(modifications, "aci", generatePermissionAcis());
+        LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", generatePermissionAcis());
         return modifications;
     }
 

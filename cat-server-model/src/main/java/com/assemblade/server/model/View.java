@@ -134,7 +134,7 @@ public class View extends AbstractFolder {
 
         Collection<String> newAcis = generatePermissionAcis();
 
-        LdapUtils.createMultipleEntryReplaceModification(modifications, "aci", newAcis);
+        LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", newAcis);
 
         return modifications;
     }

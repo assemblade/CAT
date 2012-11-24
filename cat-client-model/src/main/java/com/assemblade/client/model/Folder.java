@@ -15,11 +15,18 @@
  */
 package com.assemblade.client.model;
 
+import java.util.List;
+
 public class Folder {
     private String name;
     private String description;
     private String parentId;
     private String id;
+    private boolean addable;
+    private boolean writable;
+    private boolean deletable;
+    private List<Group> readGroups;
+    private List<Group> writeGroups;
 
     public String getName() {
         return name;
@@ -51,5 +58,45 @@ public class Folder {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public boolean isAddable() {
+        return addable;
+    }
+
+    public void setAddable(boolean addable) {
+        this.addable = addable;
+    }
+
+    public boolean isWritable() {
+        return writable;
+    }
+
+    public void setWritable(boolean writable) {
+        this.writable = writable;
+    }
+
+    public boolean isDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
+    }
+
+    public List<Group> getReadGroups() {
+        return readGroups;
+    }
+
+    public void setReadGroups(List<Group> readGroups) {
+        this.readGroups = readGroups;
+    }
+
+    public List<Group> getWriteGroups() {
+        return writeGroups;
+    }
+
+    public void setWriteGroups(List<Group> writeGroups) {
+        this.writeGroups = writeGroups;
     }
 }

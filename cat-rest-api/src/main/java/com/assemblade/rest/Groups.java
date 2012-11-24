@@ -1,10 +1,11 @@
 package com.assemblade.rest;
 
 import com.assemblade.client.model.Group;
-import com.assemblade.client.model.GroupUser;
+import com.assemblade.client.model.GroupMember;
 import com.assemblade.client.model.User;
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
+import com.assemblade.rest.mappers.GroupMapper;
 import com.assemblade.server.model.UserNotInGroup;
 import com.assemblade.server.users.GroupManager;
 
@@ -24,9 +25,11 @@ import java.util.List;
 @Path("/groups")
 public class Groups {
     private final GroupManager groupManager;
+    private final GroupMapper groupMapper;
 
-    public Groups(GroupManager groupManager) {
+    public Groups(GroupManager groupManager, GroupMapper groupMapper) {
         this.groupManager = groupManager;
+        this.groupMapper = groupMapper;
     }
 
     @GET
@@ -35,7 +38,7 @@ public class Groups {
         List<Group> groups = new ArrayList<Group>();
         try {
             for (com.assemblade.server.model.Group group: groupManager.getGroups()) {
-                groups.add(map(group));
+                groups.add(groupMapper.toClient(group));
             }
             return Response.ok(groups).build();
         } catch (StorageException e) {
@@ -51,12 +54,12 @@ public class Groups {
     @Path("{groupId}/members")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsersInGroup(@PathParam("groupId") String groupId) {
-        List<GroupUser> users = new ArrayList<GroupUser>();
+        List<GroupMember> members = new ArrayList<GroupMember>();
         try {
             for (com.assemblade.server.model.GroupUser user : groupManager.getListOfUsersInGroup(groupId)) {
-                users.add(map(user));
+                members.add(map(user));
             }
-            return Response.ok(users).build();
+            return Response.ok(members).build();
         } catch (StorageException e) {
             if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
@@ -90,7 +93,7 @@ public class Groups {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addGroup(Group group) {
         try {
-            return Response.ok(map(groupManager.addGroup(group.getName(), group.getDescription()))).build();
+            return Response.ok(groupMapper.toClient(groupManager.addGroup(group.getName(), group.getDescription()))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -105,7 +108,7 @@ public class Groups {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateGroup(Group group) {
         try {
-            return Response.ok(map(groupManager.updateGroup(map(group)))).build();
+            return Response.ok(groupMapper.toClient(groupManager.updateGroup(groupMapper.toServer(group)))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -130,27 +133,14 @@ public class Groups {
         return Response.noContent().build();
     }
 
-    private Group map(com.assemblade.server.model.Group serverGroup) {
-        Group group = new Group();
+    private GroupMember map(com.assemblade.server.model.GroupUser serverUser) {
+        GroupMember member = new GroupMember();
+        member.setUserId(serverUser.getUserId());
+        member.setFullName(serverUser.getFullName());
+        member.setEmailAddress(serverUser.getEmailAddress());
+        member.setAdministrator(serverUser.isAdministrator());
 
-        group.setId(serverGroup.getId());
-        group.setName(serverGroup.getDisplayName());
-        group.setDescription(serverGroup.getDescription());
-        group.setWritable(serverGroup.isWritable());
-        group.setDeletable(serverGroup.isDeletable());
-        group.setType(serverGroup.getType());
-
-        return group;
-    }
-
-    private GroupUser map(com.assemblade.server.model.GroupUser serverUser) {
-        GroupUser user = new GroupUser();
-        user.setUserId(serverUser.getUserId());
-        user.setFullName(serverUser.getFullName());
-        user.setEmailAddress(serverUser.getEmailAddress());
-        user.setAdministrator(serverUser.isAdministrator());
-
-        return user;
+        return member;
     }
 
     private User map(UserNotInGroup serverUser) {
@@ -161,14 +151,5 @@ public class Groups {
         user.setEmailAddress(serverUser.getEmailAddress());
 
         return user;
-    }
-
-    private com.assemblade.server.model.Group map(Group group) {
-        com.assemblade.server.model.Group serverGroup = new com.assemblade.server.model.Group();
-        serverGroup.setId(group.getId());
-        serverGroup.setName(group.getName());
-        serverGroup.setDescription(group.getDescription());
-
-        return serverGroup;
     }
 }
