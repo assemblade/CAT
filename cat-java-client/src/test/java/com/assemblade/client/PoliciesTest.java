@@ -26,26 +26,18 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 public class PoliciesTest extends AbstractApiTest {
-    private Policies test;
-
-    @Before
-    public void setup() throws Exception {
-        Authentication authentication  = login.login("admin", "password");
-        test = new Policies(authentication);
-    }
-
     @Test
     public void getAuthenticationPoliciesTest() throws ClientException {
-        List<AuthenticationPolicy> policies = test.getAuthenticationPolicies();
+        List<AuthenticationPolicy> policyList = policies.getAuthenticationPolicies();
 
-        assertTrue(policies.size() > 0);
+        assertTrue(policyList.size() > 0);
     }
 
     @Test
     public void deleteAuthenticationPolicy() throws ClientException {
         PasswordPolicy policy = new PasswordPolicy();
         policy.setName("Change on reset");
-        test.addAuthenticationPolicy(policy);
-        test.deleteAuthenticationPolicy(policy);
+        policies.addAuthenticationPolicy(policy);
+        policies.deleteAuthenticationPolicy(policy);
     }
 }

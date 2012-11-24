@@ -32,6 +32,10 @@ public class Groups extends AbstractClient {
         return get("/groups", new TypeReference<List<Group>>() {});
     }
 
+    public Group getAdministratorGroup() throws ClientException {
+        return get("/groups/administrator", new TypeReference<Group>() {});
+    }
+
     public List<GroupMember> getUsersInGroup(Group group) throws ClientException {
         return get("/groups/" + group.getId() + "/members", new TypeReference<List<GroupMember>>() {});
     }

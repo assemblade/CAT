@@ -33,6 +33,10 @@ public class GroupManager {
 		this.userManager = userManager;
 	}
 
+    public Group getAdministratorGroup() throws StorageException {
+        return userManager.getUserSession().getByEntryDn(new Group(), Group.GLOBAL_ADMIN_DN);
+    }
+
     public Group addGroup(String groupName, String description) throws StorageException {
     	Group group = new Group(groupName, description);
     	userManager.getUserSession().add(group);
