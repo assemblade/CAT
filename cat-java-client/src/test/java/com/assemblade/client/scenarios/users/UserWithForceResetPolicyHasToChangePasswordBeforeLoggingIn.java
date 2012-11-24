@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.assemblade.client;
+package com.assemblade.client.scenarios.users;
 
+import com.assemblade.client.AbstractApiTest;
+import com.assemblade.client.ChangePasswordException;
+import com.assemblade.client.ClientException;
+import com.assemblade.client.Policies;
+import com.assemblade.client.Users;
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.PasswordPolicy;
@@ -27,7 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ChangePasswordTest extends AbstractApiTest {
+public class UserWithForceResetPolicyHasToChangePasswordBeforeLoggingIn extends AbstractApiTest {
     private Policies policies;
     private Users users;
 

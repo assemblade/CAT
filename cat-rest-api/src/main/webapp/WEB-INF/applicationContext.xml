@@ -57,6 +57,18 @@
         <constructor-arg ref="userManager"/>
     </bean>
 
+    <bean id="groupMapper" class="com.assemblade.rest.mappers.GroupMapper"/>
+
+    <bean id="folderMapper" class="com.assemblade.rest.mappers.FolderMapper">
+        <constructor-arg ref="userManager"/>
+        <constructor-arg ref="groupMapper"/>
+    </bean>
+
+    <bean id="propertyMapper" class="com.assemblade.rest.mappers.PropertyMapper">
+        <constructor-arg ref="propertyManager"/>
+        <constructor-arg ref="folderMapper"/>
+    </bean>
+
     <bean id="login" class="com.assemblade.rest.Login">
         <constructor-arg ref="accessTokenManager"/>
         <constructor-arg ref="userManager"/>
@@ -64,6 +76,8 @@
 
     <bean id="folders" class="com.assemblade.rest.Folders">
         <constructor-arg ref="propertyManager"/>
+        <constructor-arg ref="folderMapper"/>
+        <constructor-arg ref="propertyMapper"/>
     </bean>
 
     <bean id="policies" class="com.assemblade.rest.Policies">
@@ -76,6 +90,7 @@
 
     <bean id="groups" class="com.assemblade.rest.Groups">
         <constructor-arg ref="groupManager"/>
+        <constructor-arg ref="groupMapper"/>
     </bean>
 
 </beans>

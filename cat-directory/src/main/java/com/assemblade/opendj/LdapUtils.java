@@ -65,16 +65,25 @@ public class LdapUtils {
         }
     }
 
-    public static void createMultipleEntryReplaceModification(List<Modification> modifications, String attributeName, Collection<String> entries) {
+    public static void createMultipleEntryModification(List<Modification> modifications, Entry currentEntry, String attributeName, Collection<String> entries) {
         AttributeType type = DirectoryServer.getAttributeType(attributeName);
         AttributeBuilder builder = new AttributeBuilder(type);
-        if (entries.size() > 0) {
-            for (String addEntry : entries) {
-                builder.add(addEntry);
+        if (currentEntry.hasAttribute(type)) {
+            if (entries.size() > 0) {
+                for (String addEntry : entries) {
+                    builder.add(addEntry);
+                }
+                modifications.add(new Modification(ModificationType.REPLACE, builder.toAttribute()));
+            } else {
+                modifications.add(new Modification(ModificationType.DELETE, builder.toAttribute()));
             }
-            modifications.add(new Modification(ModificationType.REPLACE, builder.toAttribute()));
         } else {
-            modifications.add(new Modification(ModificationType.DELETE, builder.toAttribute()));
+            if (entries.size() > 0) {
+                for (String addEntry : entries) {
+                    builder.add(addEntry);
+                }
+                modifications.add(new Modification(ModificationType.ADD, builder.toAttribute()));
+            }
         }
     }
 

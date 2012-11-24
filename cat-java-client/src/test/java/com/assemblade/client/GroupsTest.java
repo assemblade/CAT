@@ -17,25 +17,60 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.Group;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
-public class GroupsTest extends AbstractApiTest {
-    private Groups test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-    @Before
-    public void setup() throws Exception {
-        Authentication authentication  = login.login("admin", "password");
-        test = new Groups(authentication);
+public class GroupsTest extends AbstractApiTest {
+    @Test
+    public void addGroupTest() throws ClientException {
+        Group group = createGroup("group1", "group1 description");
+
+        group = groups.addGroup(group);
+
+        assertNotNull(group);
+        assertNotNull(group.getId());
+        assertEquals("group1", group.getName());
+        assertEquals("group1 description", group.getDescription());
+        assertEquals("group", group.getType());
+        assertTrue(group.isDeletable());
+        assertTrue(group.isWritable());
+
+        List<Group> groupList = groups.getAllGroups();
+
+        assertTrue(groupList.contains(group));
+
+        group = groupList.get(groupList.indexOf(group));
+
+        assertNotNull(group);
+        assertNotNull(group.getId());
+        assertEquals("group1", group.getName());
+        assertEquals("group1 description", group.getDescription());
+        assertEquals("group", group.getType());
+        assertTrue(group.isDeletable());
+        assertTrue(group.isWritable());
     }
 
     @Test
-    public void getAllGroupsTest() throws Exception {
-        List<Group> groups = test.getAllGroups();
+    public void getAdministratorGroupTest() throws ClientException {
+        Group group = groups.getAdministratorGroup();
 
-        System.out.println();
+        assertNotNull(group);
+        assertEquals("Application Administrators", group.getName());
+        assertEquals("admingroup", group.getType());
+    }
+
+    @Test
+    public void getAllGroupsTest() throws ClientException {
+        List<Group> groupList = groups.getAllGroups();
+
+        assertEquals(2, groupList.size());
     }
 
 

@@ -16,9 +16,13 @@
 package com.assemblade.rest;
 
 import com.assemblade.client.model.Folder;
+import com.assemblade.client.model.Property;
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
+import com.assemblade.rest.mappers.FolderMapper;
+import com.assemblade.rest.mappers.PropertyMapper;
 import com.assemblade.server.properties.PropertyManager;
+import com.assemblade.server.users.UserManager;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -36,9 +40,13 @@ import java.util.List;
 @Path("/folders")
 public class Folders {
     private final PropertyManager propertyManager;
+    private final FolderMapper folderMapper;
+    private final PropertyMapper propertyMapper;
 
-    public Folders(PropertyManager propertyManager) {
+    public Folders(PropertyManager propertyManager, FolderMapper folderMapper, PropertyMapper propertyMapper) {
         this.propertyManager = propertyManager;
+        this.folderMapper = folderMapper;
+        this.propertyMapper = propertyMapper;
     }
 
     @GET
@@ -47,7 +55,7 @@ public class Folders {
         try {
             List<Folder> folders = new ArrayList<Folder>();
             for (com.assemblade.server.model.Folder folder : propertyManager.getRootFolders()) {
-                folders.add(map(folder));
+                folders.add(folderMapper.toClient(folder));
             }
             return Response.ok(folders).build();
         } catch (StorageException e) {
@@ -66,9 +74,28 @@ public class Folders {
         try {
             List<Folder> folders = new ArrayList<Folder>();
             for (com.assemblade.server.model.Folder folder : propertyManager.getFolders(parentId)) {
-                folders.add(map(folder));
+                folders.add(folderMapper.toClient(folder));
             }
             return Response.ok(folders).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("{folderId}/properties")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProperties(@PathParam("folderId") String folderId) {
+        try {
+            List<Property> properties = new ArrayList<Property>();
+            for (com.assemblade.server.model.Property property : propertyManager.getProperties(folderId)) {
+                properties.add(propertyMapper.toClient(property));
+            }
+            return Response.ok(properties).build();
         } catch (StorageException e) {
             if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
@@ -83,7 +110,7 @@ public class Folders {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addRootFolder(Folder folder) {
         try {
-            folder = map(propertyManager.addFolder(map(folder)));
+            folder = folderMapper.toClient(propertyManager.addFolder(folderMapper.toServer(folder)));
             return Response.ok().entity(folder).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
@@ -99,11 +126,32 @@ public class Folders {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addChildFolder(@PathParam("parentId") String parentId, Folder folder) {
-        com.assemblade.server.model.Folder newFolder = map(folder);
-        newFolder.setParentId(parentId);
         try {
-            folder = map(propertyManager.addFolder(newFolder));
+            com.assemblade.server.model.Folder parentFolder = propertyManager.getFolder(parentId);
+            com.assemblade.server.model.Folder newFolder = folderMapper.toServer(folder);
+            newFolder.setParentDn(parentFolder.getDn());
+            folder = folderMapper.toClient(propertyManager.addFolder(newFolder));
             return Response.ok(folder).build();
+        } catch (StorageException e) {
+            if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
+                return Response.status(Response.Status.CONFLICT).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @POST
+    @Path("{folderId}/properties")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addProperty(@PathParam("folderId") String folderId, Property property) {
+        try {
+            com.assemblade.server.model.Folder folder = propertyManager.getFolder(folderId);
+            com.assemblade.server.model.Property serverProperty = propertyMapper.toServer(property);
+            serverProperty.setParentDn(folder.getDn());
+            property = propertyMapper.toClient(propertyManager.addProperty(serverProperty));
+            return Response.ok(property).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -119,8 +167,26 @@ public class Folders {
     @Produces(MediaType.APPLICATION_JSON)
     public Response editFolder(@PathParam("folderId") String folderId, Folder folder) {
         try {
-            folder = map(propertyManager.updateFolder(propertyManager.getFolder(folderId), map(folder)));
+            folder = folderMapper.toClient(propertyManager.updateFolder(folderMapper.toServer(folder)));
             return Response.ok(folder).build();
+
+        } catch (StorageException e) {
+            if (e.getErrorCode() == AssembladeErrorCode.ASB_0006) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @PUT
+    @Path("{folderId}/properties/{propertyId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response editProperty(@PathParam("folderId") String folderId, @PathParam("propertyId") String propertyId, Property property) {
+        try {
+            property = propertyMapper.toClient(propertyManager.updateProperty(propertyMapper.toServer(property)));
+            return Response.ok(property).build();
 
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0006) {
@@ -146,21 +212,18 @@ public class Folders {
         return Response.noContent().build();
     }
 
-    private Folder map(com.assemblade.server.model.Folder folder) {
-        Folder mapperFolder = new Folder();
-        mapperFolder.setId(folder.getId());
-        mapperFolder.setName(folder.getName());
-        mapperFolder.setDescription(folder.getDescription());
-        mapperFolder.setParentId(folder.getParentId());
-        return mapperFolder;
-    }
-
-    private com.assemblade.server.model.Folder map(Folder folder) {
-        com.assemblade.server.model.Folder mappedFolder = new com.assemblade.server.model.Folder();
-        mappedFolder.setId(folder.getId());
-        mappedFolder.setName(folder.getName());
-        mappedFolder.setDescription(folder.getDescription());
-        mappedFolder.setParentId(folder.getParentId());
-        return mappedFolder;
+    @DELETE
+    @Path("{folderId}/properties/{propertyId}")
+    public Response deleteProperty(@PathParam("folderId") String folderId, @PathParam("propertyId") String propertyId) {
+        try {
+            propertyManager.deleteProperty(propertyId);
+        } catch (StorageException e) {
+            if (e.getErrorCode() == AssembladeErrorCode.ASB_0006) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+        return Response.noContent().build();
     }
 }

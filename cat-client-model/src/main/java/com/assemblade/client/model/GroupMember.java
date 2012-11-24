@@ -1,6 +1,6 @@
 package com.assemblade.client.model;
 
-public class GroupUser {
+public class GroupMember {
     private String userId;
     private String fullName;
     private String emailAddress;

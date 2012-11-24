@@ -243,7 +243,7 @@ public class PropertyManagerTest extends AbstractUserManagementTest {
 
         renamedFolder.setName("folder2");
 
-        folder = test.updateFolder(folder, renamedFolder);
+        folder = test.updateFolder(renamedFolder);
 
         assertEquals(id, folder.getId());
         assertEquals("folder2", folder.getName());
@@ -274,7 +274,7 @@ public class PropertyManagerTest extends AbstractUserManagementTest {
         movedFolder.setParentDn(folder2.getDn());
         movedFolder.setParentId(folder2.getId());
 
-        folder1 = test.updateFolder(folder1, movedFolder);
+        folder1 = test.updateFolder(movedFolder);
 
         assertEquals(id, folder1.getId());
         assertEquals(folder2.getDn(), folder1.getParentDn());
