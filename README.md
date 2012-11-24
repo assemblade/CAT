@@ -34,7 +34,7 @@ export PATH=$GRADLE_HOME:$PATH
 cd to cloned CAT directory.
 
 ```bash
-gradle war
+gradle build
 ```
 
 
