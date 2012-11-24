@@ -45,13 +45,13 @@ public abstract class AbstractUser extends AbstractStorable {
 
     protected String userId;
     protected String fullName;
-    private String password;
+    protected String password;
     protected String emailAddress;
     protected String searchFilter = DEFAULT_SEARCH_STRING;
     protected String authenticationPolicy;
     protected List<String> roles = new ArrayList<String>();
-    private boolean globalAdministrator;
-    private boolean groupAdministrator;
+    protected boolean globalAdministrator;
+    protected boolean groupAdministrator;
 
     public AbstractUser() {
     }
