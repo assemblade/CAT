@@ -5,3 +5,10 @@
 *.jar
 *.war
 *.ear
+
+build
+.gradle
+
+.classpath
+.settings
+.project
