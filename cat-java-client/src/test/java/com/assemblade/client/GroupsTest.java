@@ -24,6 +24,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -64,6 +65,8 @@ public class GroupsTest extends AbstractApiTest {
         assertNotNull(group);
         assertEquals("Application Administrators", group.getName());
         assertEquals("admingroup", group.getType());
+        assertFalse(group.isDeletable());
+        assertFalse(group.isWritable());
     }
 
     @Test
