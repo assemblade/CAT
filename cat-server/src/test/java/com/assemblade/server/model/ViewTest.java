@@ -44,19 +44,19 @@ public class ViewTest extends AbstractUserManagementTest {
     @Before
     public void setup() throws Exception {
         userLogin("admin");
-        group1 = groupManager.addGroup("group1", "");
-        group2 = groupManager.addGroup("group2", "");
-        group3 = groupManager.addGroup("group3", "");
-        user1 = userManager.addUser(new User("user1", "User1", "user1@example.com", "password"));
-        user2 = userManager.addUser(new User("user2", "User2", "user2@example.com", "password"));
-        user3 = userManager.addUser(new User("user3", "User3", "user3@example.com", "password"));
-        groupManager.addUserToGroup(group1.getDn(), user1.getDn());
-        groupManager.addUserToGroup(group2.getDn(), user2.getDn());
-        groupManager.addUserToGroup(group3.getDn(), user3.getDn());
+        group1 = addGroup("group1", "");
+        group2 = addGroup("group2", "");
+        group3 = addGroup("group3", "");
+        user1 = addUser("user1", "User1", "user1@example.com", "password");
+        user2 = addUser("user2", "User2", "user2@example.com", "password");
+        user3 = addUser("user3", "User3", "user3@example.com", "password");
+        groupManager.addUserToGroup(group1, user1);
+        groupManager.addUserToGroup(group2, user2);
+        groupManager.addUserToGroup(group3, user3);
 
         propertyManager = new PropertyManager(userManager);
 
-        root = userManager.getUserSession().get(new Folder(Folder.FOLDER_ROOT));
+        root = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
 
         Folder folder1 = propertyManager.addFolder(createFolder("folder1"));
         Folder folder2 = propertyManager.addFolder(createFolder("folder2", folder1));
@@ -175,6 +175,7 @@ public class ViewTest extends AbstractUserManagementTest {
         View view = new View();
 
         view.setName(name);
+        view.setParentDn(View.ROOT);
 
         view.setOwner(userManager.getAuthenticatedUserDn());
 
@@ -184,6 +185,7 @@ public class ViewTest extends AbstractUserManagementTest {
     private Folder createFolder(String name) {
         Folder folder = new Folder();
         folder.setName(name);
+        folder.setParentDn(Folder.FOLDER_ROOT);
 
         return folder;
     }

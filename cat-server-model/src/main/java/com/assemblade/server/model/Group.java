@@ -21,9 +21,12 @@ import com.assemblade.opendj.acis.Permission;
 import com.assemblade.opendj.acis.PermissionSubject;
 import com.assemblade.opendj.acis.Subject;
 import com.assemblade.opendj.acis.Target;
+import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.Storable;
 import com.assemblade.opendj.model.StorableDecorator;
+import com.assemblade.utils.localisation.Localiser;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
@@ -38,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Group extends AbstractFolder {
+public class Group extends AbstractStorable {
 	private static final long serialVersionUID = 1L;
 
 	public static final String ROOT = "ou=groups,dc=assemblade,dc=com";
@@ -46,23 +49,10 @@ public class Group extends AbstractFolder {
     public static final String GROUP_ADMIN_DN = "cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com";
     public static final String USER_DN = "cn=user,ou=groups,dc=assemblade,dc=com";
 
+    private String name;
+    private String description;
     protected List<Storable> addMembers = new ArrayList<Storable>();
     protected List<Storable> deleteMembers = new ArrayList<Storable>();
-
-    public Group() {
-	}
-
-	public Group(String dn) {
-        super(dn);
-	}
-	
-	public Group(String name, String description) {
-        super(name, description);
-	}
-
-    public String getAdminGroupDn() {
-        return "cn=admins," + getDn();
-    }
 
 	public StorableDecorator<Group> getDecorator() {
         return new Decorator();
@@ -78,6 +68,15 @@ public class Group extends AbstractFolder {
         Map<ObjectClass, String> objectClasses = new HashMap<ObjectClass, String>();
         objectClasses.put(DirectoryServer.getObjectClass("groupofnames"), "groupOfNames");
         return objectClasses;
+    }
+
+    public Map<AttributeType, List<Attribute>> getUserAttributes() {
+        Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
+
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
+
+        return attributeMap;
     }
 
     @Override
@@ -102,13 +101,17 @@ public class Group extends AbstractFolder {
     @Override
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
-        attributeNames.addAll(Arrays.asList("member", "isMemberOf"));
+
+        attributeNames.addAll(Arrays.asList("cn", "description", "aclRights", "aci", "member", "isMemberOf"));
         return attributeNames;
     }
 
     @Override
     public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = new ArrayList<Modification>();
+        List<Modification> modifications = super.getModifications(currentEntry);
+
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
+
         for (Storable newMember : addMembers) {
             modifications.add(LdapUtils.createMultipleEntryAddModification("member", newMember.getDn()));
         }
@@ -118,29 +121,14 @@ public class Group extends AbstractFolder {
         return modifications;
     }
 
-    @Override
     public boolean requiresRename(Entry currentEntry) {
-        return !getDecorator().decorate(currentEntry).getName().equals(name);
-    }
-
-    @Override
-    public boolean requiresMove(Entry currentEntry) {
-        return false;
+        return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override
     public boolean requiresUpdate(Entry currentEntry) {
-        return CollectionUtils.isNotEmpty(addMembers) || CollectionUtils.isNotEmpty(deleteMembers);
-    }
-
-    @Override
-    public String getPermissionsAttributes() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getRootPermissions() {
-        throw new UnsupportedOperationException();
+        Group currentGroup = getDecorator().decorate(currentEntry);
+        return !StringUtils.equals(description, currentGroup.getDescription()) || CollectionUtils.isNotEmpty(addMembers) || CollectionUtils.isNotEmpty(deleteMembers);
     }
 
     @Override
@@ -148,17 +136,6 @@ public class Group extends AbstractFolder {
         return "cn=" + name;
     }
 
-    @Override
-    protected String getRootDn() {
-        return ROOT;
-    }
-
-    @Override
-    public boolean getIsFolder() {
-        return false;
-    }
-
-    @Override
     public String getType() {
         if (getDn().equals(GLOBAL_ADMIN_DN)) {
             return "admingroup";
@@ -168,6 +145,26 @@ public class Group extends AbstractFolder {
             return "group";
         }
 	}
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDisplayName() {
+        return Localiser.getInstance().translate(getName());
+    }
 
     public void addMember(Storable member) {
         addMembers.add(member);
@@ -182,7 +179,7 @@ public class Group extends AbstractFolder {
 		return "Group [dn=" + getDn() + "]";
 	}
 
-    protected class Decorator extends AbstractFolder.Decorator<Group> {
+    protected class Decorator extends AbstractStorable.Decorator<Group> {
         @Override
         public Group newInstance() {
             return new Group();
@@ -191,6 +188,9 @@ public class Group extends AbstractFolder {
         @Override
         public Group decorate(Entry entry) {
             Group group = super.decorate(entry);
+
+            group.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
+            group.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
 
             //TODO: This should be handled by an ACI
             if (group.getDn().equals(GLOBAL_ADMIN_DN) || group.getDn().equals(USER_DN)) {

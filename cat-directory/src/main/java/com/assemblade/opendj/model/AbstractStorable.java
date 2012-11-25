@@ -35,7 +35,6 @@ import java.util.Map;
 public abstract class AbstractStorable implements Storable, Serializable {
 	private static final long serialVersionUID = 1L;
 
-    protected String dn;
     protected String parentDn;
     protected String id;
     protected String parentId;
@@ -43,13 +42,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
     protected boolean writable;
     protected boolean deletable;
 
-    abstract protected String getRootDn();
-
     public AbstractStorable() {
-    }
-
-    public AbstractStorable(String dn) {
-        this.dn = dn;
     }
 
     public DN getDN() throws StorageException {
@@ -61,9 +54,6 @@ public abstract class AbstractStorable implements Storable, Serializable {
     }
 
     public String getDn() {
-        if (StringUtils.isNotEmpty(dn)) {
-            return dn;
-        }
         return getRDN() + "," + getParentDn();
     }
 
@@ -73,7 +63,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
 
     @Override
     public String getParentDn() {
-        return parentDn == null ? getRootDn() : parentDn;
+        return parentDn;
     }
 
     @Override
@@ -129,7 +119,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
     }
 
     public boolean requiresMove(Entry currentEntry) {
-        return !parentDn.equals(currentEntry.getDN().getParent().toString());
+        return !getParentDn().equals(currentEntry.getDN().getParent().toString());
     }
 
     public boolean requiresUpdate(Entry currentEntry) {
@@ -148,10 +138,6 @@ public abstract class AbstractStorable implements Storable, Serializable {
         return deletable;
     }
 
-    public void setDn(String dn) {
-        this.dn = dn;
-    }
-
     public void setId(String id) {
         this.id = id;
     }
@@ -162,6 +148,23 @@ public abstract class AbstractStorable implements Storable, Serializable {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AbstractStorable that = (AbstractStorable) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 
     protected abstract class Decorator<T extends AbstractStorable> implements StorableDecorator<T> {

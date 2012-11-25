@@ -63,7 +63,8 @@ public class Login {
     @POST
     @Path("changepassword")
     public Response changePassword(@QueryParam(value = "username") String username, @QueryParam(value = "password") String password, @QueryParam("newpassword") String newPassword) {
-        User user = new User(username, null, null, null);
+        User user = new User();
+        user.setUserId(username);
         try {
             userManager.getAdminSession().changePassword(user.getDn(), password, newPassword);
             return Response.ok().build();

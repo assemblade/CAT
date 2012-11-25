@@ -42,7 +42,7 @@ public class UserManager {
 
         user = session.get(user);
 
-        Group userGroup = session.get(new Group(Group.USER_DN));
+        Group userGroup = session.getByEntryDn(new Group(), Group.USER_DN);
 
         userGroup.addMember(user);
 
@@ -56,11 +56,11 @@ public class UserManager {
 		return user;
 	}
 	
-	public User deleteUser(String userId) throws StorageException {
-		Session session = getUserSession();
-		User user = session.get(new User(userId, null, null, null));
-		session.delete(user);
-		return user;
+	public void deleteUser(String userId) throws StorageException {
+        User user = new User();
+        user.setUserId(userId);
+        user = getUserSession().get(user);
+        getUserSession().delete(user);
 	}
 	
 	public List<User> getUsers() throws StorageException {

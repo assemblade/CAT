@@ -32,7 +32,7 @@ public class UserManagerTest extends AbstractUserManagementTest {
 	public void canAddUserPlainPasswordAndGetSessionForUser() throws Exception {
 		userLogin("admin");
 
-		addLocalUser("test", "test user", "test@example.com", "password");
+		addUser("test", "test user", "test@example.com", "password");
     	
 		userLogin("test");
 
@@ -43,8 +43,8 @@ public class UserManagerTest extends AbstractUserManagementTest {
 	public void canGetListOfLocalUsers() throws Exception {
 		userLogin("admin");
 
-		addLocalUser("test1", "test1 user", "test1@example.com", "password");
-		addLocalUser("test2", "test2 user", "test2@example.com", "password");
+		addUser("test1", "test1 user", "test1@example.com", "password");
+		addUser("test2", "test2 user", "test2@example.com", "password");
 
 		SearchResult<User> users = userManager.getUserSession().search(new User(), User.ROOT, false);
     	

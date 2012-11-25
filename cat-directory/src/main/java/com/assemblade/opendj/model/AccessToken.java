@@ -70,11 +70,6 @@ public class AccessToken extends AbstractStorable {
     }
 
     @Override
-    protected String getRootDn() {
-        return ACCESS_TOKEN_ROOT;
-    }
-
-    @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
         objectClasses.put(DirectoryServer.getObjectClass("asb-access-token"), "asb-access-token");

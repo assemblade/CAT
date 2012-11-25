@@ -34,6 +34,8 @@ import java.util.Map;
 
 public class TestStorable extends AbstractStorable implements Serializable {
 	private static final long serialVersionUID = 1L;
+
+    public String rdn;
 	public String searchFilter;
 	
 	public transient Map<ObjectClass, String> objectClasses = new HashMap<ObjectClass, String>();
@@ -48,26 +50,13 @@ public class TestStorable extends AbstractStorable implements Serializable {
 	public TestStorable() {
 	}
 	
-	public TestStorable(String dn) {
-		this.dn = dn;
-	}
-
-	public TestStorable(String dn, String parentDn) {
-		this.dn = dn;
-		this.parentDn = parentDn;
-	}
-
-	public String constructDn() {
-		throw new UnsupportedOperationException();
-	}
-
 	public String getRootDn() {
         throw new UnsupportedOperationException();
 	}
 
     @Override
     public String getRDN() {
-        throw new UnsupportedOperationException();
+        return rdn;
     }
 
     public String getSearchFilter() {

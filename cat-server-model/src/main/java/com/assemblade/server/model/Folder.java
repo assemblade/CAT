@@ -29,13 +29,6 @@ public class Folder extends AbstractFolder {
 	
 	public static final String FOLDER_ROOT = "cn=properties,dc=assemblade,dc=com";
 
-	public Folder() {
-	}
-	
-	public Folder(String dn) {
-		this.dn = dn;
-	}
-
     public String getViewPoint() {
         String dn = getDn();
 
@@ -56,17 +49,12 @@ public class Folder extends AbstractFolder {
     }
 
     @Override
-    public String getRootDn() {
-        return FOLDER_ROOT;
-    }
-
-    @Override
     public String getSearchFilter() {
 		return "(objectClass=assemblade-folder)";
 	}
 
     @Override
-    public StorableDecorator getDecorator() {
+    public StorableDecorator<Folder> getDecorator() {
         return new Decorator();
 	}
 
@@ -80,7 +68,7 @@ public class Folder extends AbstractFolder {
     //TODO:This needs to move down to the abstract
     @Override
     public boolean requiresUpdate(Entry currentEntry) {
-        Folder currentFolder = (Folder)getDecorator().decorate(currentEntry);
+        Folder currentFolder = getDecorator().decorate(currentEntry);
         return !StringUtils.equals(description, currentFolder.getDescription()) || (inherit != currentFolder.inherit) || !CollectionUtils.isEqualCollection(readGroups, currentFolder.readGroups) || !CollectionUtils.isEqualCollection(writeGroups, currentFolder.writeGroups);
     }
 

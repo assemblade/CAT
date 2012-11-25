@@ -42,11 +42,6 @@ public class Trash extends AbstractStorable implements Serializable {
 	
 	private String id;
 
-    @Override
-    protected String getRootDn() {
-        throw new UnsupportedOperationException();
-    }
-
     public Trash() {
 	}
 

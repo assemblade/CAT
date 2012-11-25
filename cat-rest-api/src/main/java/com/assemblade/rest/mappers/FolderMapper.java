@@ -42,21 +42,15 @@ public class FolderMapper {
         mapperFolder.setWritable(folder.isWritable());
         mapperFolder.setDeletable(folder.isDeletable());
         List<Group> readGroups = new ArrayList<Group>();
-        for (String groupDn : folder.getReadGroups()) {
-            try {
-                readGroups.add(groupMapper.toClient(userManager.getUserSession().get(new com.assemblade.server.model.Group(groupDn))));
-            } catch (StorageException e) {
-            }
+        for (com.assemblade.server.model.Group group : folder.getReadGroups()) {
+            readGroups.add(groupMapper.toClient(group));
         }
         if (readGroups.size() > 0) {
             mapperFolder.setReadGroups(readGroups);
         }
         List<Group> writeGroups = new ArrayList<Group>();
-        for (String groupDn : folder.getWriteGroups()) {
-            try {
-                writeGroups.add(groupMapper.toClient(userManager.getUserSession().get(new com.assemblade.server.model.Group(groupDn))));
-            } catch (StorageException e) {
-            }
+        for (com.assemblade.server.model.Group group : folder.getWriteGroups()) {
+            writeGroups.add(groupMapper.toClient(group));
         }
         if (writeGroups.size() > 0) {
             mapperFolder.setWriteGroups(writeGroups);
@@ -75,12 +69,12 @@ public class FolderMapper {
         mappedFolder.setParentId(folder.getParentId());
         if (folder.getReadGroups() != null) {
             for (Group readGroup : folder.getReadGroups()) {
-                mappedFolder.getReadGroups().add(userManager.getUserSession().dnFromId(readGroup.getId()));
+                mappedFolder.getReadGroups().add(groupMapper.toServer(readGroup));
             }
         }
         if (folder.getWriteGroups() != null) {
             for (Group writeGroup : folder.getWriteGroups()) {
-                mappedFolder.getWriteGroups().add(userManager.getUserSession().dnFromId(writeGroup.getId()));
+                mappedFolder.getWriteGroups().add(groupMapper.toServer(writeGroup));
             }
         }
         return mappedFolder;

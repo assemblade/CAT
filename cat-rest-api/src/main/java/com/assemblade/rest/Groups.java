@@ -108,7 +108,7 @@ public class Groups {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addGroup(Group group) {
         try {
-            return Response.ok(groupMapper.toClient(groupManager.addGroup(group.getName(), group.getDescription()))).build();
+            return Response.ok(groupMapper.toClient(groupManager.addGroup(groupMapper.toServer(group)))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -119,9 +119,10 @@ public class Groups {
     }
 
     @PUT
+    @Path("{groupId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateGroup(Group group) {
+    public Response updateGroup(@PathParam("groupId") String groupId, Group group) {
         try {
             return Response.ok(groupMapper.toClient(groupManager.updateGroup(groupMapper.toServer(group)))).build();
         } catch (StorageException e) {
@@ -135,7 +136,7 @@ public class Groups {
 
     @DELETE
     @Path("{groupId}")
-    public Response deleteFolder(@PathParam("groupId") String groupId) {
+    public Response deleteGroup(@PathParam("groupId") String groupId) {
         try {
             groupManager.deleteGroup(groupId);
         } catch (StorageException e) {

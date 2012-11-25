@@ -26,8 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import java.util.List;
 
 public class PropertyManager {
-    private Log log = LogFactory.getLog(PropertyManager.class);
-
 	private final UserManager userManager;
 	
 	public PropertyManager(UserManager userManager) {
@@ -51,7 +49,7 @@ public class PropertyManager {
 	}
 
     public List<Folder> getRootFolders() throws StorageException {
-        Folder parentFolder = userManager.getUserSession().get(new Folder(Folder.FOLDER_ROOT));
+        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
         if (parentFolder != null) {
             return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false).getEntries();
         } else {

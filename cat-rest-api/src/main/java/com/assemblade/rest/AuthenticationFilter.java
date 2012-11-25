@@ -70,7 +70,9 @@ public class AuthenticationFilter implements Filter {
                         ((HttpServletResponse)servletResponse).setStatus(401);
                     } else {
                         if (checkOauthAuthentication(httpServletRequest, accessToken)) {
-                            User user = directoryService.getAdminSession().get(new User(accessToken.getUid(), null, null, null));
+                            User user = new User();
+                            user.setUserId(accessToken.getUid());
+                            user = directoryService.getAdminSession().get(user);
 
                             if (user == null) {
                                 ((HttpServletResponse)servletResponse).setStatus(401);

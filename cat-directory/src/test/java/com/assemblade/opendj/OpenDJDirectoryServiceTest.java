@@ -28,7 +28,7 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 	public void addAnEntryToOurRoot() throws Exception {
 		TestStorable storable = new TestStorable();
 		
-		storable.setDn("cn=test,cn=properties,dc=assemblade,dc=com");
+		storable.rdn = "cn=test";
 		storable.setParentDn("cn=properties,dc=assemblade,dc=com");
 		storable.searchFilter = "(objectClass=assemblade-folder)";
 		storable.addUserAttribute("cn", "test");

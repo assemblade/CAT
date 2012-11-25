@@ -47,23 +47,9 @@ public class Property extends AbstractStorable implements Serializable {
 	private String value;
 	private String description;
 
-	public Property() {
-	}
-
-	public Property(String dn) {
-		this.dn = dn;
-	}
-	
-	public Property(String parentDn, String name, String value, String description) {
-		this.parentDn = parentDn;
-		this.name = name;
-		this.value = value;
-		this.description = description;
-	}
-
-	public String getRootDn() {
-        return parentDn;
-	}
+//	public String getRootDn() {
+//        return parentDn;
+//	}
 
     @Override
     public String getRDN() {

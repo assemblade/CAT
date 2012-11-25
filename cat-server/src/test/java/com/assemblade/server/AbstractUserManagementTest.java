@@ -37,22 +37,28 @@ public abstract class AbstractUserManagementTest extends AbstractDirectoryServic
         configurationManager = new ConfigurationManager(userManager);
 	}
 
-    @SuppressWarnings("serial")
 	protected void userLogin(String userName) throws Exception {
-        User user = directoryService.getAdminSession().get(new User(userName, null, null, null));
+        User user = new User();
+        user.setUserId(userName);
+        user = directoryService.getAdminSession().get(user);
         AuthenticatedUserHolder.setUser(user);
     }
     
-    protected User addLocalUser(String userName, String fullName, String emailAddress, String password) throws Exception {
-		User user = new User(userName, fullName, emailAddress, password);
-		userManager.addUser(user);
-		return user;
+    protected User addUser(String userName, String fullName, String emailAddress, String password) throws Exception {
+        User user = new User();
+        user.setUserId(userName);
+        user.setFullName(fullName);
+        user.setEmailAddress(emailAddress);
+        user.setPassword(password);
+		return userManager.addUser(user);
     }
     
     protected Group addGroup(String groupName, String description) throws StorageException {
-    	Group group = new Group(groupName, description);
-    	userManager.getUserSession().add(group);
-    	return group;
+    	Group group = new Group();
+        group.setName(groupName);
+        group.setParentDn(Group.ROOT);
+        group.setDescription(description);
+    	return groupManager.addGroup(group);
     }
     
     protected void addUserToGroup(Group group, User user) throws StorageException {

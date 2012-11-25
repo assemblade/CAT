@@ -26,26 +26,28 @@ public class UserNotInGroup extends AbstractUser {
 
 	private String groupDn;
 	
-	public UserNotInGroup() {
-	}
-	
-	public UserNotInGroup(String groupDn) {
-		super();
-		this.groupDn = groupDn;
-	}
-	
 	public String getSearchFilter() {
 		return searchFilterFormat.format(new Object[] {groupDn});
 	}
 
-	public StorableDecorator getDecorator() {
+    public String getGroupDn() {
+        return groupDn;
+    }
+
+    public void setGroupDn(String groupDn) {
+        this.groupDn = groupDn;
+    }
+
+    public StorableDecorator getDecorator() {
         return new Decorator();
 	}
 
     private class Decorator extends AbstractUser.Decorator<UserNotInGroup> {
         @Override
         public UserNotInGroup newInstance() {
-            return new UserNotInGroup(groupDn);
+            UserNotInGroup userNotInGroup = new UserNotInGroup();
+            userNotInGroup.setGroupDn(groupDn);
+            return userNotInGroup;
         }
     }
 }

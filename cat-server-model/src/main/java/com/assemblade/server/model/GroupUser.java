@@ -35,14 +35,6 @@ public class GroupUser extends AbstractUser {
 	private boolean administrator;
 	private boolean deletable;
 	
-	public GroupUser() {
-	}
-	
-	public GroupUser(String groupDn) {
-		super();
-		this.groupDn = groupDn;
-	}
-	
 	public String getSearchFilter() {
 		return searchFilterFormat.format(new Object[] {groupDn});
 	}
@@ -74,7 +66,9 @@ public class GroupUser extends AbstractUser {
     private class Decorator extends AbstractUser.Decorator<GroupUser> {
         @Override
         public GroupUser newInstance() {
-            return new GroupUser(groupDn);
+            GroupUser groupUser = new GroupUser();
+            groupUser.setGroupDn(groupDn);
+            return groupUser;
         }
 
         @Override

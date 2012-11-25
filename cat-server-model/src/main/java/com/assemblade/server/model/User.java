@@ -21,18 +21,7 @@ import org.opends.server.types.Entry;
 public class User extends AbstractUser {
 	private static final long serialVersionUID = 1L;
 
-	public User() {
-	}
-
-	public User(String dn) {
-		this.dn = dn;
-	}
-
-	public User(String uid, String fullName, String emailAddress, String password) {
-        super(uid, fullName, emailAddress, password);
-	}
-
-	public StorableDecorator getDecorator() {
+	public StorableDecorator<User> getDecorator() {
         return new Decorator();
 	}
 

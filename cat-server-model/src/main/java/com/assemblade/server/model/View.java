@@ -37,7 +37,7 @@ import java.util.Map;
 public class View extends AbstractFolder {
     private static final long serialVersionUID = 1L;
 
-    private static final String VIEWS_ROOT = "cn=views,dc=assemblade,dc=com";
+    public static final String ROOT = "cn=views,dc=assemblade,dc=com";
 
     private String sequence;
     private String viewPoints;
@@ -73,11 +73,6 @@ public class View extends AbstractFolder {
     @Override
     public String getRootPermissions() {
         return "read,search,add";
-    }
-
-    @Override
-    protected String getRootDn() {
-        return VIEWS_ROOT;
     }
 
     @Override

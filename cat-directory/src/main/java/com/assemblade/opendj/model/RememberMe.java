@@ -51,11 +51,6 @@ public class RememberMe extends AbstractStorable {
     }
 
     @Override
-    protected String getRootDn() {
-        return REMEMBER_ME_ROOT;
-    }
-
-    @Override
     public String getRDN() {
         return "asb-sequence=" + sequence;
     }

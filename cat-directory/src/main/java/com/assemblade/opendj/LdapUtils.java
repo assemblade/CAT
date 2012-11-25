@@ -36,8 +36,11 @@ public class LdapUtils {
             if (StringUtils.isEmpty(value)) {
                 modifications.add(new Modification(ModificationType.DELETE, builder.toAttribute()));
             } else {
-                builder.add(value);
-                modifications.add(new Modification(ModificationType.REPLACE, builder.toAttribute()));
+                String oldValue = getSingleAttributeStringValue(currentEntry.getAttribute(attributeName));
+                if (!StringUtils.equals(oldValue, value)) {
+                    builder.add(value);
+                    modifications.add(new Modification(ModificationType.REPLACE, builder.toAttribute()));
+                }
             }
         } else {
             if (StringUtils.isNotEmpty(value)) {

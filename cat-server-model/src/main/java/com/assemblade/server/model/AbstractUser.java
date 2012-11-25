@@ -53,28 +53,14 @@ public abstract class AbstractUser extends AbstractStorable {
     protected boolean globalAdministrator;
     protected boolean groupAdministrator;
 
-    public AbstractUser() {
-    }
-
-    public AbstractUser(String dn) {
-        super(dn);
-    }
-
-    public AbstractUser(String uid, String fullName, String emailAddress, String password) {
-        this.userId = uid;
-        this.fullName = fullName;
-        this.emailAddress = emailAddress;
-        this.password = password;
-    }
-
-    @Override
-    public String getRootDn() {
-        return ROOT;
-    }
-
     @Override
     public String getRDN() {
         return "uid=" + userId;
+    }
+
+    @Override
+    public String getParentDn() {
+        return User.ROOT;
     }
 
     @Override

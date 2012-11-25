@@ -41,11 +41,6 @@ public class Views extends AbstractFolder {
     }
 
     @Override
-    protected String getRootDn() {
-        return "dc=assemblade,dc=com";
-    }
-
-    @Override
     public String getType() {
 		return "views";
 	}

@@ -59,6 +59,13 @@ public class GroupsTest extends AbstractApiTest {
     }
 
     @Test
+    public void getAllGroupsTest() throws ClientException {
+        List<Group> groupList = groups.getAllGroups();
+
+        assertEquals(2, groupList.size());
+    }
+
+    @Test
     public void getAdministratorGroupTest() throws ClientException {
         Group group = groups.getAdministratorGroup();
 
@@ -70,11 +77,43 @@ public class GroupsTest extends AbstractApiTest {
     }
 
     @Test
-    public void getAllGroupsTest() throws ClientException {
+    public void updateGroup_rename() throws ClientException {
+        Group group = groups.addGroup(createGroup("group1", "group1 description"));
+
+        group.setName("group2");
+
+        Group updatedGroup = groups.updateGroup(group);
+
+        assertEquals("group2", updatedGroup.getName());
+
         List<Group> groupList = groups.getAllGroups();
 
-        assertEquals(2, groupList.size());
+        assertTrue(groupList.contains(updatedGroup));
+
+        updatedGroup = groupList.get(groupList.indexOf(updatedGroup));
+
+        assertEquals("group2", updatedGroup.getName());
     }
+
+    @Test
+    public void updateGroup_edit() throws ClientException {
+        Group group = groups.addGroup(createGroup("group1", "group1 description"));
+
+        group.setDescription("changed description");
+
+        Group updatedGroup = groups.updateGroup(group);
+
+        assertEquals("changed description", updatedGroup.getDescription());
+
+        List<Group> groupList = groups.getAllGroups();
+
+        assertTrue(groupList.contains(updatedGroup));
+
+        updatedGroup = groupList.get(groupList.indexOf(updatedGroup));
+
+        assertEquals("changed description", updatedGroup.getDescription());
+    }
+
 
 
 }

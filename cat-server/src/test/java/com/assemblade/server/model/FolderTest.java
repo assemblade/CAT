@@ -45,22 +45,22 @@ public class FolderTest extends AbstractUserManagementTest {
     public void setup() throws Exception {
         userLogin("admin");
 
-        group1 = groupManager.addGroup("group1", "");
-        group2 = groupManager.addGroup("group2", "");
-        group3 = groupManager.addGroup("group3", "");
-        user1 = userManager.addUser(new User("user1", "User1", "user1@example.com", "password"));
-        user2 = userManager.addUser(new User("user2", "User2", "user2@example.com", "password"));
-        user3 = userManager.addUser(new User("user3", "User3", "user3@example.com", "password"));
-        groupManager.addUserToGroup(group1.getDn(), user1.getDn());
-        groupManager.addUserToGroup(group2.getDn(), user2.getDn());
-        groupManager.addUserToGroup(group3.getDn(), user3.getDn());
+        group1 = addGroup("group1", "");
+        group2 = addGroup("group2", "");
+        group3 = addGroup("group3", "");
+        user1 = addUser("user1", "User1", "user1@example.com", "password");
+        user2 = addUser("user2", "User2", "user2@example.com", "password");
+        user3 = addUser("user3", "User3", "user3@example.com", "password");
+        groupManager.addUserToGroup(group1, user1);
+        groupManager.addUserToGroup(group2, user2);
+        groupManager.addUserToGroup(group3, user3);
 
-        root = userManager.getUserSession().get(new Folder(Folder.FOLDER_ROOT));
+        root = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
     }
 
     @Test
     public void folderIsAddedCorrectlyToRootWithInheritedPermissions() throws Exception {
-        Folder folder = createFolder("folder", "folder description", root, true, new ArrayList<String>(), new ArrayList<String>());
+        Folder folder = createFolder("folder", "folder description", root, true, new ArrayList<Group>(), new ArrayList<Group>());
 
         userManager.getUserSession().add(folder);
 
@@ -75,7 +75,7 @@ public class FolderTest extends AbstractUserManagementTest {
 
     @Test
     public void folderIsAddedCorrectlyToRootWithoutInheritedPermissions() throws Exception {
-        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
+        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
 
         userManager.getUserSession().add(folder);
 
@@ -88,16 +88,16 @@ public class FolderTest extends AbstractUserManagementTest {
         assertEquals(folder.getViewPoint(), result.getViewPoint());
 
         assertEquals(2, result.getReadGroups().size());
-        assertTrue(result.getReadGroups().contains(group1.getDn()));
-        assertTrue(result.getReadGroups().contains(group2.getDn()));
+        assertTrue(result.getReadGroups().contains(group1));
+        assertTrue(result.getReadGroups().contains(group2));
 
         assertEquals(1, result.getWriteGroups().size());
-        assertTrue(result.getWriteGroups().contains(group3.getDn()));
+        assertTrue(result.getWriteGroups().contains(group3));
     }
 
     @Test
     public void folderCanBeRenamed() throws Exception {
-        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
+        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
 
         userManager.getUserSession().add(folder);
 
@@ -114,8 +114,8 @@ public class FolderTest extends AbstractUserManagementTest {
 
     @Test
     public void folderCanBeMoved() throws Exception {
-        Folder folder1 = createFolder("folder1", "folder1 description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
-        Folder folder2 = createFolder("folder2", "folder2 description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
+        Folder folder1 = createFolder("folder1", "folder1 description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
+        Folder folder2 = createFolder("folder2", "folder2 description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
 
         userManager.getUserSession().add(folder1);
         userManager.getUserSession().add(folder2);
@@ -135,7 +135,7 @@ public class FolderTest extends AbstractUserManagementTest {
 
     @Test
     public void folderCanChangeDescription() throws Exception {
-        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
+        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
 
         userManager.getUserSession().add(folder);
 
@@ -162,8 +162,8 @@ public class FolderTest extends AbstractUserManagementTest {
 
         folder.setInherit(false);
         folder.setOwner(userManager.getAuthenticatedUserDn());
-        folder.setReadGroups(Arrays.asList(group1.getDn(), group2.getDn()));
-        folder.setWriteGroups(Arrays.asList(group3.getDn()));
+        folder.setReadGroups(Arrays.asList(group1, group2));
+        folder.setWriteGroups(Arrays.asList(group3));
 
         userManager.getUserSession().update(folder);
 
@@ -172,16 +172,16 @@ public class FolderTest extends AbstractUserManagementTest {
         assertFalse(folder.isInherit());
 
         assertEquals(2, folder.getReadGroups().size());
-        assertTrue(folder.getReadGroups().contains(group1.getDn()));
-        assertTrue(folder.getReadGroups().contains(group2.getDn()));
+        assertTrue(folder.getReadGroups().contains(group1));
+        assertTrue(folder.getReadGroups().contains(group2));
 
         assertEquals(1, folder.getWriteGroups().size());
-        assertTrue(folder.getWriteGroups().contains(group3.getDn()));
+        assertTrue(folder.getWriteGroups().contains(group3));
     }
 
     @Test
     public void folderCanSetPermissionsInheritance() throws Exception {
-        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1.getDn(), group2.getDn()), Arrays.asList(group3.getDn()));
+        Folder folder = createFolder("folder", "folder description", root, false, Arrays.asList(group1, group2), Arrays.asList(group3));
 
         userManager.getUserSession().add(folder);
 
@@ -233,7 +233,7 @@ public class FolderTest extends AbstractUserManagementTest {
         return folder;
     }
 
-    private Folder createFolder(String name, String description, AbstractFolder parent, boolean inherit, List<String> readGroups, List<String> writeGroups) {
+    private Folder createFolder(String name, String description, AbstractFolder parent, boolean inherit, List<Group> readGroups, List<Group> writeGroups) {
         Folder folder = new Folder();
         folder.setName(name);
         folder.setDescription(description);

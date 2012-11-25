@@ -25,10 +25,8 @@ import java.text.MessageFormat;
 import java.util.List;
 
 public class GroupManager {
-    private static final MessageFormat usersInGroupFilterFormat = new MessageFormat("(&(objectClass=inetOrgPerson)(isMemberOf={0}))");
-
     private final UserManager userManager;
-	
+
 	public GroupManager(UserManager userManager) {
 		this.userManager = userManager;
 	}
@@ -37,18 +35,25 @@ public class GroupManager {
         return userManager.getUserSession().getByEntryDn(new Group(), Group.GLOBAL_ADMIN_DN);
     }
 
-    public Group addGroup(String groupName, String description) throws StorageException {
-    	Group group = new Group(groupName, description);
+    public Group getGroupAdministratorGroup() throws StorageException {
+        return userManager.getUserSession().getByEntryDn(new Group(), Group.GROUP_ADMIN_DN);
+    }
+
+    public Group addGroup(Group group) throws StorageException {
     	userManager.getUserSession().add(group);
     	
-    	Group adminGroup = new Group(group.getAdminGroupDn());
+    	Group adminGroup = createAdminGroup(group);
     	userManager.getUserSession().add(adminGroup);
 
-		Group groupAdminGroup = userManager.getUserSession().get(new Group(Group.GROUP_ADMIN_DN));
+		Group groupAdminGroup = getGroupAdministratorGroup();
     	groupAdminGroup.addMember(adminGroup);
     	userManager.getUserSession().update(groupAdminGroup);
 
     	return userManager.getUserSession().get(group);
+    }
+
+    public Group getGroup(Group group) throws StorageException {
+        return userManager.getUserSession().get(group);
     }
 
     public Group updateGroup(Group group) throws StorageException {
@@ -59,9 +64,9 @@ public class GroupManager {
     public void deleteGroup(String groupId) throws StorageException {
 		Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
 		
-		Group adminGroup = userManager.getUserSession().get(new Group(group.getAdminGroupDn()));
+		Group adminGroup = userManager.getUserSession().get(createAdminGroup(group));
 		if (adminGroup != null) {
-			Group groupAdminGroup = userManager.getUserSession().get(new Group(Group.GROUP_ADMIN_DN));
+			Group groupAdminGroup = getGroupAdministratorGroup();
 			groupAdminGroup.deleteMember(adminGroup);
 	    	userManager.getUserSession().update(groupAdminGroup);
 		}
@@ -69,48 +74,26 @@ public class GroupManager {
 		userManager.getUserSession().delete(group, true);
     }
     
-    public User addUserToGroup(String groupDn, String userDn) throws StorageException {
-		Group group = userManager.getUserSession().get(new Group(groupDn));
-		if (group != null) {
-			User user = userManager.getUserSession().get(new User(userDn));
-			if (user != null) {
-		    	group.addMember(user);
-		    	userManager.getUserSession().update(group);
-		    	return user;
-			}
-		}
-		return null;
+    public Group addUserToGroup(Group group, User user) throws StorageException {
+    	group.addMember(user);
+    	userManager.getUserSession().update(group);
+        return userManager.getUserSession().get(group);
     }
 
-    public User setUserAdministrativeRights(String groupDn, String userDn, boolean administrator) throws StorageException {
-		Group group = userManager.getUserSession().get(new Group(groupDn));
-		User user = userManager.getUserSession().get(new User(userDn));
-
-        Group adminGroup = userManager.getUserSession().get(new Group(group.getAdminGroupDn()));
+    public void setUserAdministrativeRights(Group group, User user, boolean administrator) throws StorageException {
+        Group adminGroup = userManager.getUserSession().get(createAdminGroup(group));
 		if (administrator) {
 			adminGroup.addMember(user);
 		} else {
 			adminGroup.deleteMember(user);
 		}
     	userManager.getUserSession().update(adminGroup);
-    	
-    	return user;
     }
 
-    public void removeGroupAdministrativeRightsFromUser(String groupDn, String userDn) throws StorageException {
-		Group group = userManager.getUserSession().get(new Group(groupDn));
-		User user = userManager.getUserSession().get(new User(userDn));
-        Group adminGroup = userManager.getUserSession().get(new Group(group.getAdminGroupDn()));
-        adminGroup.deleteMember(user);
-    	userManager.getUserSession().update(adminGroup);
-    }
-
-    public void removeUserFromGroup(String groupDn, String userDn) throws StorageException {
-		Group group = userManager.getUserSession().get(new Group(groupDn));
-		User user = userManager.getUserSession().get(new User(userDn));
-
+    public Group removeUserFromGroup(Group group, User user) throws StorageException {
 		group.deleteMember(user);
     	userManager.getUserSession().update(group);
+        return userManager.getUserSession().get(group);
     }
 
     public List<Group> getGroups() throws StorageException {
@@ -119,11 +102,23 @@ public class GroupManager {
     
     public List<GroupUser> getListOfUsersInGroup(String groupId) throws StorageException {
         Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
-		return userManager.getUserSession().search(new GroupUser(group.getDn()), User.ROOT, false).getEntries();
+        GroupUser groupUser = new GroupUser();
+        groupUser.setGroupDn(group.getDn());
+		return userManager.getUserSession().search(groupUser, User.ROOT, false).getEntries();
     }
     
     public List<UserNotInGroup> getListOfUsersNotInGroup(String groupId) throws StorageException {
         Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
-        return userManager.getUserSession().search(new UserNotInGroup(group.getDn()), User.ROOT, false).getEntries();
+        UserNotInGroup userNotInGroup = new UserNotInGroup();
+        userNotInGroup.setGroupDn(group.getDn());
+        return userManager.getUserSession().search(userNotInGroup, User.ROOT, false).getEntries();
+    }
+
+    private Group createAdminGroup(Group group) {
+        Group adminGroup = new Group();
+        adminGroup.setParentDn(group.getDn());
+        adminGroup.setName("admins");
+
+        return adminGroup;
     }
 }

@@ -30,6 +30,8 @@ import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
+import org.opends.server.types.DN;
+import org.opends.server.types.DirectoryException;
 import org.opends.server.types.Entry;
 import org.opends.server.types.Modification;
 import org.opends.server.types.ObjectClass;
@@ -44,26 +46,14 @@ public abstract class AbstractFolder extends AbstractStorable {
     protected String name;
     protected String description;
     protected String owner;
-    protected List<String> readGroups = new ArrayList<String>();
-    protected List<String> writeGroups = new ArrayList<String>();
+    protected List<Group> readGroups = new ArrayList<Group>();
+    protected List<Group> writeGroups = new ArrayList<Group>();
     protected boolean inherit = true;
 
     public abstract String getType();
     public abstract boolean getIsFolder();
     public abstract String getPermissionsAttributes();
     public abstract String getRootPermissions();
-
-    public AbstractFolder() {
-    }
-
-    public AbstractFolder(String dn) {
-        super(dn);
-    }
-
-    public AbstractFolder(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
 
     public String getRDN() {
         return "cn=" + name;
@@ -142,19 +132,19 @@ public abstract class AbstractFolder extends AbstractStorable {
         this.owner = owner;
     }
 
-    public List<String> getReadGroups() {
+    public List<Group> getReadGroups() {
         return readGroups;
     }
 
-    public void setReadGroups(List<String> readGroups) {
+    public void setReadGroups(List<Group> readGroups) {
         this.readGroups = readGroups;
     }
 
-    public List<String> getWriteGroups() {
+    public List<Group> getWriteGroups() {
         return writeGroups;
     }
 
-    public void setWriteGroups(List<String> writeGroups) {
+    public void setWriteGroups(List<Group> writeGroups) {
         this.writeGroups = writeGroups;
     }
 
@@ -175,17 +165,25 @@ public abstract class AbstractFolder extends AbstractStorable {
             targets.add(new Target("targetscope", "=", getPermissionScope()));
             targets.add(new Target("targetattr", "=", getPermissionsAttributes()));
 
-            List<String> allowGroups = new ArrayList<String>();
+            List<String> readGroupDns = new ArrayList<String>();
+            List<String> writeGroupDns = new ArrayList<String>();
+            List<String> allowGroupDns = new ArrayList<String>();
             if (CollectionUtils.isNotEmpty(readGroups)) {
-                allowGroups.addAll(readGroups);
+                for (Group readGroup : readGroups) {
+                    readGroupDns.add(readGroup.getDn());
+                }
             }
             if (CollectionUtils.isNotEmpty(writeGroups)) {
-                allowGroups.addAll(writeGroups);
+                for (Group writeGroup : writeGroups) {
+                    writeGroupDns.add(writeGroup.getDn());
+                }
             }
-            allowGroups.add(Group.GLOBAL_ADMIN_DN);
+            allowGroupDns.addAll(readGroupDns);
+            allowGroupDns.addAll(writeGroupDns);
+            allowGroupDns.add(Group.GLOBAL_ADMIN_DN);
 
             Subject ownerSubject = new PermissionSubject("userdn", Arrays.asList(owner), "!=");
-            Subject allowedGroupsSubject = new PermissionSubject("groupdn", allowGroups, "!=");
+            Subject allowedGroupsSubject = new PermissionSubject("groupdn", allowGroupDns, "!=");
             Subject composite = new CompositeSubject(ownerSubject, allowedGroupsSubject, "and");
             Permission permission = new Permission("deny", getRootPermissions(), composite);
             AccessControlItem aci = new AccessControlItem("deny", targets, Arrays.asList(permission));
@@ -194,14 +192,14 @@ public abstract class AbstractFolder extends AbstractStorable {
             Permission allowOwner = new Permission("allow", "read,search,compare,delete,export,add,write,import", new PermissionSubject("userdn", Arrays.asList(owner), "="));
             acis.add(new AccessControlItem("owner", targets, Arrays.asList(allowOwner)).toString());
 
-            if (CollectionUtils.isNotEmpty(readGroups)) {
-                Permission allowRead = new Permission("allow", "read,search,compare,export", new PermissionSubject("groupdn", readGroups, "="));
+            if (CollectionUtils.isNotEmpty(readGroupDns)) {
+                Permission allowRead = new Permission("allow", "read,search,compare,export", new PermissionSubject("groupdn", readGroupDns, "="));
                 AccessControlItem allowReadAci = new AccessControlItem("read", targets, Arrays.asList(allowRead));
                 acis.add(allowReadAci.toString());
             }
 
-            if (CollectionUtils.isNotEmpty(writeGroups)) {
-                Permission allowWrite = new Permission("allow", "read,search,compare,delete,export,add,write,import", new PermissionSubject("groupdn", writeGroups, "="));
+            if (CollectionUtils.isNotEmpty(writeGroupDns)) {
+                Permission allowWrite = new Permission("allow", "read,search,compare,delete,export,add,write,import", new PermissionSubject("groupdn", writeGroupDns, "="));
                 AccessControlItem allowWriteAci = new AccessControlItem("write", targets, Arrays.asList(allowWrite));
                 acis.add(allowWriteAci.toString());
             }
@@ -231,9 +229,19 @@ public abstract class AbstractFolder extends AbstractStorable {
                     if (aci.getName().equals("owner")) {
                         folder.owner = aci.getPermissions().get(0).getSubject().getDns().get(0);
                     } else if (aci.getName().equals("read")) {
-                        folder.readGroups.addAll(aci.getPermissions().get(0).getSubject().getDns());
+                        for (String dn : aci.getPermissions().get(0).getSubject().getDns()) {
+                            try {
+                                folder.readGroups.add(new Group().getDecorator().decorate(DirectoryServer.getEntry(DN.decode(dn))));
+                            } catch (DirectoryException e) {
+                            }
+                        }
                     } else if (aci.getName().equals("write")) {
-                        folder.writeGroups.addAll(aci.getPermissions().get(0).getSubject().getDns());
+                        for (String dn : aci.getPermissions().get(0).getSubject().getDns()) {
+                            try {
+                                folder.writeGroups.add(new Group().getDecorator().decorate(DirectoryServer.getEntry(DN.decode(dn))));
+                            } catch (DirectoryException e) {
+                            }
+                        }
                     }
                 }
             }
