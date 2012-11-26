@@ -86,4 +86,8 @@ public class UserManager {
     public String getAuthenticatedUserDn() {
         return AuthenticationHolder.getAuthentication().getUser().getDn();
     }
+
+    public String getViewsDn() {
+        return "cn=views," + getAuthenticatedUserDn();
+    }
 }

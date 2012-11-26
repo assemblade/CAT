@@ -23,6 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
+import org.opends.server.types.DN;
+import org.opends.server.types.DirectoryException;
 import org.opends.server.types.Entry;
 import org.opends.server.types.Modification;
 import org.opends.server.types.ObjectClass;
@@ -37,27 +39,13 @@ import java.util.Map;
 public class View extends AbstractFolder {
     private static final long serialVersionUID = 1L;
 
-    public static final String ROOT = "cn=views,dc=assemblade,dc=com";
-
-    private String sequence;
-    private String viewPoints;
+    private List<Folder> folders;
 
     public View() {
-        sequence = SequenceNumberGenerator.getNextSequenceNumber();
-        inherit = false;
-    }
-
-    @Override
-    public String getRDN() {
-        return "asb-sequence=" + sequence;
     }
 
     public String getType() {
         return "view";
-    }
-
-    public String getIcon() {
-        return "classy/application.png";
     }
 
     @Override
@@ -82,7 +70,7 @@ public class View extends AbstractFolder {
 
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
-        attributeNames.addAll(Arrays.asList("asb-sequence", "asb-view-point"));
+        attributeNames.addAll(Arrays.asList("asb-view-point"));
         return attributeNames;
     }
 
@@ -95,41 +83,17 @@ public class View extends AbstractFolder {
 
     @Override
     public Map<AttributeType, List<Attribute>> getUserAttributes() {
-        Map<AttributeType, List<Attribute>> attributeMap = new HashMap<AttributeType, List<Attribute>>();
+        Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
 
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-sequence", sequence);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
-
-        if (StringUtils.isNotEmpty(viewPoints)) {
-            LdapUtils.addMultipleValueAttributeToMap(attributeMap, "asb-view-point", getViewPointDns());
-        }
+        LdapUtils.addMultipleValueAttributeToMap(attributeMap, "asb-view-point", getViewPoints());
 
         return attributeMap;
     }
 
     public List<Modification> getModifications(Entry currentEntry) {
-        View currentView = (View)getDecorator().decorate(currentEntry);
-        List<Modification> modifications = new ArrayList<Modification>();
+        List<Modification> modifications = super.getModifications(currentEntry);
 
-        if (!currentView.name.equals(name)) {
-            LdapUtils.createSingleEntryModification(modifications, currentEntry, "cn", name);
-        }
-        if (!StringUtils.equals(currentView.description, description)) {
-            LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
-        }
-
-        for (String viewPointDn : currentView.getViewPointDns()) {
-            modifications.add(LdapUtils.createMultipleEntryDeleteModification("asb-view-point", viewPointDn));
-        }
-
-        for (String viewPointDn : getViewPointDns()) {
-            modifications.add(LdapUtils.createMultipleEntryAddModification("asb-view-point", viewPointDn));
-        }
-
-        Collection<String> newAcis = generatePermissionAcis();
-
-        LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", newAcis);
+        LdapUtils.createMultipleEntryModification(modifications, currentEntry, "asb-view-point", getViewPoints());
 
         return modifications;
     }
@@ -139,63 +103,32 @@ public class View extends AbstractFolder {
         return new Decorator();
     }
 
-    @Override
-    public boolean requiresRename(Entry currentEntry) {
-        return false;
-    }
-
     public boolean requiresMove(Entry currentEntry) {
         return false;
     }
 
     public boolean requiresUpdate(Entry currentEntry) {
-        View current = getDecorator().decorate(currentEntry);
-        return !StringUtils.equals(description, current.getDescription()) || !StringUtils.equals(viewPoints, current.viewPoints) || (inherit != current.inherit) || !CollectionUtils.isEqualCollection(readGroups, current.readGroups) || !CollectionUtils.isEqualCollection(writeGroups, current.writeGroups);
-    }
-
-
-    public String getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(String sequence) {
-        this.sequence = sequence;
-    }
-
-    public String getViewPoints() {
-        return viewPoints;
-    }
-
-    public void setViewPoints(String viewPoints) {
-        this.viewPoints = viewPoints;
-    }
-
-    public boolean recordChanges() {
-        return false;
-    }
-
-    public boolean recordDeletions() {
-        return false;
-    }
-
-    private List<String> getViewPointDns() {
-        List<String> viewPointDns = new ArrayList<String>();
-
-        for (String viewPoint : viewPoints.split(",")) {
-
-            String[] rdns = viewPoint.split("/");
-
-            String viewPointDn = Folder.FOLDER_ROOT;
-
-            for (String rdn : rdns) {
-                if (StringUtils.isNotEmpty(rdn)) {
-                    viewPointDn = "cn=" + rdn + "," + viewPointDn;
-                }
-            }
-
-            viewPointDns.add(viewPointDn);
+        if (!super.requiresUpdate(currentEntry)) {
+            View currentView = getDecorator().decorate(currentEntry);
+            return !CollectionUtils.isEqualCollection(folders, currentView.folders);
         }
-        return viewPointDns;
+        return true;
+    }
+
+    public List<Folder> getFolders() {
+        return folders;
+    }
+
+    public void setFolders(List<Folder> folders) {
+        this.folders = folders;
+    }
+
+    private List<String> getViewPoints() {
+        List<String> viewPoints = new ArrayList<String>();
+        for (Folder folder : folders) {
+            viewPoints.add(folder.getDn());
+        }
+        return viewPoints;
     }
 
     private class Decorator extends AbstractFolder.Decorator<View> {
@@ -208,28 +141,20 @@ public class View extends AbstractFolder {
         public View decorate(Entry entry) {
             View view = super.decorate(entry);
 
-            view.sequence = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-sequence"));
-            Collection<String> viewPointDns = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("asb-view-point"));
+            Collection<String> viewPoints = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("asb-view-point"));
 
-            String viewPoints = "";
+            List<Folder> folders = new ArrayList<Folder>();
 
-            for (String viewPointDn : viewPointDns) {
-                String viewPoint = "";
-                int index = viewPointDn.indexOf(Folder.FOLDER_ROOT);
-                if (index > 0) {
-                    viewPointDn = viewPointDn.substring(0, index - 1);
-                    String[] rdns = viewPointDn.split(",");
-                    for (String rdn : rdns) {
-                        viewPoint = "/" + rdn.substring(rdn.indexOf("=") + 1) + viewPoint;
-                    }
+            StorableDecorator<Folder> decorator = new Folder().getDecorator();
+
+            for (String viewPoint : viewPoints) {
+                try {
+                    folders.add(decorator.decorate(DirectoryServer.getEntry(DN.decode(viewPoint))));
+                } catch (DirectoryException e) {
                 }
-                if (viewPoints.length() > 0) {
-                    viewPoints += ",";
-                }
-                viewPoints += viewPoint;
             }
 
-            view.viewPoints = viewPoints;
+            view.setFolders(folders);
             return view;
         }
     }
