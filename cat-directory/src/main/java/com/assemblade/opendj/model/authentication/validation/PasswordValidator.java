@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.assemblade.opendj.authentication.validation;
+package com.assemblade.opendj.model.authentication.validation;
 
 import com.assemblade.opendj.model.AbstractConfiguration;
 import com.assemblade.opendj.LdapUtils;

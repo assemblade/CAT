@@ -17,7 +17,7 @@ package com.assemblade.rest;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.opendj.StorageException;
-import com.assemblade.opendj.model.AccessToken;
+import com.assemblade.server.model.AccessToken;
 import com.assemblade.server.model.User;
 import com.assemblade.server.security.AccessTokenManager;
 import com.assemblade.server.security.BadCredentialsException;
@@ -47,9 +47,9 @@ public class Login {
     @Produces(MediaType.APPLICATION_JSON)
     public Response doLogin(@Context HttpServletRequest servletRequest, @QueryParam(value = "username") String username, @QueryParam(value = "password") String password) {
         try {
-            AccessToken token = accessTokenManager.requestAccessToken(username, password);
             String requestUrl = servletRequest.getRequestURL().toString();
             String baseUrl = requestUrl.substring(0, requestUrl.lastIndexOf('/'));
+            AccessToken token = accessTokenManager.requestAccessToken(username, password, baseUrl);
             return Response.ok(new Authentication(baseUrl, token.getToken(), token.getSecret())).build();
         } catch (StorageException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

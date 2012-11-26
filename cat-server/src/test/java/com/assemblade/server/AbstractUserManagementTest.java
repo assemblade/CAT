@@ -18,9 +18,10 @@ package com.assemblade.server;
 import com.assemblade.opendj.AbstractDirectoryServiceTest;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.configuration.ConfigurationManager;
+import com.assemblade.server.model.Authentication;
 import com.assemblade.server.model.Group;
 import com.assemblade.server.model.User;
-import com.assemblade.server.security.AuthenticatedUserHolder;
+import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.GroupManager;
 import com.assemblade.server.users.UserManager;
 import org.junit.Before;
@@ -41,7 +42,10 @@ public abstract class AbstractUserManagementTest extends AbstractDirectoryServic
         User user = new User();
         user.setUserId(userName);
         user = directoryService.getAdminSession().get(user);
-        AuthenticatedUserHolder.setUser(user);
+        Authentication authentication = new Authentication();
+        authentication.setUser(user);
+        authentication.setBaseUrl("http://localhost:11080/cat-rest-api");
+        AuthenticationHolder.setAuthentication(authentication);
     }
     
     protected User addUser(String userName, String fullName, String emailAddress, String password) throws Exception {

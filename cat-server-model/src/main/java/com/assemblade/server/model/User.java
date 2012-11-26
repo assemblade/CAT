@@ -27,7 +27,7 @@ public class User extends AbstractUser {
 
 	@Override
 	public String toString() {
-		return "User [userId=" + userId + ", fullName=" + fullName + ", emailAddress=" + emailAddress + ", roles=" + roles + "]";
+		return "User [userId=" + userId + ", fullName=" + fullName + ", emailAddress=" + emailAddress + "]";
 	}
 
 	public boolean recordChanges() {

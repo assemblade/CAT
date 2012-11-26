@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-package com.assemblade.opendj.authentication.validation;
+package com.assemblade.opendj.model.authentication.validation;
 
 import com.assemblade.opendj.model.ConfigurationDecorator;
 import org.opends.server.types.Entry;
 
-public class SimilarityBasedPasswordValidator extends PasswordValidator {
+public class RepeatedCharactersPasswordValidator extends PasswordValidator {
     @Override
     public String getJavaClass() {
-        return "org.opends.server.extensions.SimilarityBasedPasswordValidator";
+        return "org.opends.server.extensions.RepeatedCharactersPasswordValidator";
     }
 
     @Override
-    public ConfigurationDecorator<SimilarityBasedPasswordValidator> getDecorator() {
+    public ConfigurationDecorator<RepeatedCharactersPasswordValidator> getDecorator() {
         return new Decorator();
     }
 
-    private class Decorator extends PasswordValidator.Decorator<SimilarityBasedPasswordValidator> {
+    private class Decorator extends PasswordValidator.Decorator<RepeatedCharactersPasswordValidator> {
         @Override
-        public SimilarityBasedPasswordValidator newInstance() {
-            return new SimilarityBasedPasswordValidator();
+        public RepeatedCharactersPasswordValidator newInstance() {
+            return new RepeatedCharactersPasswordValidator();
         }
 
         @Override
-        public SimilarityBasedPasswordValidator decorate(Entry entry) {
-            SimilarityBasedPasswordValidator validator = super.decorate(entry);
+        public RepeatedCharactersPasswordValidator decorate(Entry entry) {
+            RepeatedCharactersPasswordValidator validator = super.decorate(entry);
 
             return validator;
         }

@@ -14,34 +14,34 @@
  * limitations under the License.
  */
 
-package com.assemblade.opendj.authentication.validation;
+package com.assemblade.opendj.model.authentication.validation;
 
 import com.assemblade.opendj.model.ConfigurationDecorator;
 import org.opends.server.types.Entry;
 
-public class UniqueCharactersPasswordValidator extends PasswordValidator {
+public class DictionaryPasswordValidator extends PasswordValidator {
+
     @Override
     public String getJavaClass() {
-        return "org.opends.server.extensions.UniqueCharactersPasswordValidator";
+        return "ds-cfg-dictionary-password-validator";
     }
 
     @Override
-    public ConfigurationDecorator<UniqueCharactersPasswordValidator> getDecorator() {
+    public ConfigurationDecorator<DictionaryPasswordValidator> getDecorator() {
         return new Decorator();
     }
 
-    private class Decorator extends PasswordValidator.Decorator<UniqueCharactersPasswordValidator> {
+    private class Decorator extends PasswordValidator.Decorator<DictionaryPasswordValidator> {
         @Override
-        public UniqueCharactersPasswordValidator newInstance() {
-            return new UniqueCharactersPasswordValidator();
+        public DictionaryPasswordValidator newInstance() {
+            return new DictionaryPasswordValidator();
         }
 
         @Override
-        public UniqueCharactersPasswordValidator decorate(Entry entry) {
-            UniqueCharactersPasswordValidator validator = super.decorate(entry);
+        public DictionaryPasswordValidator decorate(Entry entry) {
+            DictionaryPasswordValidator validator = super.decorate(entry);
 
             return validator;
         }
     }
-
 }

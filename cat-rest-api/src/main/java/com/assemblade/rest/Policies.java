@@ -113,14 +113,14 @@ public class Policies {
     }
 
     private AuthenticationPolicy map(Configuration configuration) {
-        if (configuration instanceof com.assemblade.opendj.authentication.policy.PasswordPolicy) {
-            com.assemblade.opendj.authentication.policy.PasswordPolicy serverPasswordPolicy = (com.assemblade.opendj.authentication.policy.PasswordPolicy)configuration;
+        if (configuration instanceof com.assemblade.opendj.model.authentication.policy.PasswordPolicy) {
+            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = (com.assemblade.opendj.model.authentication.policy.PasswordPolicy)configuration;
             PasswordPolicy passwordPolicy = new PasswordPolicy();
             passwordPolicy.setName(serverPasswordPolicy.getName());
             passwordPolicy.setForceChangeOnReset(serverPasswordPolicy.isForceChangeOnReset());
             return passwordPolicy;
         } else {
-            com.assemblade.opendj.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = (com.assemblade.opendj.authentication.policy.LdapPassthroughAuthenticationPolicy)configuration;
+            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = (com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy)configuration;
             LdapPassthroughPolicy ldapPassthroughPolicy = new LdapPassthroughPolicy();
             ldapPassthroughPolicy.setName(serverLdapPassthroughPolicy.getName());
             ldapPassthroughPolicy.setPrimaryRemoteServer(serverLdapPassthroughPolicy.getPrimaryRemoteServer());
@@ -135,13 +135,13 @@ public class Policies {
 
     private Configuration map(AuthenticationPolicy authenticationPolicy) {
         if (authenticationPolicy instanceof PasswordPolicy) {
-            com.assemblade.opendj.authentication.policy.PasswordPolicy serverPasswordPolicy = new com.assemblade.opendj.authentication.policy.PasswordPolicy();
+            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = new com.assemblade.opendj.model.authentication.policy.PasswordPolicy();
             PasswordPolicy passwordPolicy = (PasswordPolicy)authenticationPolicy;
             serverPasswordPolicy.setName(passwordPolicy.getName());
             serverPasswordPolicy.setForceChangeOnReset(passwordPolicy.isForceChangeOnReset());
             return serverPasswordPolicy;
         } else {
-            com.assemblade.opendj.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = new com.assemblade.opendj.authentication.policy.LdapPassthroughAuthenticationPolicy();
+            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = new com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy();
             LdapPassthroughPolicy ldapPassthroughPolicy = (LdapPassthroughPolicy)authenticationPolicy;
             serverLdapPassthroughPolicy.setName(ldapPassthroughPolicy.getName());
             serverLdapPassthroughPolicy.setPrimaryRemoteServer(ldapPassthroughPolicy.getPrimaryRemoteServer());

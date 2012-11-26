@@ -112,11 +112,6 @@ public class ChangeLogEntry extends AbstractStorable {
         return "changeNumber=" + sequence;
     }
 
-//    @Override
-//    protected String getRootDn() {
-//        return targetDn;
-//    }
-
     @Override
     public String getParentDn() {
 		return targetDn;

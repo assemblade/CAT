@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.assemblade.opendj.authentication.policy;
+package com.assemblade.opendj.model.authentication.policy;
 
 import com.assemblade.opendj.model.ConfigurationDecorator;
 import com.assemblade.opendj.LdapUtils;

@@ -18,7 +18,7 @@ package com.assemblade.server.security;
 import com.assemblade.opendj.BindStatus;
 import com.assemblade.opendj.DirectoryService;
 import com.assemblade.opendj.StorageException;
-import com.assemblade.opendj.model.AccessToken;
+import com.assemblade.server.model.AccessToken;
 import com.assemblade.server.model.User;
 
 import java.text.MessageFormat;
@@ -34,7 +34,7 @@ public class AccessTokenManager {
         this.directoryService = directoryService;
     }
 
-    public AccessToken requestAccessToken(String username, String password) throws StorageException, BadCredentialsException, ChangePasswordException {
+    public AccessToken requestAccessToken(String username, String password, String baseUrl) throws StorageException, BadCredentialsException, ChangePasswordException {
         User user = getUser(username);
 
         if (user == null) {
@@ -49,12 +49,13 @@ public class AccessTokenManager {
             throw new ChangePasswordException();
         }
 
-        List<AccessToken> tokens = directoryService.getAdminSession().search(new AccessToken(), AccessToken.ACCESS_TOKEN_ROOT, "(&(objectClass=inetOrgPerson)(uid={0}))");
+        List<AccessToken> tokens = directoryService.getAdminSession().search(new AccessToken(), AccessToken.ROOT, "(&(objectClass=inetOrgPerson)(uid={0}))");
         for (AccessToken token : tokens) {
             directoryService.getAdminSession().delete(token);
         }
 
-        AccessToken token = new AccessToken(username);
+        AccessToken token = AccessToken.createAccessToken(user);
+        token.setBaseUrl(baseUrl);
 
         directoryService.getAdminSession().add(token);
 
@@ -62,7 +63,9 @@ public class AccessTokenManager {
     }
 
     public AccessToken getExistingAccessToken(String token) throws StorageException {
-        return directoryService.getAdminSession().get(AccessToken.createWithToken(token));
+        AccessToken accessToken = new AccessToken();
+        accessToken.setToken(token);
+        return directoryService.getAdminSession().get(accessToken);
     }
 
     private User getUser(String userName) {

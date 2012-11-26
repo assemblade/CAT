@@ -20,7 +20,7 @@ import com.assemblade.opendj.Session;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.Group;
 import com.assemblade.server.model.User;
-import com.assemblade.server.security.AuthenticatedUserHolder;
+import com.assemblade.server.security.AuthenticationHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -68,7 +68,7 @@ public class UserManager {
 	}
 
     public User getAuthenticatedUser() {
-        return AuthenticatedUserHolder.getUser();
+        return AuthenticationHolder.getAuthentication().getUser();
     }
 
     public Session getAdminSession() {
@@ -78,7 +78,7 @@ public class UserManager {
 	public Session getUserSession() {
 		Session session = null;
 		try {
-			session = directoryService.getSession(AuthenticatedUserHolder.getUser().getDn());
+			session = directoryService.getSession(AuthenticationHolder.getAuthentication().getUser().getDn());
 		} catch (Exception e) {
 			log.error("Failed to get a user session", e);
 		}
@@ -86,6 +86,6 @@ public class UserManager {
 	}
 
     public String getAuthenticatedUserDn() {
-        return AuthenticatedUserHolder.getUser().getDn();
+        return AuthenticationHolder.getAuthentication().getUser().getDn();
     }
 }

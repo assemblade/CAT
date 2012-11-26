@@ -14,50 +14,46 @@
  * limitations under the License.
  */
 
-package com.assemblade.opendj.authentication.policy;
+package com.assemblade.opendj.model.authentication.validation;
 
-import com.assemblade.opendj.model.AbstractConfiguration;
+import com.assemblade.opendj.model.ConfigurationDecorator;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Entry;
 import org.opends.server.types.ObjectClass;
 
 import java.util.Map;
 
-public abstract class AuthenticationPolicy extends AbstractConfiguration {
-    private static final long serialVersionUID = 1L;
-
-    private static final String ROOT_DN = "cn=Password Policies,cn=config";
-
-    public AuthenticationPolicy() {
-        super();
-    }
-
-    public AuthenticationPolicy(String dn) {
-        super(dn);
+public class CharacterSetPasswordValidator extends PasswordValidator {
+    @Override
+    public String getJavaClass() {
+        return "org.opends.server.extensions.CharacterSetPasswordValidator";
     }
 
     @Override
-    public String getRootDn() {
-        return ROOT_DN;
-    }
-
-    @Override
-    public String getSearchFilter() {
-        return "(objectClass=ds-cfg-authentication-policy)";
+    public ConfigurationDecorator<CharacterSetPasswordValidator> getDecorator() {
+        return new Decorator();
     }
 
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("ds-cfg-authentication-policy"), "ds-cfg-authentication-policy");
+
+        objectClasses.put(DirectoryServer.getObjectClass("ds-cfg-character-set-password-validator"), "ds-cfg-character-set-password-validator");
+
         return objectClasses;
     }
 
-    protected abstract class Decorator<T extends AuthenticationPolicy> extends AbstractConfiguration.Decorator<T> {
+    private class Decorator extends PasswordValidator.Decorator<CharacterSetPasswordValidator> {
         @Override
-        public T decorate(Entry entry) {
-            T policy = super.decorate(entry);
-            return policy;
+        public CharacterSetPasswordValidator newInstance() {
+            return new CharacterSetPasswordValidator();
+        }
+
+        @Override
+        public CharacterSetPasswordValidator decorate(Entry entry) {
+            CharacterSetPasswordValidator validator = super.decorate(entry);
+
+            return validator;
         }
     }
 }

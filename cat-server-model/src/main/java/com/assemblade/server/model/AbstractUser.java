@@ -49,7 +49,6 @@ public abstract class AbstractUser extends AbstractStorable {
     protected String emailAddress;
     protected String searchFilter = DEFAULT_SEARCH_STRING;
     protected String authenticationPolicy;
-    protected List<String> roles = new ArrayList<String>();
     protected boolean globalAdministrator;
     protected boolean groupAdministrator;
 
@@ -138,13 +137,9 @@ public abstract class AbstractUser extends AbstractStorable {
         return emailAddress;
     }
 
-    public List<String> getRoles() {
-        return roles;
-    }
-
     @Override
     public String toString() {
-        return "User [userId=" + userId + ", fullName=" + fullName + ", emailAddress=" + emailAddress + ", roles=" + roles + "]";
+        return "User [userId=" + userId + ", fullName=" + fullName + ", emailAddress=" + emailAddress + "]";
     }
 
     public void setUserId(String userId) {
@@ -206,7 +201,7 @@ public abstract class AbstractUser extends AbstractStorable {
                             }
                             RDN groupRDN = groupDN.getRDN();
                             String groupName = groupRDN.getAttributeValue(0).toString();
-                            user.roles.add(groupName);
+//                            user.roles.add(groupName);
                             if ((groupName.equals("admins")) && !groupDN.getParent().toString().equals(Group.ROOT)) {
                                 user.groupAdministrator = true;
                             }

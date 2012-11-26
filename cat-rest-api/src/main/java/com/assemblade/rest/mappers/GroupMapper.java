@@ -34,6 +34,7 @@ public class GroupMapper {
     public com.assemblade.server.model.Group toServer(Group group) {
         com.assemblade.server.model.Group serverGroup = new com.assemblade.server.model.Group();
         serverGroup.setId(group.getId());
+        serverGroup.setParentDn(com.assemblade.server.model.Group.ROOT);
         serverGroup.setName(group.getName());
         serverGroup.setDescription(group.getDescription());
 

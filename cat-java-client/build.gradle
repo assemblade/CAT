@@ -138,4 +138,4 @@ uploadArchives {
     }
 }
 
-assemble.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble'
+test.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble', 'cleanTest'

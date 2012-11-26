@@ -17,10 +17,11 @@ package com.assemblade.rest;
 
 import com.assemblade.opendj.DirectoryService;
 import com.assemblade.opendj.StorageException;
-import com.assemblade.opendj.model.AccessToken;
+import com.assemblade.server.model.AccessToken;
+import com.assemblade.server.model.Authentication;
 import com.assemblade.server.model.User;
 import com.assemblade.server.security.AccessTokenManager;
-import com.assemblade.server.security.AuthenticatedUserHolder;
+import com.assemblade.server.security.AuthenticationHolder;
 import org.apache.commons.lang.StringUtils;
 import org.scribe.model.OAuthConstants;
 import org.scribe.services.HMACSha1SignatureService;
@@ -77,7 +78,10 @@ public class AuthenticationFilter implements Filter {
                             if (user == null) {
                                 ((HttpServletResponse)servletResponse).setStatus(401);
                             } else {
-                                AuthenticatedUserHolder.setUser(user);
+                                Authentication authentication = new Authentication();
+                                authentication.setUser(user);
+                                authentication.setBaseUrl(accessToken.getBaseUrl());
+                                AuthenticationHolder.setAuthentication(authentication);
                                 filterChain.doFilter(servletRequest, servletResponse);
                             }
                         } else {

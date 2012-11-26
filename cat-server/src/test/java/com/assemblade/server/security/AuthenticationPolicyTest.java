@@ -17,7 +17,7 @@ package com.assemblade.server.security;
 
 
 import com.assemblade.opendj.OpenDJTestRunner;
-import com.assemblade.opendj.authentication.policy.PasswordPolicy;
+import com.assemblade.opendj.model.authentication.policy.PasswordPolicy;
 import com.assemblade.server.AbstractUserManagementTest;
 import com.assemblade.server.model.User;
 import org.junit.Test;

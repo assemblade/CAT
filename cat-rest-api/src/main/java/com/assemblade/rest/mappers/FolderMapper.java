@@ -19,6 +19,7 @@ import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.users.UserManager;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,9 @@ public class FolderMapper {
 
     public com.assemblade.server.model.Folder toServer(Folder folder) throws StorageException {
         com.assemblade.server.model.Folder mappedFolder = new com.assemblade.server.model.Folder();
-        if (folder.getParentId() != null) {
+        if (StringUtils.isEmpty(folder.getParentId())) {
+            mappedFolder.setParentDn(com.assemblade.server.model.Folder.FOLDER_ROOT);
+        } else {
             mappedFolder.setParentDn(userManager.getUserSession().dnFromId(folder.getParentId()));
         }
         mappedFolder.setId(folder.getId());

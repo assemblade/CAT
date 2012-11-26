@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.assemblade.opendj.model;
+package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
+import com.assemblade.opendj.model.AbstractStorable;
+import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
@@ -36,37 +38,31 @@ import java.util.Map;
 public class AccessToken extends AbstractStorable {
     private static final long serialVersionUID = 1L;
 
-    public static final String ACCESS_TOKEN_ROOT = "ou=accesstokens,dc=assemblade,dc=com";
+    public static final String ROOT = "ou=accesstokens,dc=assemblade,dc=com";
     public static final SecureRandom secureRandom = new SecureRandom();
 
     private String token;
     private String uid;
     private String secret;
+    private String baseUrl;
     private String ipAddress;
 
-    public static AccessToken createWithToken(String token) {
-        AccessToken accessToken = new AccessToken();
-        accessToken.token = token;
-        return accessToken;
-    }
-
-    public AccessToken() {
-    }
-
-    public AccessToken(String uid) {
-        this.token = Base64.encode(SequenceNumberGenerator.getNextSequenceNumber().getBytes());
-        this.uid = uid;
-        this.secret = new BigInteger(130, secureRandom).toString();
-    }
-
-    public AccessToken(String uid, String ipAddress) {
-        this(uid);
-        this.ipAddress = ipAddress;
+    public static AccessToken createAccessToken(User user) {
+        AccessToken token = new AccessToken();
+        token.uid = user.getUserId();
+        token.token = Base64.encode(SequenceNumberGenerator.getNextSequenceNumber().getBytes());
+        token.secret = new BigInteger(130, secureRandom).toString();
+        return token;
     }
 
     @Override
     public String getRDN() {
         return "asb-token=" + token;
+    }
+
+    @Override
+    public String getParentDn() {
+        return ROOT;
     }
 
     @Override
@@ -79,7 +75,7 @@ public class AccessToken extends AbstractStorable {
     @Override
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
-        attributeNames.addAll(new ArrayList<String>(Arrays.asList("asb-token", "uid", "asb-secret", "ipNetworkNumber")));
+        attributeNames.addAll(new ArrayList<String>(Arrays.asList("asb-token", "uid", "asb-secret", "asb-baseurl", "ipNetworkNumber")));
         return attributeNames;
     }
 
@@ -95,6 +91,7 @@ public class AccessToken extends AbstractStorable {
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-token", token);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "uid", uid);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-secret", secret);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-baseurl", baseUrl);
 
         if (StringUtils.isNotEmpty(ipAddress)) {
             LdapUtils.addSingleValueAttributeToMap(attributeMap, "ipNetworkNumber", ipAddress);
@@ -106,12 +103,24 @@ public class AccessToken extends AbstractStorable {
         return uid;
     }
 
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
     public String getIpAddress() {
         return ipAddress;
     }
 
     public String getToken() {
         return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getSecret() {
@@ -131,6 +140,7 @@ public class AccessToken extends AbstractStorable {
             token.token = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-token"));
             token.uid = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("uid"));
             token.secret = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-secret"));
+            token.baseUrl = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-baseurl"));
             token.ipAddress = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ipnetworknumber"));
 
             return token;
