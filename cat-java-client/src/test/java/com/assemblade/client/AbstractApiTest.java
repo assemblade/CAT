@@ -54,7 +54,7 @@ public class AbstractApiTest {
                 groups.deleteGroup(group);
             }
         }
-        for (User user : users.getAllUsers()) {
+        for (User user : users.getUsers()) {
             if (user.isDeletable()) {
                 users.deleteUser(user);
             }
@@ -64,6 +64,22 @@ public class AbstractApiTest {
                 policies.deleteAuthenticationPolicy(policy);
             }
         }
+    }
+
+    protected User createUser(String userId, String fullName, String emailAddress, String authenticationPolicy, String password) {
+        User user = new User();
+        user.setUserId(userId);
+        user.setFullName(fullName);
+        if (emailAddress != null) {
+            user.setEmailAddress(emailAddress);
+        }
+        if (authenticationPolicy != null) {
+            user.setAuthenticationPolicy(authenticationPolicy);
+        }
+        if (password != null) {
+            user.setPassword(password);
+        }
+        return user;
     }
 
     protected Group createGroup(String name, String description) {

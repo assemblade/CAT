@@ -27,35 +27,100 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class UsersTest extends AbstractApiTest {
-    private Users test;
+    @Test
+    public void addUserTest() throws ClientException {
+        User user = createUser("test", "Test User", "test@assemblade.com", null, "password");
 
-    @Before
-    public void setup() throws Exception {
-        Authentication authentication  = login.login("admin", "password");
-        test = new Users(authentication);
+        user = users.addUser(user);
+
+        assertNotNull(user);
+        assertEquals("test", user.getUserId());
+        assertEquals("Test User", user.getFullName());
+        assertEquals("test@assemblade.com", user.getEmailAddress());
+
+        List<User> userList = users.getUsers();
+
+        assertTrue(userList.contains(user));
+
+        user = userList.get(userList.indexOf(user));
+
+        assertEquals("test", user.getUserId());
+        assertEquals("Test User", user.getFullName());
+        assertEquals("test@assemblade.com", user.getEmailAddress());
+    }
+
+    @Test
+    public void getUsers() throws ClientException {
+        List<User> userList = users.getUsers();
+
+        assertEquals(1, userList.size());
     }
 
     @Test
     public void getAuthenticatedUserTest() throws ClientException {
-        User user = test.getAuthenticatedUser();
-
-        assertNotNull(user);
-    }
-
-    @Test
-    public void getAllUsers() throws ClientException {
-        List<User> users = test.getAllUsers();
-
-        assertTrue(users.size() > 0);
-    }
-
-    @Test
-    public void getAuthenticatedUser() throws ClientException {
-        User user = test.getAuthenticatedUser();
+        User user = users.getAuthenticatedUser();
 
         assertNotNull(user);
         assertEquals("admin", user.getUserId());
     }
 
+    @Test
+    public void updateUserTest_rename() throws ClientException {
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
 
+        user.setUserId("test2");
+
+        user = users.updateUser(user);
+
+        assertNotNull(user);
+        assertEquals("test2", user.getUserId());
+
+        List<User> userList = users.getUsers();
+
+        assertTrue(userList.contains(user));
+
+        user = userList.get(userList.indexOf(user));
+
+        assertEquals("test2", user.getUserId());
+    }
+
+    @Test
+    public void updateUserTest_changeFullName() throws ClientException {
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+
+        user.setFullName("New Name");
+
+        user = users.updateUser(user);
+
+        assertNotNull(user);
+        assertEquals("New Name", user.getFullName());
+
+        List<User> userList = users.getUsers();
+
+        assertTrue(userList.contains(user));
+
+        user = userList.get(userList.indexOf(user));
+
+        assertEquals("New Name", user.getFullName());
+    }
+
+    @Test
+    public void updateUserTest_changeEmailAddress() throws ClientException {
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+
+        user.setEmailAddress("new@assemblade.com");
+
+        user = users.updateUser(user);
+
+        assertNotNull(user);
+        assertEquals("new@assemblade.com", user.getEmailAddress());
+
+        List<User> userList = users.getUsers();
+
+        assertTrue(userList.contains(user));
+
+        user = userList.get(userList.indexOf(user));
+
+        assertEquals("new@assemblade.com", user.getEmailAddress());
+    }
 }

@@ -16,27 +16,28 @@
 package com.assemblade.rest.mappers;
 
 import com.assemblade.client.model.Group;
+import com.assemblade.server.security.AuthenticationHolder;
 
 public class GroupMapper {
     public Group toClient(com.assemblade.server.model.Group serverGroup) {
-        Group group = new Group();
+        Group clientGroup = new Group();
+        clientGroup.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/" + serverGroup.getId());
+        clientGroup.setId(serverGroup.getId());
+        clientGroup.setName(serverGroup.getDisplayName());
+        clientGroup.setDescription(serverGroup.getDescription());
+        clientGroup.setWritable(serverGroup.isWritable());
+        clientGroup.setDeletable(serverGroup.isDeletable());
+        clientGroup.setType(serverGroup.getType());
 
-        group.setId(serverGroup.getId());
-        group.setName(serverGroup.getDisplayName());
-        group.setDescription(serverGroup.getDescription());
-        group.setWritable(serverGroup.isWritable());
-        group.setDeletable(serverGroup.isDeletable());
-        group.setType(serverGroup.getType());
-
-        return group;
+        return clientGroup;
     }
 
-    public com.assemblade.server.model.Group toServer(Group group) {
+    public com.assemblade.server.model.Group toServer(Group clientGroup) {
         com.assemblade.server.model.Group serverGroup = new com.assemblade.server.model.Group();
-        serverGroup.setId(group.getId());
+        serverGroup.setId(clientGroup.getId());
         serverGroup.setParentDn(com.assemblade.server.model.Group.ROOT);
-        serverGroup.setName(group.getName());
-        serverGroup.setDescription(group.getDescription());
+        serverGroup.setName(clientGroup.getName());
+        serverGroup.setDescription(clientGroup.getDescription());
 
         return serverGroup;
     }

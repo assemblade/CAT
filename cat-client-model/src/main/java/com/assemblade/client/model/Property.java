@@ -16,11 +16,20 @@
 package com.assemblade.client.model;
 
 public class Property {
+    private String url;
     private Folder folder;
     private String id;
     private String name;
     private String description;
     private String value;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public Folder getFolder() {
         return folder;

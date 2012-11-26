@@ -30,6 +30,7 @@ public enum AssembladeErrorCode implements Serializable {
     ASB_0009("ASB_0009", "Failed to move an entry"),
     ASB_0010("ASB_0010", "Search failed"),
     ASB_0011("ASB_0011", "Failed to change password"),
+    ASB_0012("ASB_0012", "Failed to encode a URL"),
     ASB_9999("ASB_9999", "General error");
     ;
 

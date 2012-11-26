@@ -53,13 +53,11 @@ public class UserManager {
 	
 	public User updateUser(User user) throws StorageException {
 		getUserSession().update(user);
-		return user;
+		return getUserSession().get(user);
 	}
 	
 	public void deleteUser(String userId) throws StorageException {
-        User user = new User();
-        user.setUserId(userId);
-        user = getUserSession().get(user);
+        User user = getUserSession().getByEntryId(new User(), userId);
         getUserSession().delete(user);
 	}
 	

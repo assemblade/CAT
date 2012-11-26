@@ -36,7 +36,7 @@ public class Users extends AbstractClient {
         super(authentication);
     }
 
-    public List<User> getAllUsers() throws ClientException {
+    public List<User> getUsers() throws ClientException {
         return get("/users", new TypeReference<List<User>>(){});
     }
 
@@ -49,18 +49,10 @@ public class Users extends AbstractClient {
     }
 
     public User updateUser(User user) throws ClientException {
-        try {
-            return add("/users/" + URIUtil.encode(user.getUserId(), URI.allowed_fragment), user, new TypeReference<User>() {});
-        } catch (URIException e) {
-            throw new CallFailedException("Failed to encode request path", e);
-        }
+        return update("/users/" + user.getId(), user, new TypeReference<User>() {});
     }
 
     public void deleteUser(User user) throws ClientException {
-        try {
-            delete("/users/" + URIUtil.encode(user.getUserId(), URI.allowed_fragment));
-        } catch (URIException e) {
-            throw new CallFailedException("Failed to encode request path", e);
-        }
+        delete("/users/" + user.getId());
     }
 }

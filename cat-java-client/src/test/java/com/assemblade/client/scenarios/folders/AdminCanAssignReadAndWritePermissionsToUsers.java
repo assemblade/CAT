@@ -31,35 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class AdminCanAssignReadAndWritePermissionsToUsers extends AbstractApiTest {
-    private Users users;
-    private Groups groups;
-    private Folders folders;
-
-    @Before
-    public void setup() throws ClientException {
-        Authentication authentication = login.login("admin", "password");
-        users = new Users(authentication);
-        groups = new Groups(authentication);
-        folders = new Folders(authentication);
-    }
-
-    @After
-    public void teardown() throws ClientException {
-        for (Folder folder : folders.getRootFolders()) {
-            folders.deleteFolder(folder);
-        }
-        for (Group group : groups.getAllGroups()) {
-            if (group.isDeletable()) {
-                groups.deleteGroup(group);
-            }
-        }
-        for (User user : users.getAllUsers()) {
-            if (user.isDeletable()) {
-                users.deleteUser(user);
-            }
-        }
-    }
-
     @Test
     public void adminCanAssignReadPermissionsToAUser() throws ClientException {
 

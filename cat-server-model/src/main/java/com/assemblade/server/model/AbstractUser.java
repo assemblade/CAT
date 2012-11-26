@@ -96,6 +96,7 @@ public abstract class AbstractUser extends AbstractStorable {
         return attributeMap;
     }
 
+    @Override
     public Map<AttributeType, List<Attribute>> getOperationalAttributes() {
         Map<AttributeType, List<Attribute>> attributeMap = super.getOperationalAttributes();
 
@@ -106,16 +107,28 @@ public abstract class AbstractUser extends AbstractStorable {
         return attributeMap;
     }
 
+    @Override
+    public boolean requiresRename(Entry currentEntry) {
+        return !StringUtils.equals(userId, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("uid")));
+    }
+
+    @Override
+    public boolean requiresUpdate(Entry currentEntry) {
+        User user = new User().getDecorator().decorate(currentEntry);
+        return !StringUtils.equals(fullName, user.fullName) || !StringUtils.equals(emailAddress, user.emailAddress) || !StringUtils.equals(authenticationPolicy, user.authenticationPolicy);
+    }
+
+    @Override
     public List<Modification> getModifications(Entry currentEntry) {
         List<Modification> modifications = super.getModifications(currentEntry);
 
         User currentUser = (User)getDecorator().decorate(currentEntry);
 
-        if (!currentUser.getFullName().equals(fullName)) {
+        if (!StringUtils.equals(currentUser.getFullName(), fullName)) {
             LdapUtils.createSingleEntryModification(modifications, currentEntry, "cn", fullName);
         }
 
-        if (!currentUser.getEmailAddress().equals(emailAddress)) {
+        if (!StringUtils.equals(currentUser.getEmailAddress(), emailAddress)) {
             LdapUtils.createSingleEntryModification(modifications,currentEntry, "mail", emailAddress);
         }
         return modifications;
@@ -201,7 +214,6 @@ public abstract class AbstractUser extends AbstractStorable {
                             }
                             RDN groupRDN = groupDN.getRDN();
                             String groupName = groupRDN.getAttributeValue(0).toString();
-//                            user.roles.add(groupName);
                             if ((groupName.equals("admins")) && !groupDN.getParent().toString().equals(Group.ROOT)) {
                                 user.groupAdministrator = true;
                             }

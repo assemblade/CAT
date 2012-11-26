@@ -18,6 +18,7 @@ package com.assemblade.client.model;
 import java.util.List;
 
 public class Folder {
+    private String url;
     private String name;
     private String description;
     private String parentId;
@@ -27,6 +28,14 @@ public class Folder {
     private boolean deletable;
     private List<Group> readGroups;
     private List<Group> writeGroups;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public String getName() {
         return name;

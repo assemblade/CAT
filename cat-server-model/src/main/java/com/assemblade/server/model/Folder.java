@@ -65,13 +65,6 @@ public class Folder extends AbstractFolder {
         return objectClasses;
     }
 
-    //TODO:This needs to move down to the abstract
-    @Override
-    public boolean requiresUpdate(Entry currentEntry) {
-        Folder currentFolder = getDecorator().decorate(currentEntry);
-        return !StringUtils.equals(description, currentFolder.getDescription()) || (inherit != currentFolder.inherit) || !CollectionUtils.isEqualCollection(readGroups, currentFolder.readGroups) || !CollectionUtils.isEqualCollection(writeGroups, currentFolder.writeGroups);
-    }
-
     @Override
     public String getType() {
 		return "propertyFolder";

@@ -16,6 +16,8 @@
 package com.assemblade.client.model;
 
 public class User {
+    private String url;
+    private String id;
     private String userId;
     private String fullName;
     private String emailAddress;
@@ -25,6 +27,22 @@ public class User {
     private String password;
     private boolean writable;
     private boolean deletable;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getUserId() {
         return userId;
@@ -96,5 +114,22 @@ public class User {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return userId != null ? userId.hashCode() : 0;
     }
 }

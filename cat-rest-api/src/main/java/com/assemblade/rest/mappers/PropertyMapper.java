@@ -31,6 +31,7 @@ public class PropertyMapper {
     public Property toClient(com.assemblade.server.model.Property serverProperty) throws StorageException {
         Property clientProperty = new Property();
         clientProperty.setFolder(folderMapper.toClient(propertyManager.getFolder(serverProperty.getParentId())));
+        clientProperty.setUrl(clientProperty.getFolder().getUrl() + "/properties/" + serverProperty.getId());
         clientProperty.setId(serverProperty.getId());
         clientProperty.setName(serverProperty.getName());
         clientProperty.setDescription(serverProperty.getDescription());

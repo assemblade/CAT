@@ -3,6 +3,7 @@ package com.assemblade.rest;
 import com.assemblade.client.model.User;
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
+import com.assemblade.rest.mappers.UserMapper;
 import com.assemblade.server.users.UserManager;
 
 import javax.ws.rs.Consumes;
@@ -21,9 +22,11 @@ import java.util.List;
 @Path("/users")
 public class Users {
     private final UserManager userManager;
+    private final UserMapper userMapper;
 
-    public Users(UserManager userManager) {
+    public Users(UserManager userManager, UserMapper userMapper) {
         this.userManager = userManager;
+        this.userMapper = userMapper;
     }
 
     @GET
@@ -32,7 +35,7 @@ public class Users {
         List<User> users = new ArrayList<User>();
         try {
             for (com.assemblade.server.model.User user : userManager.getUsers()) {
-                users.add(map(user));
+                users.add(userMapper.toClient(user));
             }
             return Response.ok(users).build();
         } catch (StorageException e) {
@@ -48,7 +51,11 @@ public class Users {
     @Path("/current")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAuthenticatedUser() {
-        return Response.ok(map(userManager.getAuthenticatedUser())).build();
+        try {
+            return Response.ok(userMapper.toClient(userManager.getAuthenticatedUser())).build();
+        } catch (StorageException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @POST
@@ -56,8 +63,7 @@ public class Users {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addUser(User user) {
         try {
-            user = map(userManager.addUser(map(user)));
-            return Response.ok().entity(user).build();
+            return Response.ok().entity(userMapper.toClient(userManager.addUser(userMapper.toServer(user)))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -68,12 +74,12 @@ public class Users {
     }
 
     @PUT
+    @Path("{userId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response editUser(User user) {
+    public Response editUser(@PathParam("userId") String userId, User user) {
         try {
-            user = map(userManager.updateUser(map(user)));
-            return Response.ok(user).build();
+            return Response.ok(userMapper.toClient(userManager.updateUser(userMapper.toServer(user)))).build();
 
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0006) {
@@ -97,28 +103,5 @@ public class Users {
             }
         }
         return Response.noContent().build();
-    }
-
-    private User map(com.assemblade.server.model.User serverUser) {
-        User user = new User();
-        user.setUserId(serverUser.getUserId());
-        user.setFullName(serverUser.getFullName());
-        user.setEmailAddress(serverUser.getEmailAddress());
-        user.setGlobalAdministrator(serverUser.isGlobalAdministrator());
-        user.setGroupAdministrator(serverUser.isGroupAdministrator());
-        user.setAuthenticationPolicy(serverUser.getAuthenticationPolicy());
-        user.setWritable(serverUser.isWritable());
-        user.setDeletable(serverUser.isDeletable());
-        return user;
-    }
-
-    private com.assemblade.server.model.User map(User user) {
-        com.assemblade.server.model.User serverUser = new com.assemblade.server.model.User();
-        serverUser.setUserId(user.getUserId());
-        serverUser.setFullName(user.getFullName());
-        serverUser.setEmailAddress(user.getEmailAddress());
-        serverUser.setAuthenticationPolicy(user.getAuthenticationPolicy());
-        serverUser.setPassword(user.getPassword());
-        return serverUser;
     }
 }

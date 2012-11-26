@@ -33,43 +33,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class UserWithForceResetPolicyHasToChangePasswordBeforeLoggingIn extends AbstractApiTest {
-    private Policies policies;
-    private Users users;
-
-    @Before
-    public void setup() throws Exception {
-        Authentication authentication = login.login("admin", "password");
-        policies = new Policies(authentication);
-
-        for (AuthenticationPolicy policy : policies.getAuthenticationPolicies()) {
-            if (!policy.getName().startsWith("Default")) {
-                policies.deleteAuthenticationPolicy(policy);
-            }
-        }
-
-        users = new Users(authentication);
-
-        for (User user: users.getAllUsers()) {
-            if (user.isDeletable()) {
-                users.deleteUser(user);
-            }
-        }
-    }
-
-    @After
-    public void teardown() throws Exception {
-        for (User user: users.getAllUsers()) {
-            if (user.isDeletable()) {
-                users.deleteUser(user);
-            }
-        }
-        for (AuthenticationPolicy policy : policies.getAuthenticationPolicies()) {
-            if (!policy.getName().startsWith("Default")) {
-                policies.deleteAuthenticationPolicy(policy);
-            }
-        }
-    }
-
     @Test
     public void userCanChangeTheirPassword() throws ClientException {
         PasswordPolicy policy = new PasswordPolicy();

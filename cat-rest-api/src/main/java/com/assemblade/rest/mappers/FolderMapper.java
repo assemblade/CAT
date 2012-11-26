@@ -18,6 +18,7 @@ package com.assemblade.rest.mappers;
 import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
 import com.assemblade.opendj.StorageException;
+import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.UserManager;
 import org.apache.commons.lang.StringUtils;
 
@@ -33,30 +34,31 @@ public class FolderMapper {
         this.groupMapper = groupMapper;
     }
 
-    public Folder toClient(com.assemblade.server.model.Folder folder) {
-        Folder mapperFolder = new Folder();
-        mapperFolder.setId(folder.getId());
-        mapperFolder.setName(folder.getName());
-        mapperFolder.setDescription(folder.getDescription());
-        mapperFolder.setParentId(folder.getParentId());
-        mapperFolder.setAddable(folder.isAddable());
-        mapperFolder.setWritable(folder.isWritable());
-        mapperFolder.setDeletable(folder.isDeletable());
+    public Folder toClient(com.assemblade.server.model.Folder serverFolder) {
+        Folder clientFolder = new Folder();
+        clientFolder.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/folders/" + serverFolder.getId());
+        clientFolder.setId(serverFolder.getId());
+        clientFolder.setName(serverFolder.getName());
+        clientFolder.setDescription(serverFolder.getDescription());
+        clientFolder.setParentId(serverFolder.getParentId());
+        clientFolder.setAddable(serverFolder.isAddable());
+        clientFolder.setWritable(serverFolder.isWritable());
+        clientFolder.setDeletable(serverFolder.isDeletable());
         List<Group> readGroups = new ArrayList<Group>();
-        for (com.assemblade.server.model.Group group : folder.getReadGroups()) {
+        for (com.assemblade.server.model.Group group : serverFolder.getReadGroups()) {
             readGroups.add(groupMapper.toClient(group));
         }
         if (readGroups.size() > 0) {
-            mapperFolder.setReadGroups(readGroups);
+            clientFolder.setReadGroups(readGroups);
         }
         List<Group> writeGroups = new ArrayList<Group>();
-        for (com.assemblade.server.model.Group group : folder.getWriteGroups()) {
+        for (com.assemblade.server.model.Group group : serverFolder.getWriteGroups()) {
             writeGroups.add(groupMapper.toClient(group));
         }
         if (writeGroups.size() > 0) {
-            mapperFolder.setWriteGroups(writeGroups);
+            clientFolder.setWriteGroups(writeGroups);
         }
-        return mapperFolder;
+        return clientFolder;
     }
 
     public com.assemblade.server.model.Folder toServer(Folder folder) throws StorageException {

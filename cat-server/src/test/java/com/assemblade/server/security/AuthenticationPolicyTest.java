@@ -15,7 +15,6 @@
  */
 package com.assemblade.server.security;
 
-
 import com.assemblade.opendj.OpenDJTestRunner;
 import com.assemblade.opendj.model.authentication.policy.PasswordPolicy;
 import com.assemblade.server.AbstractUserManagementTest;
@@ -46,7 +45,7 @@ public class AuthenticationPolicyTest extends AbstractUserManagementTest {
 
         assertEquals("Force Change", user.getAuthenticationPolicy());
 
-        userManager.deleteUser(user.getUserId());
+        userManager.deleteUser(user.getId());
         userManager.getUserSession().delete(policy.getDn(), false);
     }
 }

@@ -124,6 +124,13 @@ public abstract class AbstractFolder extends AbstractStorable {
         return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
+    @Override
+    public boolean requiresUpdate(Entry currentEntry) {
+        //TODO find a better way to this rather than instantiating a concrete class
+        Folder currentFolder = new Folder().getDecorator().decorate(currentEntry);
+        return !StringUtils.equals(description, currentFolder.getDescription()) || (inherit != currentFolder.inherit) || !CollectionUtils.isEqualCollection(readGroups, currentFolder.readGroups) || !CollectionUtils.isEqualCollection(writeGroups, currentFolder.writeGroups);
+    }
+
     public String getOwner() {
         return owner;
     }
