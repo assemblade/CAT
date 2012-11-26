@@ -26,29 +26,28 @@ import org.opends.server.types.Entry;
 import java.text.MessageFormat;
 import java.util.List;
 
-public class GroupUser extends AbstractUser {
+public class GroupMember extends AbstractUser {
 	private static final long serialVersionUID = 1L;
 	
 	private static final MessageFormat searchFilterFormat = new MessageFormat("(&(objectClass=inetOrgPerson)(isMemberOf={0}))");
 	
-	private String groupDn;
+	private Group group;
 	private boolean administrator;
-	private boolean deletable;
-	
+
 	public String getSearchFilter() {
-		return searchFilterFormat.format(new Object[] {groupDn});
+		return searchFilterFormat.format(new Object[] {group.getDn()});
 	}
 
 	public StorableDecorator getDecorator() {
         return new Decorator();
 	}
 	
-	public String getGroupDn() {
-		return groupDn;
+	public Group getGroup() {
+		return group;
 	}
 	
-	public void setGroupDn(String groupDn) {
-		this.groupDn = groupDn;
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 	
 	public boolean isEnabled() {
@@ -63,33 +62,33 @@ public class GroupUser extends AbstractUser {
 		this.administrator = administrator;
 	}
 
-    private class Decorator extends AbstractUser.Decorator<GroupUser> {
+    private class Decorator extends AbstractUser.Decorator<GroupMember> {
         @Override
-        public GroupUser newInstance() {
-            GroupUser groupUser = new GroupUser();
-            groupUser.setGroupDn(groupDn);
-            return groupUser;
+        public GroupMember newInstance() {
+            GroupMember groupMember = new GroupMember();
+            groupMember.setGroup(group);
+            return groupMember;
         }
 
         @Override
-        public GroupUser decorate(Entry entry) {
-            GroupUser user = super.decorate(entry);
-            String adminGroupDn = "cn=admins," + groupDn;
+        public GroupMember decorate(Entry entry) {
+            GroupMember member = super.decorate(entry);
+            String adminGroupDn = "cn=admins," + group.getDn();
             List<Attribute> attributes = entry.getOperationalAttribute(DirectoryServer.getAttributeType("ismemberof"));
             if (attributes != null) {
                 for (Attribute attribute : attributes) {
                     for (AttributeValue value : attribute) {
                         if (adminGroupDn.equals(value.getValue().toString())) {
-                            user.administrator = true;
+                            member.administrator = true;
                         }
                     }
                 }
             }
             EntryPermissions permissions = LdapUtils.getEntryPermissions(entry.getAttributes());
             if (permissions.canDelete()) {
-                user.deletable = true;
+                member.deletable = true;
             }
-            return user;
+            return member;
         }
     }
 }

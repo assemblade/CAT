@@ -19,6 +19,7 @@ import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
+import com.assemblade.client.model.GroupMember;
 import com.assemblade.client.model.Property;
 import com.assemblade.client.model.User;
 import org.junit.After;
@@ -88,6 +89,15 @@ public class AbstractApiTest {
         group.setDescription(description);
 
         return group;
+    }
+
+    protected GroupMember createGroupMember(Group group, User user) {
+        GroupMember groupMember = new GroupMember();
+        groupMember.setGroup(group);
+        groupMember.setId(user.getId());
+        groupMember.setUserId(user.getUserId());
+
+        return groupMember;
     }
 
     protected Folder createFolder(String name, String description) {

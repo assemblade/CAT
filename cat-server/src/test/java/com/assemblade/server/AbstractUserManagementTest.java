@@ -20,6 +20,7 @@ import com.assemblade.opendj.StorageException;
 import com.assemblade.server.configuration.ConfigurationManager;
 import com.assemblade.server.model.Authentication;
 import com.assemblade.server.model.Group;
+import com.assemblade.server.model.GroupMember;
 import com.assemblade.server.model.User;
 import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.GroupManager;
@@ -55,6 +56,15 @@ public abstract class AbstractUserManagementTest extends AbstractDirectoryServic
         user.setEmailAddress(emailAddress);
         user.setPassword(password);
 		return userManager.addUser(user);
+    }
+
+    protected GroupMember createGroupMember(Group group, User user) {
+        GroupMember groupMember = new GroupMember();
+        groupMember.setGroup(group);
+        groupMember.setId(user.getId());
+        groupMember.setUserId(user.getUserId());
+        groupMember.setParentDn(user.getParentDn());
+        return groupMember;
     }
     
     protected Group addGroup(String groupName, String description) throws StorageException {

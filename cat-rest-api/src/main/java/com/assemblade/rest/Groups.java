@@ -6,7 +6,9 @@ import com.assemblade.client.model.User;
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.rest.mappers.GroupMapper;
+import com.assemblade.rest.mappers.GroupMemberMapper;
 import com.assemblade.server.model.UserNotInGroup;
+import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.GroupManager;
 
 import javax.ws.rs.Consumes;
@@ -26,10 +28,12 @@ import java.util.List;
 public class Groups {
     private final GroupManager groupManager;
     private final GroupMapper groupMapper;
+    private final GroupMemberMapper groupMemberMapper;
 
-    public Groups(GroupManager groupManager, GroupMapper groupMapper) {
+    public Groups(GroupManager groupManager, GroupMapper groupMapper, GroupMemberMapper groupMemberMapper) {
         this.groupManager = groupManager;
         this.groupMapper = groupMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     @GET
@@ -68,11 +72,11 @@ public class Groups {
     @GET
     @Path("{groupId}/members")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsersInGroup(@PathParam("groupId") String groupId) {
+    public Response getGroupMembers(@PathParam("groupId") String groupId) {
         List<GroupMember> members = new ArrayList<GroupMember>();
         try {
-            for (com.assemblade.server.model.GroupUser user : groupManager.getListOfUsersInGroup(groupId)) {
-                members.add(map(user));
+            for (com.assemblade.server.model.GroupMember member : groupManager.getListOfUsersInGroup(groupId)) {
+                members.add(groupMemberMapper.toClient(member));
             }
             return Response.ok(members).build();
         } catch (StorageException e) {
@@ -82,6 +86,51 @@ public class Groups {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         }
+    }
+
+    @POST
+    @Path("{groupId}/members")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addMemberToGroup(@PathParam("groupId") String groupId, GroupMember groupMember) {
+        try {
+            return Response.ok(groupMemberMapper.toClient(groupManager.addMemberToGroup(groupMemberMapper.toServer(groupMember)))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @PUT
+    @Path("{groupId}/members/{memberId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response editGroupMember(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId, GroupMember groupMember) {
+        try {
+            return Response.ok(groupMemberMapper.toClient(groupManager.setGroupMemberAdministrativeRights(groupMemberMapper.toServer(groupMember)))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @DELETE
+    @Path("{groupId}/members/{memberId}")
+    public Response removeMemberFromGroup(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId) {
+        try {
+            groupManager.removeMemberFromGroup(groupId, memberId);
+        } catch (StorageException e) {
+            if (e.getErrorCode() == AssembladeErrorCode.ASB_0006) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+        return Response.noContent().build();
     }
 
     @GET
@@ -147,16 +196,6 @@ public class Groups {
             }
         }
         return Response.noContent().build();
-    }
-
-    private GroupMember map(com.assemblade.server.model.GroupUser serverUser) {
-        GroupMember member = new GroupMember();
-        member.setUserId(serverUser.getUserId());
-        member.setFullName(serverUser.getFullName());
-        member.setEmailAddress(serverUser.getEmailAddress());
-        member.setAdministrator(serverUser.isAdministrator());
-
-        return member;
     }
 
     private User map(UserNotInGroup serverUser) {

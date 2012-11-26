@@ -265,7 +265,10 @@ public class Session {
 			if (searchResult.getResultCode() == ResultCode.SUCCESS) {
 				if (result.size() > 0) {
 					return result.get(0);
-				}
+				} else {
+                    log.error("Got multiple entries for what should have been a single entry [" + storable.getDn() + "]");
+                    throw new StorageException(AssembladeErrorCode.ASB_0006);
+                }
 			} else {
                 log.error("Failed to get entry [" + storable.getDn().toString() + "] because: " + searchResult.getErrorMessage().toString());
                 throw new StorageException(AssembladeErrorCode.ASB_0006);
@@ -274,7 +277,6 @@ public class Session {
 			log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
             throw new StorageException(AssembladeErrorCode.ASB_9999);
         }
-		return null;
 	}
 
     public <T extends Storable> Entry getRawEntry(final T storable) throws StorageException {

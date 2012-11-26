@@ -36,8 +36,20 @@ public class Groups extends AbstractClient {
         return get("/groups/administrator", new TypeReference<Group>() {});
     }
 
-    public List<GroupMember> getUsersInGroup(Group group) throws ClientException {
+    public List<GroupMember> getGroupMembers(Group group) throws ClientException {
         return get("/groups/" + group.getId() + "/members", new TypeReference<List<GroupMember>>() {});
+    }
+
+    public GroupMember addMemberToGroup(GroupMember groupMember) throws ClientException {
+        return add("/groups/" + groupMember.getGroup().getId() + "/members", groupMember, new TypeReference<GroupMember>() {});
+    }
+
+    public GroupMember editGroupMember(GroupMember groupMember) throws ClientException {
+        return update("/groups/" + groupMember.getGroup().getId() + "/members/" + groupMember.getId(), groupMember, new TypeReference<GroupMember>() {});
+    }
+
+    public void removeMemberFromGroup(GroupMember groupMember) throws ClientException {
+        delete("/groups/" + groupMember.getGroup().getId() + "/members/" + groupMember.getId());
     }
 
     public List<User> getUsersNotInGroup(Group group) throws ClientException {

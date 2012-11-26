@@ -53,9 +53,9 @@ public class PropertyManagerTest extends AbstractUserManagementTest {
         user1 = addUser("user1", "User1", "user1@example.com", "password");
         user2 = addUser("user2", "User2", "user2@example.com", "password");
         user3 = addUser("user3", "User3", "user3@example.com", "password");
-        groupManager.addUserToGroup(group1, user1);
-        groupManager.addUserToGroup(group2, user2);
-        groupManager.addUserToGroup(group3, user3);
+        groupManager.addMemberToGroup(createGroupMember(group1, user1));
+        groupManager.addMemberToGroup(createGroupMember(group2, user2));
+        groupManager.addMemberToGroup(createGroupMember(group3, user3));
     }
 
     @After

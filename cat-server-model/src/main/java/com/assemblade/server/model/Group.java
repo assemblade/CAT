@@ -115,9 +115,11 @@ public class Group extends AbstractStorable {
         for (Storable newMember : addMembers) {
             modifications.add(LdapUtils.createMultipleEntryAddModification("member", newMember.getDn()));
         }
+        addMembers.clear();
         for (Storable deleteMember : deleteMembers) {
             modifications.add(LdapUtils.createMultipleEntryDeleteModification("member", deleteMember.getDn()));
         }
+        deleteMembers.clear();
         return modifications;
     }
 

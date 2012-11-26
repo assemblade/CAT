@@ -61,6 +61,10 @@
 
     <bean id="userMapper" class="com.assemblade.rest.mappers.UserMapper"/>
 
+    <bean id="groupMemberMapper" class="com.assemblade.rest.mappers.GroupMemberMapper">
+        <constructor-arg ref="groupMapper"/>
+    </bean>
+
     <bean id="folderMapper" class="com.assemblade.rest.mappers.FolderMapper">
         <constructor-arg ref="userManager"/>
         <constructor-arg ref="groupMapper"/>
@@ -94,6 +98,6 @@
     <bean id="groups" class="com.assemblade.rest.Groups">
         <constructor-arg ref="groupManager"/>
         <constructor-arg ref="groupMapper"/>
+        <constructor-arg ref="groupMemberMapper"/>
     </bean>
-
 </beans>

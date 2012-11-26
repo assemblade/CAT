@@ -51,11 +51,7 @@ public class Users {
     @Path("/current")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAuthenticatedUser() {
-        try {
-            return Response.ok(userMapper.toClient(userManager.getAuthenticatedUser())).build();
-        } catch (StorageException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+        return Response.ok(userMapper.toClient(userManager.getAuthenticatedUser())).build();
     }
 
     @POST
