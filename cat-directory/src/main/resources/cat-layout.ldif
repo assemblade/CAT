@@ -41,6 +41,14 @@ cn: Assemblade Administrator
 sn: Administrator
 userPassword: password
 
+dn: cn=views,uid=admin,ou=users,dc=assemblade,dc=com
+changetype: add
+cn: views
+objectClass: top
+objectClass: extensibleObject
+objectClass: assemblade-object
+objectClass: assemblade-views
+
 dn: ou=groups,dc=assemblade,dc=com
 changetype: add
 ou: groups

@@ -131,7 +131,18 @@ task initialiseTomcat(dependsOn: fetchTomcat) {
     }
 }
 
-task deployApplication(dependsOn: initialiseTomcat) {
+task clearDatastore() {
+    inputs.file "${project(':cat-directory').projectDir}/src/main/resources"
+    outputs.file "${buildDir}/datastore/config/schema"
+
+    doLast {
+        println('Clearing datastore')
+        stopTomcat.execute()
+        ant.delete(dir: "${buildDir}/datastore")
+    }
+}
+
+task deployApplication(dependsOn: [initialiseTomcat, clearDatastore]) {
     inputs.file  "${buildDir}/libs/${project.name}.war"
     outputs.file  "${tomcatHome}/webapps/${project.name}.war"
 

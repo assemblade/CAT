@@ -15,5 +15,41 @@
  */
 package com.assemblade.client;
 
-public class ViewsTest {
+import com.assemblade.client.model.Folder;
+import com.assemblade.client.model.View;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+public class ViewsTest extends AbstractApiTest {
+    @Test
+    public void addViewTest() throws ClientException {
+        Folder folder1 = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder folder2 = folders.addRootFolder(createFolder("folder2", "folder2 description"));
+
+        View view = createView("view", "view description", folder1, folder2);
+
+        view = views.addView(view);
+
+        assertNotNull(view);
+        assertEquals("view", view.getName());
+        assertEquals("view description", view.getDescription());
+        assertEquals(0, view.getFolders().indexOf(folder1));
+        assertEquals(1, view.getFolders().indexOf(folder2));
+
+        List<View> viewList = views.getViews();
+
+        assertTrue(viewList.contains(view));
+
+        view = viewList.get(viewList.indexOf(view));
+
+        assertEquals("view", view.getName());
+        assertEquals("view description", view.getDescription());
+        assertEquals(0, view.getFolders().indexOf(folder1));
+        assertEquals(1, view.getFolders().indexOf(folder2));
+    }
 }

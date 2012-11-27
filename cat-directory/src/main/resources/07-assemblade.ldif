@@ -29,7 +29,7 @@ objectClasses: ( 1.2.826.0.1.6161060.2.1.7 NAME 'asb-cfg-root-cfg' SUP top STRUC
 objectClasses: ( 1.2.826.0.1.6161060.2.1.8 NAME 'asb-cfg-remote-ldap-cfg' SUP top STRUCTURAL MUST ( cn $ asb-cfg-remote-ldap-enabled $ asb-cfg-remote-ldap-name-attr $ asb-cfg-remote-ldap-user-attr ) X-ORIGIN 'Assemblade Ltd.' )
 objectClasses: ( 1.2.826.0.1.6161060.2.1.9 NAME 'assemblade-trash' SUP assemblade-object STRUCTURAL MUST cn X-ORIGIN 'Assemblade Ltd.' )
 objectClasses: ( 1.2.826.0.1.6161060.2.1.10 NAME 'assemblade-views' SUP assemblade-folder STRUCTURAL X-ORIGIN 'Assemblade Ltd.' )
-objectClasses: ( 1.2.826.0.1.6161060.2.1.11 NAME 'assemblade-view' SUP assemblade-folder STRUCTURAL MUST asb-sequence MAY asb-view-point X-ORIGIN 'Assemblade Ltd.' )
+objectClasses: ( 1.2.826.0.1.6161060.2.1.11 NAME 'assemblade-view' SUP assemblade-folder STRUCTURAL MAY asb-view-point X-ORIGIN 'Assemblade Ltd.' )
 objectClasses: ( 1.2.826.0.1.6161060.2.1.12 NAME 'asb-remember-me' SUP assemblade-object STRUCTURAL MUST ( asb-sequence $ uid $ asb-expiry-time ) X-ORIGIN 'Assemblade Ltd.' )
 objectClasses: ( 1.2.826.0.1.6161060.2.1.13 NAME 'asb-access-token' SUP assemblade-object STRUCTURAL MUST ( asb-token $ uid $ asb-secret $ asb-baseurl ) MAY ( ipNetworkNumber ) X-ORIGIN 'Assemblade Ltd.' )
 objectClasses: ( 1.2.826.0.1.6161060.2.1.14 NAME 'asb-user' SUP inetOrgPerson STRUCTURAL MUST sAMAccountName X-ORIGIN 'Assemblade Ltd.' )

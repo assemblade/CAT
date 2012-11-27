@@ -81,6 +81,7 @@
     </bean>
 
     <bean id="viewMapper" class="com.assemblade.rest.mappers.ViewMapper">
+        <constructor-arg ref="userManager"/>
         <constructor-arg ref="folderMapper"/>
     </bean>
 

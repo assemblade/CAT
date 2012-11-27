@@ -22,8 +22,11 @@ import com.assemblade.client.model.Group;
 import com.assemblade.client.model.GroupMember;
 import com.assemblade.client.model.Property;
 import com.assemblade.client.model.User;
+import com.assemblade.client.model.View;
 import org.junit.After;
 import org.junit.Before;
+
+import java.util.Arrays;
 
 public class AbstractApiTest {
     protected static final String baseUrl = "http://localhost:11080/cat-rest-api";
@@ -33,6 +36,7 @@ public class AbstractApiTest {
     protected Groups groups;
     protected Folders folders;
     protected Properties properties;
+    protected Views views;
 
     @Before
     public void initialise_client_for_admin() throws ClientException {
@@ -43,10 +47,15 @@ public class AbstractApiTest {
         groups = new Groups(authentication);
         folders = new Folders(authentication);
         properties = new Properties(authentication);
+        views = new Views(authentication);
     }
 
     @After
     public void delete_everything() throws ClientException {
+        for (View view : views.getViews()) {
+            views.deleteView(view);
+        }
+
         for (Folder folder : folders.getRootFolders()) {
             folders.deleteFolder(folder);
         }
@@ -116,6 +125,15 @@ public class AbstractApiTest {
         property.setValue(value);
 
         return property;
+    }
+
+    protected View createView(String name, String description, Folder... folders) {
+        View view = new View();
+        view.setName(name);
+        view.setDescription(description);
+        view.setFolders(Arrays.asList(folders));
+
+        return view;
     }
 
 }

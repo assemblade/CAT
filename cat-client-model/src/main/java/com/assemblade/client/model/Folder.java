@@ -108,4 +108,21 @@ public class Folder {
     public void setWriteGroups(List<Group> writeGroups) {
         this.writeGroups = writeGroups;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Folder folder = (Folder) o;
+
+        if (id != null ? !id.equals(folder.id) : folder.id != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

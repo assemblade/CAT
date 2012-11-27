@@ -19,15 +19,18 @@ import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.View;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.security.AuthenticationHolder;
+import com.assemblade.server.users.UserManager;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ViewMapper {
+    private final UserManager userManager;
     private final FolderMapper folderMapper;
 
-    public ViewMapper(FolderMapper folderMapper) {
+    public ViewMapper(UserManager userManager, FolderMapper folderMapper) {
+        this.userManager = userManager;
         this.folderMapper = folderMapper;
     }
 
@@ -55,7 +58,7 @@ public class ViewMapper {
 
         serverView.setId(clientView.getId());
         serverView.setName(clientView.getName());
-        serverView.setParentDn(AuthenticationHolder.getAuthentication().getUser().getDn());
+        serverView.setParentDn(userManager.getViewsDn());
         serverView.setDescription(clientView.getDescription());
 
         List<com.assemblade.server.model.Folder> serverFolders = new ArrayList<com.assemblade.server.model.Folder>();
