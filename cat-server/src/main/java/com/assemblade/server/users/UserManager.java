@@ -20,6 +20,7 @@ import com.assemblade.opendj.Session;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.Group;
 import com.assemblade.server.model.User;
+import com.assemblade.server.model.Views;
 import com.assemblade.server.security.AuthenticationHolder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +49,11 @@ public class UserManager {
 
         session.update(userGroup);
 
+        Views views = new Views();
+        views.setParentDn(user.getDn());
+
+        session.add(views);
+
 		return user;
 	}
 	
@@ -58,7 +64,7 @@ public class UserManager {
 	
 	public void deleteUser(String userId) throws StorageException {
         User user = getUserSession().getByEntryId(new User(), userId);
-        getUserSession().delete(user);
+        getUserSession().delete(user, true);
 	}
 	
 	public List<User> getUsers() throws StorageException {

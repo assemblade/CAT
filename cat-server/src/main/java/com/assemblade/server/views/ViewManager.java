@@ -16,13 +16,16 @@
 package com.assemblade.server.views;
 
 import com.assemblade.opendj.StorageException;
+import com.assemblade.server.model.Folder;
 import com.assemblade.server.model.Property;
 import com.assemblade.server.model.View;
 import com.assemblade.server.properties.PropertyManager;
 import com.assemblade.server.users.UserManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ViewManager {
     private final UserManager userManager;
@@ -54,8 +57,16 @@ public class ViewManager {
     }
 
     public List<Property> getProperties(String viewId) throws StorageException {
-        List<Property> properties = new ArrayList<Property>();
+        Map<String, Property> propertyMap = new HashMap<String, Property>();
 
-        return properties;
+        View view = userManager.getUserSession().getByEntryId(new View(), viewId);
+
+        for (Folder folder : view.getFolders()) {
+            for (Property property : propertyManager.getProperties(folder.getId())) {
+                propertyMap.put(property.getName(), property);
+            }
+        }
+
+        return new ArrayList<Property>(propertyMap.values());
     }
 }

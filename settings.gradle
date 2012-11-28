@@ -1,1 +1,1 @@
-include 'cat-utils','cat-directory','cat-server-model','cat-server','cat-client-model','cat-rest-api','cat-java-client'
+include 'cat-utils','cat-directory','cat-server-model','cat-server','cat-client-model','cat-rest-api','cat-java-client','cat-shell'
