@@ -72,6 +72,7 @@
 
     <bean id="folderMapper" class="com.assemblade.rest.mappers.FolderMapper">
         <constructor-arg ref="userManager"/>
+        <constructor-arg ref="propertyManager"/>
         <constructor-arg ref="groupMapper"/>
     </bean>
 

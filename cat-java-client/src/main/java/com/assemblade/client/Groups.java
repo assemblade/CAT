@@ -28,6 +28,10 @@ public class Groups extends AbstractClient {
         super(authentication);
     }
 
+    public Group getGroup(String url) throws ClientException {
+        return getFromUrl(url, new TypeReference<Group>() {});
+    }
+
     public List<Group> getAllGroups() throws ClientException {
         return get("/groups", new TypeReference<List<Group>>() {});
     }

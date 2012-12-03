@@ -18,6 +18,7 @@ package com.assemblade.rest.mappers;
 import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
 import com.assemblade.opendj.StorageException;
+import com.assemblade.server.properties.PropertyManager;
 import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.UserManager;
 import org.apache.commons.lang.StringUtils;
@@ -27,20 +28,24 @@ import java.util.List;
 
 public class FolderMapper {
     private final UserManager userManager;
+    private final PropertyManager propertyManager;
     private final GroupMapper groupMapper;
 
-    public FolderMapper(UserManager userManager, GroupMapper groupMapper) {
+    public FolderMapper(UserManager userManager, PropertyManager propertyManager, GroupMapper groupMapper) {
         this.userManager = userManager;
+        this.propertyManager = propertyManager;
         this.groupMapper = groupMapper;
     }
 
-    public Folder toClient(com.assemblade.server.model.Folder serverFolder) {
+    public Folder toClient(com.assemblade.server.model.Folder serverFolder) throws StorageException {
         Folder clientFolder = new Folder();
         clientFolder.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/folders/" + serverFolder.getId());
         clientFolder.setId(serverFolder.getId());
         clientFolder.setName(serverFolder.getName());
         clientFolder.setDescription(serverFolder.getDescription());
-        clientFolder.setParentId(serverFolder.getParentId());
+        if (!userManager.getUserSession().dnFromId(serverFolder.getParentId()).equals(com.assemblade.server.model.Folder.FOLDER_ROOT)) {
+            clientFolder.setParent(toClient(propertyManager.getFolder(serverFolder.getParentId())));
+        }
         clientFolder.setAddable(serverFolder.isAddable());
         clientFolder.setWritable(serverFolder.isWritable());
         clientFolder.setDeletable(serverFolder.isDeletable());
@@ -63,15 +68,15 @@ public class FolderMapper {
 
     public com.assemblade.server.model.Folder toServer(Folder folder) throws StorageException {
         com.assemblade.server.model.Folder mappedFolder = new com.assemblade.server.model.Folder();
-        if (StringUtils.isEmpty(folder.getParentId())) {
+        if (folder.getParent() == null) {
             mappedFolder.setParentDn(com.assemblade.server.model.Folder.FOLDER_ROOT);
         } else {
-            mappedFolder.setParentDn(userManager.getUserSession().dnFromId(folder.getParentId()));
+            mappedFolder.setParentDn(userManager.getUserSession().dnFromId(folder.getParent().getId()));
         }
+        mappedFolder.setParentId(folder.getParent() == null ? null : folder.getParent().getId());
         mappedFolder.setId(folder.getId());
         mappedFolder.setName(folder.getName());
         mappedFolder.setDescription(folder.getDescription());
-        mappedFolder.setParentId(folder.getParentId());
         if (folder.getReadGroups() != null) {
             for (Group readGroup : folder.getReadGroups()) {
                 mappedFolder.getReadGroups().add(groupMapper.toServer(readGroup));

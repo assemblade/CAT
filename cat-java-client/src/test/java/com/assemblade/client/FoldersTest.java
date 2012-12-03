@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class FoldersTest extends AbstractApiTest {
     @Test
@@ -36,6 +37,17 @@ public class FoldersTest extends AbstractApiTest {
         assertNotNull(folder.getId());
 
         assertEquals(1, folders.getRootFolders().size());
+    }
+
+    @Test
+    public void getFolderTest() throws ClientException {
+        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+
+        folder = folders.getFolder(folder.getUrl());
+
+        assertEquals("folder1", folder.getName());
+        assertEquals("folder1 description", folder.getDescription());
+        assertNull(folder.getParent());
     }
 
     @Test
@@ -54,7 +66,7 @@ public class FoldersTest extends AbstractApiTest {
         Folder childFolder = folders.addChildFolder(rootFolder, createFolder("folder2", "folder2 description"));
 
         assertNotNull(childFolder);
-        assertEquals(rootFolder.getId(), childFolder.getParentId());
+        assertEquals(rootFolder.getId(), childFolder.getParent().getId());
 
         assertEquals(1, folders.getChildFolders(rootFolder).size());
     }

@@ -16,7 +16,10 @@
 package com.assemblade.shell;
 
 import com.assemblade.client.model.Authentication;
+import jline.Terminal;
+import jline.console.ConsoleReader;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class InputProcessor {
@@ -36,21 +39,24 @@ public class InputProcessor {
 
         if (authentication != null) {
             System.out.println();
-            Scanner input = new Scanner(System.in);
-            boolean exited = false;
 
-            while (!exited) {
-                System.out.print("> ");
+            try {
+                ConsoleReader reader = new ConsoleReader();
 
-                String line = input.nextLine();
+                boolean exited = false;
 
-                if (line.equals("exit")) {
-                    exited = true;
-                } else {
-                    lineProcessor.processLine(line);
+                while (!exited) {
+                    String line = reader.readLine("> ");
+
+                    if (line.equals("exit")) {
+                        exited = true;
+                    } else {
+                        lineProcessor.processLine(authentication, line);
+                    }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            input.close();
 
             System.out.println();
             System.out.println("bye!!");

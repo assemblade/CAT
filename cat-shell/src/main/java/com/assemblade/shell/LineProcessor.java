@@ -15,6 +15,13 @@
  */
 package com.assemblade.shell;
 
+import com.assemblade.client.ClientException;
+import com.assemblade.client.Users;
+import com.assemblade.client.model.Authentication;
+import com.assemblade.client.model.User;
+
+import java.util.List;
+
 public class LineProcessor {
     private final AuthenticationProcessor authenticationProcessor;
 
@@ -22,7 +29,18 @@ public class LineProcessor {
         this.authenticationProcessor = authenticationProcessor;
     }
 
-    public void processLine(String line) {
+    public void processLine(Authentication authentication, String line) {
+        if (line.equals("list users")) {
+            Users users = new Users(authentication);
+            try {
+                List<User> userList = users.getUsers();
+                for (User user : userList) {
+                    System.out.println(user.getUserId() + "," + user.getFullName() + "," + user.getEmailAddress());
+                }
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 }

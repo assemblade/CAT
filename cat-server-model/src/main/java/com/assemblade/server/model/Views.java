@@ -38,7 +38,7 @@ public class Views extends AbstractStorable {
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("assemblade-views"), "assemblade-views");
+        objectClasses.put(DirectoryServer.getObjectClass("asb-views"), "asb-views");
         return objectClasses;
     }
 

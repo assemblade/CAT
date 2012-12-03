@@ -37,7 +37,7 @@ public class Trash extends AbstractStorable implements Serializable {
 
 	static {
 		objectClasses.put(DirectoryServer.getObjectClass("top"), "top");
-		objectClasses.put(DirectoryServer.getObjectClass("assemblade-trash"), "assemblade-trash");
+		objectClasses.put(DirectoryServer.getObjectClass("asb-trash"), "asb-trash");
 	}
 	
 	private String id;
@@ -60,7 +60,7 @@ public class Trash extends AbstractStorable implements Serializable {
     }
 
     public String getSearchFilter() {
-		return "(objectClass=assemblade-trash)";
+		return "(objectClass=asb-trash)";
 	}
 	
 	public Collection<String> getAttributeNames() {

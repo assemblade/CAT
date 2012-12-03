@@ -46,8 +46,8 @@ changetype: add
 cn: views
 objectClass: top
 objectClass: extensibleObject
-objectClass: assemblade-object
-objectClass: assemblade-views
+objectClass: asb-object
+objectClass: asb-views
 
 dn: ou=groups,dc=assemblade,dc=com
 changetype: add
@@ -119,8 +119,8 @@ changetype: add
 cn: properties
 objectClass: top
 objectClass: extensibleObject
-objectClass: assemblade-object
-objectClass: assemblade-folder
+objectClass: asb-object
+objectClass: asb-folder
 description: The base folder for properties
 
 dn: cn=views,dc=assemblade,dc=com
@@ -128,6 +128,6 @@ changetype: add
 cn: views
 objectClass: top
 objectClass: extensibleObject
-objectClass: assemblade-object
-objectClass: assemblade-views
+objectClass: asb-object
+objectClass: asb-views
 description: The base entry for views

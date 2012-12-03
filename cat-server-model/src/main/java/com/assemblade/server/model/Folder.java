@@ -50,7 +50,7 @@ public class Folder extends AbstractFolder {
 
     @Override
     public String getSearchFilter() {
-		return "(objectClass=assemblade-folder)";
+		return "(objectClass=asb-folder)";
 	}
 
     @Override
@@ -61,7 +61,7 @@ public class Folder extends AbstractFolder {
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("assemblade-folder"), "assemblade-folder");
+        objectClasses.put(DirectoryServer.getObjectClass("asb-folder"), "asb-folder");
         return objectClasses;
     }
 

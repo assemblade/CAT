@@ -59,6 +59,21 @@ public class GroupsTest extends AbstractApiTest {
     }
 
     @Test
+    public void getGroupTest() throws ClientException {
+        Group group = groups.addGroup(createGroup("group1", "group1 description"));
+
+        group = groups.getGroup(group.getUrl());
+
+        assertNotNull(group);
+        assertNotNull(group.getId());
+        assertEquals("group1", group.getName());
+        assertEquals("group1 description", group.getDescription());
+        assertEquals("group", group.getType());
+        assertTrue(group.isDeletable());
+        assertTrue(group.isWritable());
+    }
+
+    @Test
     public void getAllGroupsTest() throws ClientException {
         List<Group> groupList = groups.getAllGroups();
 

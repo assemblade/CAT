@@ -82,7 +82,7 @@ public abstract class AbstractFolder extends AbstractStorable {
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("assemblade-folder"), "assemblade-folder");
+        objectClasses.put(DirectoryServer.getObjectClass("asb-folder"), "asb-folder");
         return objectClasses;
     }
 

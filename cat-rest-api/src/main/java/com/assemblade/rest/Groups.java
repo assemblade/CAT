@@ -55,6 +55,21 @@ public class Groups {
     }
 
     @GET
+    @Path("{groupId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGroup(@PathParam("groupId") String groupId) {
+        try {
+            return Response.ok(groupMapper.toClient(groupManager.getGroup(groupId))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
     @Path("/administrator")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAdministratorGroup() {

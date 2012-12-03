@@ -100,6 +100,7 @@ public class Session {
     }
 
 	public void add(Storable storable) throws StorageException {
+        log.debug("Adding " + storable.getDn());
         AddOperation result = connection.processAdd(storable.getDN(), storable.getObjectClasses(), storable.getUserAttributes(), storable.getOperationalAttributes());
         if (result.getResultCode() != ResultCode.SUCCESS) {
             log.error("Failed to add entry [" + storable.getDn().toString() + "] because: " + result.getErrorMessage().toString());
@@ -112,6 +113,7 @@ public class Session {
 	}
 
     public void add(Configuration configuration) throws StorageException {
+        log.debug("Adding " + configuration.getDn());
         AddOperation result = connection.processAdd(configuration.getDN(), configuration.getObjectClasses(), configuration.getUserAttributes(), new HashMap<AttributeType, List<Attribute>>());
         if (result.getResultCode() != ResultCode.SUCCESS) {
             log.error("Failed to add entry [" + configuration.getDn().toString() + "] because: " + result.getErrorMessage().toString());
@@ -402,9 +404,14 @@ public class Session {
                 if (result.getSearchEntries().size() > 0) {
                     return (T)storable.getDecorator().decorate(result.getSearchEntries().getFirst());
                 }
+            } else {
+                try {
+                    dumpTree("dc=assemblade,dc=com", true, "(objectclass=*)");
+                } catch (Exception e) {
+                }
             }
         } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + storable.getDn() + "]", e);
+            log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
         }
         return null;
     }
@@ -421,7 +428,7 @@ public class Session {
                 }
             }
         } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + storable.getDn() + "]", e);
+            log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
         }
         if (object == null) {
             throw new StorageException(AssembladeErrorCode.ASB_0006);
@@ -559,23 +566,24 @@ public class Session {
     }
 
 
-    public void dumpTree(String dn, boolean subTree, String filter) throws Exception {
-		final StringBuffer buffer = new StringBuffer();
+    public void dumpTree(String dn, boolean subTree, String filter) {
+        if (log.isDebugEnabled()) {
+            List<Control> controls = new ArrayList<Control>();
 
-		List<Control> controls = new ArrayList<Control>();
-		
-		LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(Arrays.asList("*", "+"));
+            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(Arrays.asList("*", "+"));
 
-		InternalSearchOperation operation = connection.processSearch(dn, subTree ? SearchScope.WHOLE_SUBTREE : SearchScope.SINGLE_LEVEL, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, filter, attributeSet, controls, new InternalSearchListener() {
-			public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
-				buffer.append(entry.getDN().toString());
-				buffer.append('\n');
-			}
+            try {
+                connection.processSearch(dn, subTree ? SearchScope.WHOLE_SUBTREE : SearchScope.SINGLE_LEVEL, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, filter, attributeSet, controls, new InternalSearchListener() {
+                    public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
+                        log.debug(entry.getDN().toString());
+                    }
 
-			public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-			}
-		});
-
-		System.out.println(buffer.toString());
+                    public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
+                    }
+                });
+            } catch (DirectoryException e) {
+                log.error("Exception during dumptree", e);
+            }
+        }
 	}
 }

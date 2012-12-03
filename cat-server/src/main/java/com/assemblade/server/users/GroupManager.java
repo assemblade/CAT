@@ -52,7 +52,7 @@ public class GroupManager {
     }
 
     public Group getGroup(String groupId) throws StorageException {
-        return userManager.getUserSession().getByEntryId(new Group(), groupId);
+        return userManager.getUserSession().getByEntryDn(new Group(), userManager.getUserSession().dnFromId(groupId));
     }
 
     public Group getGroup(Group group) throws StorageException {

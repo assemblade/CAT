@@ -65,7 +65,7 @@ public class View extends AbstractFolder {
 
     @Override
     public String getSearchFilter() {
-        return "(objectClass=assemblade-view)";
+        return "(objectClass=asb-view)";
     }
 
     public Collection<String> getAttributeNames() {
@@ -77,7 +77,7 @@ public class View extends AbstractFolder {
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("assemblade-view"), "assemblade-view");
+        objectClasses.put(DirectoryServer.getObjectClass("asb-view"), "asb-view");
         return objectClasses;
     }
 

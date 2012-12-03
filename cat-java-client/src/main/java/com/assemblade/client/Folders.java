@@ -26,12 +26,16 @@ public class Folders extends AbstractClient {
         super(authentication);
     }
 
+    public Folder getFolder(String url) throws ClientException {
+        return getFromUrl(url, new TypeReference<Folder>() {});
+    }
+
     public List<Folder> getRootFolders() throws ClientException {
         return get("/folders", new TypeReference<List<Folder>>() {});
     }
 
     public List<Folder> getChildFolders(Folder parent) throws ClientException {
-        return get("/folders/" + parent.getId(), new TypeReference<List<Folder>>() {});
+        return get("/folders/" + parent.getId() + "/folders", new TypeReference<List<Folder>>() {});
     }
 
     public Folder addRootFolder(Folder folder) throws ClientException {

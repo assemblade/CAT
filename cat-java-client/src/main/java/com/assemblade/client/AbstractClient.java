@@ -59,7 +59,11 @@ public abstract class AbstractClient {
     }
 
     protected <T> T get(String path, TypeReference<T> type) throws ClientException {
-        GetMethod get = new GetMethod(baseUrl + path);
+        return getFromUrl(baseUrl + path, type);
+    }
+
+    protected <T> T getFromUrl(String url, TypeReference<T> type) throws ClientException {
+        GetMethod get = new GetMethod(url);
         try {
             int statusCode = executeMethod(get);
             if (statusCode == 200) {

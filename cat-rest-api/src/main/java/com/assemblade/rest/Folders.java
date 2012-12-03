@@ -22,7 +22,6 @@ import com.assemblade.opendj.StorageException;
 import com.assemblade.rest.mappers.FolderMapper;
 import com.assemblade.rest.mappers.PropertyMapper;
 import com.assemblade.server.properties.PropertyManager;
-import com.assemblade.server.users.UserManager;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -68,12 +67,27 @@ public class Folders {
     }
 
     @GET
-    @Path("{parentId}")
+    @Path("{folderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getChildFolders(@PathParam("parentId") String parentId) {
+    public Response getFolder(@PathParam("folderId") String folderId) {
+        try {
+            return Response.ok(folderMapper.toClient(propertyManager.getFolder(folderId))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("{folderId}/folders")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getChildFolders(@PathParam("folderId") String folderId) {
         try {
             List<Folder> folders = new ArrayList<Folder>();
-            for (com.assemblade.server.model.Folder folder : propertyManager.getFolders(parentId)) {
+            for (com.assemblade.server.model.Folder folder : propertyManager.getFolders(folderId)) {
                 folders.add(folderMapper.toClient(folder));
             }
             return Response.ok(folders).build();

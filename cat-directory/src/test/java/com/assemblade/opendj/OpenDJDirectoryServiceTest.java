@@ -30,10 +30,10 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		
 		storable.rdn = "cn=test";
 		storable.setParentDn("cn=properties,dc=assemblade,dc=com");
-		storable.searchFilter = "(objectClass=assemblade-folder)";
+		storable.searchFilter = "(objectClass=asb-folder)";
 		storable.addUserAttribute("cn", "test");
-		storable.addObjectClasses("assemblade-folder");
-		storable.addOperationalAttribute("assemblade-deleted", "false");
+		storable.addObjectClasses("asb-folder");
+		storable.addOperationalAttribute("asb-deleted", "false");
 
 		Session session = directoryService.getSession(ADMIN_DN);
 		

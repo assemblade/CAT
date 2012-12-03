@@ -18,10 +18,11 @@ package com.assemblade.client.model;
 import java.util.List;
 
 public class Folder {
+    private Folder parent;
     private String url;
     private String name;
     private String description;
-    private String parentId;
+    private String template;
     private String id;
     private boolean addable;
     private boolean writable;
@@ -61,12 +62,12 @@ public class Folder {
         this.id = id;
     }
 
-    public String getParentId() {
-        return parentId;
+    public Folder getParent() {
+        return parent;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setParent(Folder parent) {
+        this.parent = parent;
     }
 
     public boolean isAddable() {

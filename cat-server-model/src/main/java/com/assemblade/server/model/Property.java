@@ -40,16 +40,12 @@ public class Property extends AbstractStorable implements Serializable {
 	private static Map<ObjectClass, String> objectClasses = new HashMap<ObjectClass, String>();
 
 	static {
-		objectClasses.put(DirectoryServer.getObjectClass("assemblade-property"), "assemblade-property");
+		objectClasses.put(DirectoryServer.getObjectClass("asb-property"), "asb-property");
 	}
 	
     private String name;
 	private String value;
 	private String description;
-
-//	public String getRootDn() {
-//        return parentDn;
-//	}
 
     @Override
     public String getRDN() {
@@ -57,13 +53,13 @@ public class Property extends AbstractStorable implements Serializable {
     }
 
     public String getSearchFilter() {
-		return "(objectClass=assemblade-property)";
+		return "(objectClass=asb-property)";
 	}
 	
 	public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
 
-        attributeNames.addAll(Arrays.asList("cn", "assemblade-value", "description", "aclRights"));
+        attributeNames.addAll(Arrays.asList("cn", "asb-value", "description", "aclRights"));
 
         return attributeNames;
 	}
@@ -76,7 +72,7 @@ public class Property extends AbstractStorable implements Serializable {
 		Map<AttributeType, List<Attribute>> attributeMap = new HashMap<AttributeType, List<Attribute>>();
 
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "assemblade-value", value);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-value", value);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
 		return attributeMap;
 	}
@@ -98,7 +94,7 @@ public class Property extends AbstractStorable implements Serializable {
     public List<Modification> getModifications(Entry currentEntry) {
         List<Modification> modifications = super.getModifications(currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
-        LdapUtils.createSingleEntryModification(modifications, currentEntry, "assemblade-value", value);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-value", value);
         return modifications;
     }
 
@@ -141,7 +137,7 @@ public class Property extends AbstractStorable implements Serializable {
             Property property = super.decorate(entry);
 
             property.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
-            property.value = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("assemblade-value"));
+            property.value = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-value"));
             property.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
 
             return property;

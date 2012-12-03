@@ -34,7 +34,7 @@ public class ViewMapper {
         this.folderMapper = folderMapper;
     }
 
-    public View toClient(com.assemblade.server.model.View serverView) {
+    public View toClient(com.assemblade.server.model.View serverView) throws StorageException {
         View clientView = new View();
 
         clientView.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/views/" + serverView.getId());
