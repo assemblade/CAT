@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,12 +45,8 @@ public class View extends AbstractFolder {
     public View() {
     }
 
-    public String getType() {
-        return "view";
-    }
-
     @Override
-    public boolean getIsFolder() {
+    public boolean canHaveChildren() {
         return false;
     }
 
@@ -110,7 +107,19 @@ public class View extends AbstractFolder {
     public boolean requiresUpdate(Entry currentEntry) {
         if (!super.requiresUpdate(currentEntry)) {
             View currentView = getDecorator().decorate(currentEntry);
-            return !CollectionUtils.isEqualCollection(folders, currentView.folders);
+            Iterator<Folder> newIterator = folders.iterator();
+            Iterator<Folder> currentIterator = currentView.folders.iterator();
+            while (newIterator.hasNext()) {
+                if (!currentIterator.hasNext()) {
+                    return true;
+                }
+                if (!newIterator.next().equals(currentIterator.next())) {
+                    return true;
+                }
+            }
+            if (currentIterator.hasNext()) {
+                return true;
+            }
         }
         return true;
     }

@@ -21,7 +21,7 @@ import com.assemblade.server.security.AuthenticationHolder;
 public class GroupMapper {
     public Group toClient(com.assemblade.server.model.Group serverGroup) {
         Group clientGroup = new Group();
-        clientGroup.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/" + serverGroup.getId());
+        clientGroup.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/id/" + serverGroup.getId());
         clientGroup.setId(serverGroup.getId());
         clientGroup.setName(serverGroup.getDisplayName());
         clientGroup.setDescription(serverGroup.getDescription());

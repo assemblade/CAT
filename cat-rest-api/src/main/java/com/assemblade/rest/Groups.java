@@ -7,8 +7,7 @@ import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.rest.mappers.GroupMapper;
 import com.assemblade.rest.mappers.GroupMemberMapper;
-import com.assemblade.server.model.UserNotInGroup;
-import com.assemblade.server.security.AuthenticationHolder;
+import com.assemblade.rest.mappers.UserMapper;
 import com.assemblade.server.users.GroupManager;
 
 import javax.ws.rs.Consumes;
@@ -29,11 +28,13 @@ public class Groups {
     private final GroupManager groupManager;
     private final GroupMapper groupMapper;
     private final GroupMemberMapper groupMemberMapper;
+    private final UserMapper userMapper;
 
-    public Groups(GroupManager groupManager, GroupMapper groupMapper, GroupMemberMapper groupMemberMapper) {
+    public Groups(GroupManager groupManager, GroupMapper groupMapper, GroupMemberMapper groupMemberMapper, UserMapper userMapper) {
         this.groupManager = groupManager;
         this.groupMapper = groupMapper;
         this.groupMemberMapper = groupMemberMapper;
+        this.userMapper = userMapper;
     }
 
     @GET
@@ -55,7 +56,7 @@ public class Groups {
     }
 
     @GET
-    @Path("{groupId}")
+    @Path("/id/{groupId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroup(@PathParam("groupId") String groupId) {
         try {
@@ -85,7 +86,7 @@ public class Groups {
     }
 
     @GET
-    @Path("{groupId}/members")
+    @Path("/id/{groupId}/members")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGroupMembers(@PathParam("groupId") String groupId) {
         List<GroupMember> members = new ArrayList<GroupMember>();
@@ -104,7 +105,7 @@ public class Groups {
     }
 
     @POST
-    @Path("{groupId}/members")
+    @Path("/id/{groupId}/members")
     @Produces(MediaType.APPLICATION_JSON)
     public Response addMemberToGroup(@PathParam("groupId") String groupId, GroupMember groupMember) {
         try {
@@ -119,7 +120,7 @@ public class Groups {
     }
 
     @PUT
-    @Path("{groupId}/members/{memberId}")
+    @Path("/id/{groupId}/members/id/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response editGroupMember(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId, GroupMember groupMember) {
         try {
@@ -134,7 +135,7 @@ public class Groups {
     }
 
     @DELETE
-    @Path("{groupId}/members/{memberId}")
+    @Path("/id/{groupId}/members/id/{memberId}")
     public Response removeMemberFromGroup(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId) {
         try {
             groupManager.removeMemberFromGroup(groupId, memberId);
@@ -149,13 +150,13 @@ public class Groups {
     }
 
     @GET
-    @Path("{groupId}/nonmembers")
+    @Path("/id/{groupId}/nonmembers")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsersNotInGroup(@PathParam("groupId") String groupId) {
+    public Response getNonGroupMembers(@PathParam("groupId") String groupId) {
         List<User> users = new ArrayList<User>();
         try {
-            for (com.assemblade.server.model.UserNotInGroup user : groupManager.getListOfUsersNotInGroup(groupId)) {
-                users.add(map(user));
+            for (com.assemblade.server.model.User user : groupManager.getListOfUsersNotInGroup(groupId)) {
+                users.add(userMapper.toClient(user));
             }
             return Response.ok(users).build();
         } catch (StorageException e) {
@@ -183,7 +184,7 @@ public class Groups {
     }
 
     @PUT
-    @Path("{groupId}")
+    @Path("/id/{groupId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateGroup(@PathParam("groupId") String groupId, Group group) {
@@ -199,7 +200,7 @@ public class Groups {
     }
 
     @DELETE
-    @Path("{groupId}")
+    @Path("/id/{groupId}")
     public Response deleteGroup(@PathParam("groupId") String groupId) {
         try {
             groupManager.deleteGroup(groupId);
@@ -211,15 +212,5 @@ public class Groups {
             }
         }
         return Response.noContent().build();
-    }
-
-    private User map(UserNotInGroup serverUser) {
-        User user = new User();
-
-        user.setUserId(serverUser.getUserId());
-        user.setFullName(serverUser.getFullName());
-        user.setEmailAddress(serverUser.getEmailAddress());
-
-        return user;
     }
 }

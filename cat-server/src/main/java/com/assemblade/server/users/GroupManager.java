@@ -19,11 +19,13 @@ import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.Group;
 import com.assemblade.server.model.GroupMember;
 import com.assemblade.server.model.User;
-import com.assemblade.server.model.UserNotInGroup;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 public class GroupManager {
+    private static final MessageFormat searchFilterFormat = new MessageFormat("(&(objectClass=inetOrgPerson)(!(isMemberOf={0})))");
+
     private final UserManager userManager;
 
 	public GroupManager(UserManager userManager) {
@@ -121,11 +123,10 @@ public class GroupManager {
 		return userManager.getUserSession().search(groupMember, User.ROOT, false).getEntries();
     }
     
-    public List<UserNotInGroup> getListOfUsersNotInGroup(String groupId) throws StorageException {
-        Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
-        UserNotInGroup userNotInGroup = new UserNotInGroup();
-        userNotInGroup.setGroupDn(group.getDn());
-        return userManager.getUserSession().search(userNotInGroup, User.ROOT, false).getEntries();
+    public List<User> getListOfUsersNotInGroup(String groupId) throws StorageException {
+        String groupDn = userManager.getUserSession().dnFromId(groupId);
+        String searchFilter = searchFilterFormat.format(new Object[] {groupDn});
+        return userManager.getUserSession().search(new User(), User.ROOT, searchFilter);
     }
 
     private Group createAdminGroup(Group group) {

@@ -37,7 +37,7 @@ public class ViewMapper {
     public View toClient(com.assemblade.server.model.View serverView) throws StorageException {
         View clientView = new View();
 
-        clientView.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/views/" + serverView.getId());
+        clientView.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/views/id/" + serverView.getId());
         clientView.setId(serverView.getId());
         clientView.setName(serverView.getName());
         clientView.setDescription(serverView.getDescription());

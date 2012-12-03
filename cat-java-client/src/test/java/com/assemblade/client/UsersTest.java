@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +38,10 @@ public class UsersTest extends AbstractApiTest {
         assertEquals("test", user.getUserId());
         assertEquals("Test User", user.getFullName());
         assertEquals("test@assemblade.com", user.getEmailAddress());
+        assertFalse(user.isGlobalAdministrator());
+        assertFalse(user.isGroupAdministrator());
+        assertTrue(user.isWritable());
+        assertTrue(user.isDeletable());
 
         List<User> userList = users.getUsers();
 
@@ -47,6 +52,25 @@ public class UsersTest extends AbstractApiTest {
         assertEquals("test", user.getUserId());
         assertEquals("Test User", user.getFullName());
         assertEquals("test@assemblade.com", user.getEmailAddress());
+        assertFalse(user.isGlobalAdministrator());
+        assertFalse(user.isGroupAdministrator());
+        assertTrue(user.isWritable());
+        assertTrue(user.isDeletable());
+    }
+
+    @Test
+    public void getUser() throws ClientException {
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+
+        user = users.getUser(user.getUrl());
+
+        assertEquals("test", user.getUserId());
+        assertEquals("Test User", user.getFullName());
+        assertEquals("test@assemblade.com", user.getEmailAddress());
+        assertFalse(user.isGlobalAdministrator());
+        assertFalse(user.isGroupAdministrator());
+        assertTrue(user.isWritable());
+        assertTrue(user.isDeletable());
     }
 
     @Test

@@ -46,12 +46,12 @@ public abstract class AbstractFolder extends AbstractStorable {
     protected String name;
     protected String description;
     protected String owner;
+    protected String template;
     protected List<Group> readGroups = new ArrayList<Group>();
     protected List<Group> writeGroups = new ArrayList<Group>();
     protected boolean inherit = true;
 
-    public abstract String getType();
-    public abstract boolean getIsFolder();
+    public abstract boolean canHaveChildren();
     public abstract String getPermissionsAttributes();
     public abstract String getRootPermissions();
 
@@ -75,10 +75,6 @@ public abstract class AbstractFolder extends AbstractStorable {
         this.description = description;
     }
 
-    public String getDisplayName() {
-        return Localiser.getInstance().translate(getName());
-    }
-
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
@@ -90,7 +86,7 @@ public abstract class AbstractFolder extends AbstractStorable {
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
 
-        attributeNames.addAll(Arrays.asList("cn", "description", "aclRights", "aci"));
+        attributeNames.addAll(Arrays.asList("cn", "description", "asb-template", "aclRights", "aci"));
 
         return attributeNames;
     }
@@ -100,6 +96,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-template", template);
 
         return attributeMap;
     }
@@ -115,6 +112,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
     public List<Modification> getModifications(Entry currentEntry) {
         List<Modification> modifications = super.getModifications(currentEntry);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-template", template);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
         LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", generatePermissionAcis());
         return modifications;
@@ -126,9 +124,20 @@ public abstract class AbstractFolder extends AbstractStorable {
 
     @Override
     public boolean requiresUpdate(Entry currentEntry) {
-        //TODO find a better way to this rather than instantiating a concrete class
         Folder currentFolder = new Folder().getDecorator().decorate(currentEntry);
-        return !StringUtils.equals(description, currentFolder.getDescription()) || (inherit != currentFolder.inherit) || !CollectionUtils.isEqualCollection(readGroups, currentFolder.readGroups) || !CollectionUtils.isEqualCollection(writeGroups, currentFolder.writeGroups);
+        return !StringUtils.equals(template, currentFolder.getTemplate())
+                || !StringUtils.equals(description, currentFolder.getDescription())
+                || (inherit != currentFolder.inherit)
+                || !CollectionUtils.isEqualCollection(readGroups, currentFolder.readGroups)
+                || !CollectionUtils.isEqualCollection(writeGroups, currentFolder.writeGroups);
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
     }
 
     public String getOwner() {
@@ -216,7 +225,7 @@ public abstract class AbstractFolder extends AbstractStorable {
     }
 
     private String getPermissionScope() {
-        return getIsFolder() ? "subtree" : "base";
+        return canHaveChildren() ? "subtree" : "base";
     }
 
     protected abstract class Decorator<T extends AbstractFolder> extends AbstractStorable.Decorator<T> {
@@ -226,6 +235,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
             folder.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             folder.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
+            folder.template = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-template"));
 
             Collection<String> acis = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("aci"));
 

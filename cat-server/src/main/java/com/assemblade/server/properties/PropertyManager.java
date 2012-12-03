@@ -39,7 +39,7 @@ public class PropertyManager {
 	}
 
     public Folder getFolder(String folderId) throws StorageException {
-        return userManager.getUserSession().getByEntryId(new Folder(), folderId);
+        return userManager.getUserSession().getByEntryDn(new Folder(), userManager.getUserSession().dnFromId(folderId));
     }
 	
 	public Folder updateFolder(Folder updatedFolder) throws StorageException {

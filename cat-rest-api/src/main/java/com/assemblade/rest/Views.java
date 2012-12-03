@@ -67,7 +67,37 @@ public class Views {
     }
 
     @GET
-    @Path("{viewId}/properties")
+    @Path("/id/{viewId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getView(@PathParam("viewId") String viewId) {
+        try {
+            return Response.ok(viewMapper.toClient(viewManager.getView(viewId))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("/name/{viewName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getViewByName(@PathParam("viewName") String viewName) {
+        try {
+            return Response.ok(viewMapper.toClient(viewManager.getViewByName(viewName))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("/id/{viewId}/properties")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProperties(@PathParam("viewId") String viewId) {
         List<Property> properties = new ArrayList<Property>();
@@ -101,7 +131,7 @@ public class Views {
     }
 
     @PUT
-    @Path("{viewId}")
+    @Path("/id/{viewId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editView(@PathParam("viewId") String viewId, View view) {
@@ -118,7 +148,7 @@ public class Views {
     }
 
     @DELETE
-    @Path("{viewId}")
+    @Path("/id/{viewId}")
     public Response deleteView(@PathParam("viewId") String viewId) {
         try {
             viewManager.deleteView(viewId);

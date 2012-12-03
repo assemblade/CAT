@@ -45,6 +45,17 @@ public class ViewManager {
         return userManager.getUserSession().search(new View(), userManager.getViewsDn(), false).getEntries();
     }
 
+    public View getView(String viewId) throws StorageException {
+        return userManager.getUserSession().getByEntryDn(new View(), userManager.getUserSession().dnFromId(viewId));
+    }
+
+    public View getViewByName(String viewName) throws StorageException {
+        View view = new View();
+        view.setName(viewName);
+        view.setParentDn(userManager.getViewsDn());
+        return userManager.getUserSession().get(view);
+    }
+
     public View updateView(View view) throws StorageException {
         userManager.getUserSession().update(view);
 

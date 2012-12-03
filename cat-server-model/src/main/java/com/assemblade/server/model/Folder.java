@@ -29,25 +29,6 @@ public class Folder extends AbstractFolder {
 	
 	public static final String FOLDER_ROOT = "cn=properties,dc=assemblade,dc=com";
 
-    public String getViewPoint() {
-        String dn = getDn();
-
-        String viewPoint = "";
-
-        int index = dn.indexOf(FOLDER_ROOT);
-
-        if (index > 0) {
-            dn = dn.substring(0, index - 1);
-
-            String[] rdns = dn.split(",");
-
-            for (String rdn : rdns) {
-                viewPoint = "/" + rdn.substring(rdn.indexOf("=") + 1) + viewPoint;
-            }
-        }
-        return viewPoint;
-    }
-
     @Override
     public String getSearchFilter() {
 		return "(objectClass=asb-folder)";
@@ -66,12 +47,7 @@ public class Folder extends AbstractFolder {
     }
 
     @Override
-    public String getType() {
-		return "propertyFolder";
-	}
-
-    @Override
-    public boolean getIsFolder() {
+    public boolean canHaveChildren() {
         return true;
     }
 

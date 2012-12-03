@@ -21,7 +21,7 @@ import com.assemblade.server.security.AuthenticationHolder;
 public class UserMapper {
     public User toClient(com.assemblade.server.model.User serverUser) {
         User clientUser = new User();
-        clientUser.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/users/" + serverUser.getId());
+        clientUser.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/users/id/" + serverUser.getId());
         clientUser.setId(serverUser.getId());
         clientUser.setUserId(serverUser.getUserId());
         clientUser.setFullName(serverUser.getFullName());

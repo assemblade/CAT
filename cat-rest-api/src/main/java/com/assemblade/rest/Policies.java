@@ -16,11 +16,10 @@
 package com.assemblade.rest;
 
 import com.assemblade.client.model.AuthenticationPolicy;
-import com.assemblade.client.model.LdapPassthroughPolicy;
-import com.assemblade.client.model.PasswordPolicy;
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.Configuration;
+import com.assemblade.rest.mappers.AuthenticationPolicyMapper;
 import com.assemblade.server.configuration.ConfigurationManager;
 
 import javax.ws.rs.Consumes;
@@ -40,9 +39,11 @@ import java.util.List;
 @Path("/policies")
 public class Policies {
     private final ConfigurationManager configurationManager;
+    private final AuthenticationPolicyMapper authenticationPolicyMapper;
 
-    public Policies(ConfigurationManager configurationManager) {
+    public Policies(ConfigurationManager configurationManager, AuthenticationPolicyMapper authenticationPolicyMapper) {
         this.configurationManager = configurationManager;
+        this.authenticationPolicyMapper = authenticationPolicyMapper;
     }
 
     @GET
@@ -51,10 +52,25 @@ public class Policies {
         List<AuthenticationPolicy> policies = new ArrayList<AuthenticationPolicy>();
         try {
             for (Configuration configuration : configurationManager.getAuthenticationPolicies()) {
-                policies.add(map(configuration));
+                policies.add(authenticationPolicyMapper.toClient(configuration));
             }
             GenericEntity<List<AuthenticationPolicy>> entity = new GenericEntity<List<AuthenticationPolicy>>(policies) {};
             return Response.ok(entity).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("/name/{policyName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAuthenticationPolicy(@PathParam("policyName") String policyName) {
+        try {
+            return Response.ok().entity(authenticationPolicyMapper.toClient(configurationManager.getAuthenticationPolicy(policyName))).build();
         } catch (StorageException e) {
             if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
@@ -69,8 +85,7 @@ public class Policies {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addAuthenticationPolicy(AuthenticationPolicy policy) {
         try {
-            configurationManager.addConfiguration(map(policy));
-            return Response.ok().entity(policy).build();
+            return Response.ok().entity(authenticationPolicyMapper.toClient(configurationManager.addConfiguration(authenticationPolicyMapper.toServer(policy)))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -81,12 +96,12 @@ public class Policies {
     }
 
     @PUT
+    @Path("/name/{policyName}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateAuthenticationPolicy(AuthenticationPolicy policy) {
+    public Response updateAuthenticationPolicy(@PathParam("policyName") String policyName, AuthenticationPolicy policy) {
         try {
-            policy = map(configurationManager.updateConfiguration(map(policy)));
-            return Response.ok().entity(policy).build();
+            return Response.ok().entity(authenticationPolicyMapper.toClient(configurationManager.updateConfiguration(authenticationPolicyMapper.toServer(policy)))).build();
         } catch (StorageException e) {
             if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
                 return Response.status(Response.Status.CONFLICT).build();
@@ -97,7 +112,7 @@ public class Policies {
     }
 
     @DELETE
-    @Path("{policyName}")
+    @Path("/name/{policyName}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteAuthenticationPolicy(@PathParam("policyName")String policyName) {
         try {
@@ -109,48 +124,6 @@ public class Policies {
             } else {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
-        }
-    }
-
-    private AuthenticationPolicy map(Configuration configuration) {
-        if (configuration instanceof com.assemblade.opendj.model.authentication.policy.PasswordPolicy) {
-            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = (com.assemblade.opendj.model.authentication.policy.PasswordPolicy)configuration;
-            PasswordPolicy passwordPolicy = new PasswordPolicy();
-            passwordPolicy.setName(serverPasswordPolicy.getName());
-            passwordPolicy.setForceChangeOnReset(serverPasswordPolicy.isForceChangeOnReset());
-            return passwordPolicy;
-        } else {
-            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = (com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy)configuration;
-            LdapPassthroughPolicy ldapPassthroughPolicy = new LdapPassthroughPolicy();
-            ldapPassthroughPolicy.setName(serverLdapPassthroughPolicy.getName());
-            ldapPassthroughPolicy.setPrimaryRemoteServer(serverLdapPassthroughPolicy.getPrimaryRemoteServer());
-            ldapPassthroughPolicy.setSecondaryRemoteServer(serverLdapPassthroughPolicy.getSecondaryRemoteServer());
-            ldapPassthroughPolicy.setSearchBase(serverLdapPassthroughPolicy.getSearchBase());
-            ldapPassthroughPolicy.setBindDn(serverLdapPassthroughPolicy.getBindDn());
-            ldapPassthroughPolicy.setBindPassword(serverLdapPassthroughPolicy.getBindPassword());
-            ldapPassthroughPolicy.setMappingAttribute(serverLdapPassthroughPolicy.getMappingAttribute());
-            return ldapPassthroughPolicy;
-        }
-    }
-
-    private Configuration map(AuthenticationPolicy authenticationPolicy) {
-        if (authenticationPolicy instanceof PasswordPolicy) {
-            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = new com.assemblade.opendj.model.authentication.policy.PasswordPolicy();
-            PasswordPolicy passwordPolicy = (PasswordPolicy)authenticationPolicy;
-            serverPasswordPolicy.setName(passwordPolicy.getName());
-            serverPasswordPolicy.setForceChangeOnReset(passwordPolicy.isForceChangeOnReset());
-            return serverPasswordPolicy;
-        } else {
-            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = new com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy();
-            LdapPassthroughPolicy ldapPassthroughPolicy = (LdapPassthroughPolicy)authenticationPolicy;
-            serverLdapPassthroughPolicy.setName(ldapPassthroughPolicy.getName());
-            serverLdapPassthroughPolicy.setPrimaryRemoteServer(ldapPassthroughPolicy.getPrimaryRemoteServer());
-            serverLdapPassthroughPolicy.setSecondaryRemoteServer(ldapPassthroughPolicy.getSecondaryRemoteServer());
-            serverLdapPassthroughPolicy.setSearchBase(ldapPassthroughPolicy.getSearchBase());
-            serverLdapPassthroughPolicy.setBindDn(ldapPassthroughPolicy.getBindDn());
-            serverLdapPassthroughPolicy.setBindPassword(ldapPassthroughPolicy.getBindPassword());
-            serverLdapPassthroughPolicy.setMappingAttribute(ldapPassthroughPolicy.getMappingAttribute());
-            return serverLdapPassthroughPolicy;
         }
     }
 }

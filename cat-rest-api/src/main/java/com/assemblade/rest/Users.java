@@ -48,6 +48,21 @@ public class Users {
     }
 
     @GET
+    @Path("/id/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUser(@PathParam("userId") String userId) {
+        try {
+            return Response.ok(userMapper.toClient(userManager.getUser(userId))).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
     @Path("/current")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAuthenticatedUser() {
@@ -70,7 +85,7 @@ public class Users {
     }
 
     @PUT
-    @Path("{userId}")
+    @Path("/id/{userId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editUser(@PathParam("userId") String userId, User user) {
@@ -87,7 +102,7 @@ public class Users {
     }
 
     @DELETE
-    @Path("{userId}")
+    @Path("/id/{userId}")
     public Response deleteUser(@PathParam("userId") String userId) {
         try {
             userManager.deleteUser(userId);

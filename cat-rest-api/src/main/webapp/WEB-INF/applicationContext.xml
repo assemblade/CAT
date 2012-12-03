@@ -66,6 +66,8 @@
 
     <bean id="userMapper" class="com.assemblade.rest.mappers.UserMapper"/>
 
+    <bean id="authenticationPolicyMapper" class="com.assemblade.rest.mappers.AuthenticationPolicyMapper"/>
+
     <bean id="groupMemberMapper" class="com.assemblade.rest.mappers.GroupMemberMapper">
         <constructor-arg ref="groupMapper"/>
     </bean>
@@ -99,6 +101,7 @@
 
     <bean id="policies" class="com.assemblade.rest.Policies">
         <constructor-arg ref="configurationManager"/>
+        <constructor-arg ref="authenticationPolicyMapper"/>
     </bean>
 
     <bean id="users" class="com.assemblade.rest.Users">
@@ -110,6 +113,7 @@
         <constructor-arg ref="groupManager"/>
         <constructor-arg ref="groupMapper"/>
         <constructor-arg ref="groupMemberMapper"/>
+        <constructor-arg ref="userMapper"/>
     </bean>
 
     <bean id="views" class="com.assemblade.rest.Views">

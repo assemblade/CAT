@@ -16,8 +16,12 @@
 package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
+import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Property;
 import com.assemblade.client.model.View;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.codehaus.jackson.type.TypeReference;
 
 import java.util.List;
@@ -27,12 +31,24 @@ public class Views extends AbstractClient {
         super(authentication);
     }
 
+    public View getView(String url) throws ClientException {
+        return getFromUrl(url, new TypeReference<View>() {});
+    }
+
+    public View getViewByName(String name) throws ClientException {
+        try {
+            return get("/views/name/" + URIUtil.encode(name, URI.allowed_fragment), new TypeReference<View>() {});
+        } catch (URIException e) {
+            throw new CallFailedException("Failed to encode request path", e);
+        }
+    }
+
     public List<View> getViews() throws ClientException {
         return get("/views", new TypeReference<List<View>>(){});
     }
 
     public List<Property> getProperties(View view) throws ClientException {
-        return get("/views/" + view.getId() + "/properties", new TypeReference<List<Property>>() {});
+        return get("/views/id/" + view.getId() + "/properties", new TypeReference<List<Property>>() {});
     }
 
     public View addView(View view) throws ClientException {
@@ -40,11 +56,11 @@ public class Views extends AbstractClient {
     }
 
     public View updateView(View view) throws ClientException {
-        return update("/views/" + view.getId(), view, new TypeReference<View>() {});
+        return update("/views/id/" + view.getId(), view, new TypeReference<View>() {});
     }
 
     public void deleteView(View view) throws ClientException {
-        delete("/views/" + view.getId());
+        delete("/views/id/" + view.getId());
     }
 
 }

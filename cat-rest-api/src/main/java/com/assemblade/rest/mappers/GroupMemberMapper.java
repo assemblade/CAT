@@ -28,7 +28,7 @@ public class GroupMemberMapper {
 
     public GroupMember toClient(com.assemblade.server.model.GroupMember serverGroupMember) {
         GroupMember clientGroupMember = new GroupMember();
-        clientGroupMember.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/" + serverGroupMember.getGroup().getId() + "/members/" + serverGroupMember.getId());
+        clientGroupMember.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/id/" + serverGroupMember.getGroup().getId() + "/members/id/" + serverGroupMember.getId());
         clientGroupMember.setId(serverGroupMember.getId());
         clientGroupMember.setGroup(groupMapper.toClient(serverGroupMember.getGroup()));
         clientGroupMember.setUserId(serverGroupMember.getUserId());

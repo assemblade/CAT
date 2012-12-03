@@ -26,7 +26,7 @@ import java.util.Map;
 public abstract class AuthenticationPolicy extends AbstractConfiguration {
     private static final long serialVersionUID = 1L;
 
-    private static final String ROOT_DN = "cn=Password Policies,cn=config";
+    public static final String ROOT = "cn=Password Policies,cn=config";
 
     public AuthenticationPolicy() {
         super();
@@ -38,7 +38,7 @@ public abstract class AuthenticationPolicy extends AbstractConfiguration {
 
     @Override
     public String getRootDn() {
-        return ROOT_DN;
+        return ROOT;
     }
 
     @Override

@@ -17,6 +17,8 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.Group;
+import com.assemblade.client.model.GroupMember;
+import com.assemblade.client.model.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,6 +130,18 @@ public class GroupsTest extends AbstractApiTest {
 
         assertEquals("changed description", updatedGroup.getDescription());
     }
+
+    @Test
+    public void deleteGroupTest() throws ClientException {
+        Group group = groups.addGroup(createGroup("group1", "group1 description"));
+
+        groups.deleteGroup(group);
+
+        List<Group> groupList = groups.getAllGroups();
+
+        assertFalse(groupList.contains(group));
+    }
+
 
 
 

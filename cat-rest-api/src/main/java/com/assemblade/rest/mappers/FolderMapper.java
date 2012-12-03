@@ -21,7 +21,6 @@ import com.assemblade.opendj.StorageException;
 import com.assemblade.server.properties.PropertyManager;
 import com.assemblade.server.security.AuthenticationHolder;
 import com.assemblade.server.users.UserManager;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +38,11 @@ public class FolderMapper {
 
     public Folder toClient(com.assemblade.server.model.Folder serverFolder) throws StorageException {
         Folder clientFolder = new Folder();
-        clientFolder.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/folders/" + serverFolder.getId());
+        clientFolder.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/folders/id/" + serverFolder.getId());
         clientFolder.setId(serverFolder.getId());
         clientFolder.setName(serverFolder.getName());
         clientFolder.setDescription(serverFolder.getDescription());
+        clientFolder.setTemplate(serverFolder.getTemplate());
         if (!userManager.getUserSession().dnFromId(serverFolder.getParentId()).equals(com.assemblade.server.model.Folder.FOLDER_ROOT)) {
             clientFolder.setParent(toClient(propertyManager.getFolder(serverFolder.getParentId())));
         }
@@ -66,28 +66,30 @@ public class FolderMapper {
         return clientFolder;
     }
 
-    public com.assemblade.server.model.Folder toServer(Folder folder) throws StorageException {
-        com.assemblade.server.model.Folder mappedFolder = new com.assemblade.server.model.Folder();
-        if (folder.getParent() == null) {
-            mappedFolder.setParentDn(com.assemblade.server.model.Folder.FOLDER_ROOT);
+    public com.assemblade.server.model.Folder toServer(Folder clientFolder) throws StorageException {
+        com.assemblade.server.model.Folder serverFolder = new com.assemblade.server.model.Folder();
+        if (clientFolder.getParent() == null) {
+            serverFolder.setParentDn(com.assemblade.server.model.Folder.FOLDER_ROOT);
         } else {
-            mappedFolder.setParentDn(userManager.getUserSession().dnFromId(folder.getParent().getId()));
+            serverFolder.setParentDn(userManager.getUserSession().dnFromId(clientFolder.getParent().getId()));
         }
-        mappedFolder.setParentId(folder.getParent() == null ? null : folder.getParent().getId());
-        mappedFolder.setId(folder.getId());
-        mappedFolder.setName(folder.getName());
-        mappedFolder.setDescription(folder.getDescription());
-        if (folder.getReadGroups() != null) {
-            for (Group readGroup : folder.getReadGroups()) {
-                mappedFolder.getReadGroups().add(groupMapper.toServer(readGroup));
+        serverFolder.setParentId(clientFolder.getParent() == null ? null : clientFolder.getParent().getId());
+        serverFolder.setId(clientFolder.getId());
+        serverFolder.setName(clientFolder.getName());
+        serverFolder.setDescription(clientFolder.getDescription());
+        serverFolder.setTemplate(clientFolder.getTemplate());
+
+        if (clientFolder.getReadGroups() != null) {
+            for (Group readGroup : clientFolder.getReadGroups()) {
+                serverFolder.getReadGroups().add(groupMapper.toServer(readGroup));
             }
         }
-        if (folder.getWriteGroups() != null) {
-            for (Group writeGroup : folder.getWriteGroups()) {
-                mappedFolder.getWriteGroups().add(groupMapper.toServer(writeGroup));
+        if (clientFolder.getWriteGroups() != null) {
+            for (Group writeGroup : clientFolder.getWriteGroups()) {
+                serverFolder.getWriteGroups().add(groupMapper.toServer(writeGroup));
             }
         }
-        return mappedFolder;
+        return serverFolder;
     }
 
 

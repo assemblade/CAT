@@ -341,6 +341,34 @@ public class Session {
         return null;
     }
 
+    public Configuration getConfigurationByDn(String dn) throws StorageException {
+        final List<Configuration> result = new ArrayList<Configuration>();
+        try {
+            List<Control> controls = new ArrayList<Control>();
+            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
+            attributeSet.addAll(Arrays.asList("+", "*"));
+            InternalSearchOperation searchResult = connection.processSearch(dn, SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
+                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
+                    ConfigurationDecorator decorator = AbstractConfiguration.getDecorator(searchEntry);
+                    if (decorator != null) {
+                        result.add(decorator.decorate(searchEntry));
+                    }
+                }
+
+                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
+                }
+            });
+            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
+                if (result.size() > 0) {
+                    return result.get(0);
+                }
+            }
+        } catch (DirectoryException e) {
+            log.warn("Exception thrown getting entry [" + dn + "]", e);
+        }
+        return null;
+    }
+
     public List<Configuration> getConfigurationItems(String filter) throws StorageException {
         final List<Configuration> result = new ArrayList<Configuration>();
 

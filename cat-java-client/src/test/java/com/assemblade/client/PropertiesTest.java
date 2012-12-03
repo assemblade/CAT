@@ -26,18 +26,14 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PropertiesTest extends AbstractApiTest {
-    private Folders folders;
-    private Properties test;
     private Folder folder;
 
     @Before
     public void setup() throws Exception {
-        Authentication authentication  = login.login("admin", "password");
-        folders = new Folders(authentication);
-        test = new Properties(authentication);
-        folder = folders.addRootFolder(createFolder("folder", "description"));
+        folder = folders.addRootFolder(createFolder("folder", "description", "properties"));
     }
 
     @After
@@ -50,7 +46,7 @@ public class PropertiesTest extends AbstractApiTest {
     @Test
     public void addPropertyTest() throws ClientException {
         Property property = createProperty(folder, "property1", "property1 description", "value1");
-        property = test.addProperty(property);
+        property = properties.addProperty(property);
 
         assertNotNull(property);
         assertNotNull(property.getId());
@@ -58,89 +54,126 @@ public class PropertiesTest extends AbstractApiTest {
         assertEquals("property1 description", property.getDescription());
         assertEquals("value1", property.getValue());
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals(1, properties.size());
-        assertNotNull(properties.get(0).getId());
-        assertEquals("property1", properties.get(0).getName());
-        assertEquals("property1 description", properties.get(0).getDescription());
-        assertEquals("value1", properties.get(0).getValue());
+        assertEquals(1, propertyList.size());
+        assertTrue(propertyList.contains(property));
+
+        property = propertyList.get(propertyList.indexOf(property));
+
+        assertNotNull(property);
+        assertNotNull(property.getId());
+        assertEquals("property1", property.getName());
+        assertEquals("property1 description", property.getDescription());
+        assertEquals("value1", property.getValue());
+    }
+
+    @Test
+    public void getPropertyTest() throws ClientException {
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+
+        property = properties.getProperty(property.getUrl());
+
+        assertNotNull(property);
+        assertNotNull(property.getId());
+        assertEquals("property1", property.getName());
+        assertEquals("property1 description", property.getDescription());
+        assertEquals("value1", property.getValue());
     }
 
     @Test
     public void getPropertiesTest() throws ClientException {
-        test.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+        properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals(1, properties.size());
+        assertEquals(1, propertyList.size());
     }
 
     @Test
     public void updatePropertyTest_rename() throws ClientException {
-        Property property = test.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
 
         property.setName("property2");
 
-        Property updatedProperty = test.updateProperty(property);
+        property = properties.updateProperty(property);
 
-        assertEquals("property2", updatedProperty.getName());
+        assertEquals("property2", property.getName());
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals("property2", properties.get(0).getName());
+        property = propertyList.get(propertyList.indexOf(property));
+
+        assertEquals("property2", property.getName());
     }
 
     @Test
     public void updatePropertyTest_move() throws ClientException {
-        Property property = test.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
 
-        Folder newFolder = folders.addRootFolder(createFolder("folder2", "folder 2 description"));
+        Folder newFolder = folders.addRootFolder(createFolder("folder2", "folder 2 description", "properties"));
 
         property.setFolder(newFolder);
 
-        Property updatedProperty = test.updateProperty(property);
+        property = properties.updateProperty(property);
 
-        assertEquals("folder2", updatedProperty.getFolder().getName());
+        assertEquals("folder2", property.getFolder().getName());
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals(0, properties.size());
+        assertEquals(0, propertyList.size());
 
-        properties = test.getProperties(newFolder);
+        propertyList = properties.getProperties(newFolder);
 
-        assertEquals(1, properties.size());
+        assertEquals(1, propertyList.size());
 
-        assertEquals("folder2", properties.get(0).getFolder().getName());
+        property = propertyList.get(propertyList.indexOf(property));
+
+        assertEquals("folder2", property.getFolder().getName());
     }
 
     @Test
     public void updatePropertyTest_changeDescription() throws ClientException {
-        Property property = test.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
 
         property.setDescription("changed description");
 
-        Property updatedProperty = test.updateProperty(property);
+        Property updatedProperty = properties.updateProperty(property);
 
         assertEquals("changed description", updatedProperty.getDescription());
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals("changed description", properties.get(0).getDescription());
+        property = propertyList.get(propertyList.indexOf(property));
+
+        assertEquals("changed description", property.getDescription());
     }
 
     @Test
     public void updatePropertyTest_changeValue() throws ClientException {
-        Property property = test.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
 
         property.setValue("new value");
 
-        Property updatedProperty = test.updateProperty(property);
+        Property updatedProperty = properties.updateProperty(property);
 
         assertEquals("new value", updatedProperty.getValue());
 
-        List<Property> properties = test.getProperties(folder);
+        List<Property> propertyList = properties.getProperties(folder);
 
-        assertEquals("new value", properties.get(0).getValue());
+        property = propertyList.get(propertyList.indexOf(property));
+
+        assertEquals("new value", property.getValue());
+    }
+
+    @Test
+    public void deletePropertyTest() throws ClientException {
+        Property property = properties.addProperty(createProperty(folder, "property1", "property1 description", "value1"));
+
+        properties.deleteProperty(property);
+
+        List<Property> propertyList = properties.getProperties(folder);
+
+        assertEquals(0, propertyList.size());
     }
 }

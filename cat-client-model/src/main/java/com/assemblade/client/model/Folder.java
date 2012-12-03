@@ -54,6 +54,14 @@ public class Folder {
         this.description = description;
     }
 
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
     public String getId() {
         return id;
     }

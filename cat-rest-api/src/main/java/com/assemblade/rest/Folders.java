@@ -67,7 +67,7 @@ public class Folders {
     }
 
     @GET
-    @Path("{folderId}")
+    @Path("/id/{folderId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFolder(@PathParam("folderId") String folderId) {
         try {
@@ -82,7 +82,7 @@ public class Folders {
     }
 
     @GET
-    @Path("{folderId}/folders")
+    @Path("/id/{folderId}/folders")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getChildFolders(@PathParam("folderId") String folderId) {
         try {
@@ -101,7 +101,7 @@ public class Folders {
     }
 
     @GET
-    @Path("{folderId}/properties")
+    @Path("/id/{folderId}/properties")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProperties(@PathParam("folderId") String folderId) {
         try {
@@ -110,6 +110,21 @@ public class Folders {
                 properties.add(propertyMapper.toClient(property));
             }
             return Response.ok(properties).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("/id/{folderId}/properties/id/{propertyId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProperty(@PathParam("folderId") String folderId, @PathParam("propertyId") String propertyId) {
+        try {
+            return Response.ok(propertyMapper.toClient(propertyManager.getProperty(propertyId))).build();
         } catch (StorageException e) {
             if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
@@ -136,7 +151,7 @@ public class Folders {
     }
 
     @POST
-    @Path("{parentId}")
+    @Path("/id/{parentId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addChildFolder(@PathParam("parentId") String parentId, Folder folder) {
@@ -156,7 +171,7 @@ public class Folders {
     }
 
     @POST
-    @Path("{folderId}/properties")
+    @Path("/id/{folderId}/properties")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addProperty(@PathParam("folderId") String folderId, Property property) {
@@ -176,7 +191,7 @@ public class Folders {
     }
 
     @PUT
-    @Path("{folderId}")
+    @Path("/id/{folderId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editFolder(@PathParam("folderId") String folderId, Folder folder) {
@@ -194,7 +209,7 @@ public class Folders {
     }
 
     @PUT
-    @Path("{folderId}/properties/{propertyId}")
+    @Path("/id/{folderId}/properties/id/{propertyId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response editProperty(@PathParam("folderId") String folderId, @PathParam("propertyId") String propertyId, Property property) {
@@ -212,7 +227,7 @@ public class Folders {
     }
 
     @DELETE
-    @Path("{folderId}")
+    @Path("/id/{folderId}")
     public Response deleteFolder(@PathParam("folderId") String folderId) {
         try {
             propertyManager.deleteFolder(folderId);
@@ -227,7 +242,7 @@ public class Folders {
     }
 
     @DELETE
-    @Path("{folderId}/properties/{propertyId}")
+    @Path("/id/{folderId}/properties/id/{propertyId}")
     public Response deleteProperty(@PathParam("folderId") String folderId, @PathParam("propertyId") String propertyId) {
         try {
             propertyManager.deleteProperty(propertyId);

@@ -17,6 +17,7 @@ package com.assemblade.server.configuration;
 
 import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.Configuration;
+import com.assemblade.opendj.model.authentication.policy.AuthenticationPolicy;
 import com.assemblade.server.users.UserManager;
 
 import java.util.List;
@@ -33,8 +34,13 @@ public class ConfigurationManager {
         return  userManager.getUserSession().getConfigurationItems("(objectClass=ds-cfg-authentication-policy)");
     }
 
-    public void addConfiguration(Configuration configuration) throws StorageException {
+    public Configuration getAuthenticationPolicy(String name) throws StorageException {
+        return userManager.getUserSession().getConfigurationByDn("cn=" + name + "," + AuthenticationPolicy.ROOT);
+    }
+
+    public Configuration addConfiguration(Configuration configuration) throws StorageException {
         userManager.getUserSession().add(configuration);
+        return userManager.getUserSession().get(configuration);
     }
 
     public Configuration updateConfiguration(Configuration configuration) throws StorageException {

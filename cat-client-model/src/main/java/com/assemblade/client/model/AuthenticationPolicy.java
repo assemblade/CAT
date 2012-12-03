@@ -20,10 +20,19 @@ import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.MINIMAL_CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class AuthenticationPolicy {
+    private String url;
     private String name;
 
     @JsonIgnore
     public abstract String getType();
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public String getName() {
         return name;

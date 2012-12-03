@@ -27,19 +27,23 @@ public class Properties extends AbstractClient {
         super(authentication);
     }
 
+    public Property getProperty(String url) throws ClientException {
+        return getFromUrl(url, new TypeReference<Property>() {});
+    }
+
     public List<Property> getProperties(Folder folder) throws ClientException {
-        return get("/folders/" + folder.getId() + "/properties", new TypeReference<List<Property>>() {});
+        return get("/folders/id/" + folder.getId() + "/properties", new TypeReference<List<Property>>() {});
     }
 
     public Property addProperty(Property property) throws ClientException {
-        return add("/folders/" + property.getFolder().getId() + "/properties", property, new TypeReference<Property>() {});
+        return add("/folders/id/" + property.getFolder().getId() + "/properties", property, new TypeReference<Property>() {});
     }
 
     public Property updateProperty(Property property) throws ClientException {
-        return update("/folders/" + property.getFolder().getId() + "/properties/" + property.getId(), property, new TypeReference<Property>() {});
+        return update("/folders/id/" + property.getFolder().getId() + "/properties/id/" + property.getId(), property, new TypeReference<Property>() {});
     }
 
     public void deleteProperty(Property property) throws ClientException {
-        delete("/folders/" + property.getFolder().getId() + "/properties/" + property.getId());
+        delete("/folders/id/" + property.getFolder().getId() + "/properties/id/" + property.getId());
     }
 }

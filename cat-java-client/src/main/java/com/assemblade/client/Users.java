@@ -36,6 +36,10 @@ public class Users extends AbstractClient {
         super(authentication);
     }
 
+    public User getUser(String url) throws ClientException {
+        return getFromUrl(url, new TypeReference<User>() {});
+    }
+
     public List<User> getUsers() throws ClientException {
         return get("/users", new TypeReference<List<User>>(){});
     }
@@ -49,10 +53,10 @@ public class Users extends AbstractClient {
     }
 
     public User updateUser(User user) throws ClientException {
-        return update("/users/" + user.getId(), user, new TypeReference<User>() {});
+        return update("/users/id/" + user.getId(), user, new TypeReference<User>() {});
     }
 
     public void deleteUser(User user) throws ClientException {
-        delete("/users/" + user.getId());
+        delete("/users/id/" + user.getId());
     }
 }

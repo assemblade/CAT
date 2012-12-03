@@ -70,7 +70,6 @@ public class FolderTest extends AbstractUserManagementTest {
         assertEquals(folder.getName(), result.getName());
         assertEquals(folder.getDescription(), result.getDescription());
         assertEquals(folder.isInherit(), result.isInherit());
-        assertEquals(folder.getViewPoint(), result.getViewPoint());
     }
 
     @Test
@@ -85,7 +84,6 @@ public class FolderTest extends AbstractUserManagementTest {
         assertEquals(folder.getName(), result.getName());
         assertEquals(folder.getDescription(), result.getDescription());
         assertEquals(folder.isInherit(), result.isInherit());
-        assertEquals(folder.getViewPoint(), result.getViewPoint());
 
         assertEquals(2, result.getReadGroups().size());
         assertTrue(result.getReadGroups().contains(group1));
@@ -197,29 +195,6 @@ public class FolderTest extends AbstractUserManagementTest {
         assertNull(folder.getOwner());
         assertEquals(0, folder.getReadGroups().size());
         assertEquals(0, folder.getWriteGroups().size());
-    }
-
-    @Test
-    public void folderCorrectlyStoresAndReturnsViewPoints() throws Exception {
-        Folder folder1 = createFolder("folder1", "folder1 description", root);
-
-        assertEquals("/folder1", folder1.getViewPoint());
-
-        userManager.getUserSession().add(folder1);
-
-        folder1 = userManager.getUserSession().get(folder1);
-
-        assertEquals("/folder1", folder1.getViewPoint());
-
-        Folder folder2 = createFolder("folder2", "folder2 description", folder1);
-
-        assertEquals("/folder1/folder2", folder2.getViewPoint());
-
-        userManager.getUserSession().add(folder2);
-
-        folder2 = userManager.getUserSession().get(folder2);
-
-        assertEquals("/folder1/folder2", folder2.getViewPoint());
     }
 
     private Folder createFolder(String name, String description, AbstractFolder parent) {

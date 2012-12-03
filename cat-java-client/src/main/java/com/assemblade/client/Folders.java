@@ -35,7 +35,7 @@ public class Folders extends AbstractClient {
     }
 
     public List<Folder> getChildFolders(Folder parent) throws ClientException {
-        return get("/folders/" + parent.getId() + "/folders", new TypeReference<List<Folder>>() {});
+        return get("/folders/id/" + parent.getId() + "/folders", new TypeReference<List<Folder>>() {});
     }
 
     public Folder addRootFolder(Folder folder) throws ClientException {
@@ -43,14 +43,14 @@ public class Folders extends AbstractClient {
     }
 
     public Folder addChildFolder(Folder parent, Folder folder) throws ClientException {
-        return add("/folders/" + parent.getId(), folder, new TypeReference<Folder>() {});
+        return add("/folders/id/" + parent.getId(), folder, new TypeReference<Folder>() {});
     }
 
     public Folder updateFolder(Folder folder) throws ClientException {
-        return update("/folders/" + folder.getId(), folder, new TypeReference<Folder>() {});
+        return update("/folders/id/" + folder.getId(), folder, new TypeReference<Folder>() {});
     }
 
     public void deleteFolder(Folder folder) throws ClientException {
-        delete("/folders/" + folder.getId());
+        delete("/folders/id/" + folder.getId());
     }
 }

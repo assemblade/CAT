@@ -15,10 +15,7 @@
  */
 package com.assemblade.client;
 
-import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.Folder;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -26,33 +23,63 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class FoldersTest extends AbstractApiTest {
     @Test
     public void addRootFolderTest() throws ClientException {
-        Folder folder = createFolder("folder1", "folder1 description");
+        Folder folder = createFolder("folder1", "folder1 description", "properties");
         folder = folders.addRootFolder(folder);
 
         assertNotNull(folder);
         assertNotNull(folder.getId());
+        assertNull(folder.getParent());
+        assertEquals("folder1", folder.getName());
+        assertEquals("folder1 description", folder.getDescription());
+        assertEquals("properties", folder.getTemplate());
+        assertTrue(folder.isAddable());
+        assertTrue(folder.isWritable());
+        assertTrue(folder.isDeletable());
 
-        assertEquals(1, folders.getRootFolders().size());
+        List<Folder> folderList = folders.getRootFolders();
+
+        assertEquals(1, folderList.size());
+
+        assertTrue(folderList.contains(folder));
+
+        folder = folderList.get(folderList.indexOf(folder));
+
+        assertNotNull(folder);
+        assertNotNull(folder.getId());
+        assertNull(folder.getParent());
+        assertEquals("folder1", folder.getName());
+        assertEquals("folder1 description", folder.getDescription());
+        assertEquals("properties", folder.getTemplate());
+        assertTrue(folder.isAddable());
+        assertTrue(folder.isWritable());
+        assertTrue(folder.isDeletable());
     }
 
     @Test
     public void getFolderTest() throws ClientException {
-        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
         folder = folders.getFolder(folder.getUrl());
 
+        assertNotNull(folder);
+        assertNotNull(folder.getId());
+        assertNull(folder.getParent());
         assertEquals("folder1", folder.getName());
         assertEquals("folder1 description", folder.getDescription());
-        assertNull(folder.getParent());
+        assertEquals("properties", folder.getTemplate());
+        assertTrue(folder.isAddable());
+        assertTrue(folder.isWritable());
+        assertTrue(folder.isDeletable());
     }
 
     @Test
     public void getRootFoldersTest() throws ClientException {
-        folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
         List<Folder> folders = this.folders.getRootFolders();
 
@@ -61,33 +88,52 @@ public class FoldersTest extends AbstractApiTest {
 
     @Test
     public void addChildFolderTest() throws ClientException {
-        Folder rootFolder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder rootFolder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
-        Folder childFolder = folders.addChildFolder(rootFolder, createFolder("folder2", "folder2 description"));
+        Folder childFolder = folders.addChildFolder(rootFolder, createFolder("folder2", "folder2 description", "properties"));
 
         assertNotNull(childFolder);
         assertEquals(rootFolder.getId(), childFolder.getParent().getId());
+        assertEquals("folder2", childFolder.getName());
+        assertEquals("folder2 description", childFolder.getDescription());
+        assertEquals("properties", childFolder.getTemplate());
+        assertTrue(childFolder.isAddable());
+        assertTrue(childFolder.isWritable());
+        assertTrue(childFolder.isDeletable());
 
-        assertEquals(1, folders.getChildFolders(rootFolder).size());
+        List<Folder> folderList = folders.getChildFolders(rootFolder);
+
+        assertEquals(1, folderList.size());
+
+        assertTrue(folderList.contains(childFolder));
+
+        childFolder = folderList.get(folderList.indexOf(childFolder));
+
+        assertEquals(rootFolder.getId(), childFolder.getParent().getId());
+        assertEquals("folder2", childFolder.getName());
+        assertEquals("folder2 description", childFolder.getDescription());
+        assertEquals("properties", childFolder.getTemplate());
+        assertTrue(childFolder.isAddable());
+        assertTrue(childFolder.isWritable());
+        assertTrue(childFolder.isDeletable());
     }
 
     @Test
     public void getChildFoldersTest() throws ClientException {
-        Folder rootFolder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder rootFolder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
-        Folder childFolder = folders.addChildFolder(rootFolder, createFolder("folder2", "folder2 description"));
+        Folder childFolder = folders.addChildFolder(rootFolder, createFolder("folder2", "folder2 description", "properties"));
 
         List<Folder> childFolders = folders.getChildFolders(rootFolder);
 
         assertEquals(1, childFolders.size());
-        assertEquals(childFolder.getId(), childFolders.get(0).getId());
-        assertEquals(childFolder.getName(), childFolders.get(0).getName());
-        assertEquals(childFolder.getDescription(), childFolders.get(0).getDescription());
+
+        assertTrue(childFolders.contains(childFolder));
     }
 
     @Test
     public void updateFolderTest_rename() throws ClientException {
-        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
         folder.setName("folder2");
 
@@ -96,15 +142,16 @@ public class FoldersTest extends AbstractApiTest {
         assertEquals(folder.getId(), updatedFolder.getId());
         assertEquals("folder2", updatedFolder.getName());
 
-        List<Folder> folders = this.folders.getRootFolders();
+        List<Folder> folderList = this.folders.getRootFolders();
 
-        assertEquals(1, folders.size());
-        assertEquals("folder2", folders.get(0).getName());
+        folder = folderList.get(folderList.indexOf(folder));
+
+        assertEquals("folder2", folder.getName());
     }
 
     @Test
     public void updateFolderTest_changeDescription() throws Exception {
-        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
         folder.setDescription("changed description");
 
@@ -113,15 +160,16 @@ public class FoldersTest extends AbstractApiTest {
         assertEquals(folder.getId(), updatedFolder.getId());
         assertEquals("changed description", updatedFolder.getDescription());
 
-        List<Folder> folders = this.folders.getRootFolders();
+        List<Folder> folderList = this.folders.getRootFolders();
 
-        assertEquals(1, folders.size());
-        assertEquals("changed description", folders.get(0).getDescription());
+        folder = folderList.get(folderList.indexOf(folder));
+
+        assertEquals("changed description", folder.getDescription());
     }
 
     @Test
     public void deleteFolderTest() throws ClientException {
-        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description"));
+        Folder folder = folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 
         assertEquals(1, folders.getRootFolders().size());
 

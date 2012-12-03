@@ -47,7 +47,7 @@ public class Policies extends AbstractClient {
 
     public AuthenticationPolicy updateAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
         try {
-            return add("/policies/" + URIUtil.encode(policy.getName(), URI.allowed_fragment), policy, new TypeReference<AuthenticationPolicy>() {});
+            return add("/policies/name/" + URIUtil.encode(policy.getName(), URI.allowed_fragment), policy, new TypeReference<AuthenticationPolicy>() {});
         } catch (URIException e) {
             throw new CallFailedException("Failed to encode request path", e);
         }
@@ -55,7 +55,7 @@ public class Policies extends AbstractClient {
 
     public void deleteAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
         try {
-            delete("/policies/" + URIUtil.encode(policy.getName(), URI.allowed_fragment));
+            delete("/policies/name/" + URIUtil.encode(policy.getName(), URI.allowed_fragment));
         } catch (URIException e) {
             throw new CallFailedException("Failed to encode request path", e);
         }

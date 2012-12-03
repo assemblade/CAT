@@ -109,10 +109,11 @@ public class AbstractApiTest {
         return groupMember;
     }
 
-    protected Folder createFolder(String name, String description) {
+    protected Folder createFolder(String name, String description, String template) {
         Folder folder = new Folder();
         folder.setName(name);
         folder.setDescription(description);
+        folder.setTemplate(template);
 
         return folder;
     }

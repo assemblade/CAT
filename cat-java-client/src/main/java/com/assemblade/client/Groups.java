@@ -41,23 +41,23 @@ public class Groups extends AbstractClient {
     }
 
     public List<GroupMember> getGroupMembers(Group group) throws ClientException {
-        return get("/groups/" + group.getId() + "/members", new TypeReference<List<GroupMember>>() {});
+        return get("/groups/id/" + group.getId() + "/members", new TypeReference<List<GroupMember>>() {});
     }
 
     public GroupMember addMemberToGroup(GroupMember groupMember) throws ClientException {
-        return add("/groups/" + groupMember.getGroup().getId() + "/members", groupMember, new TypeReference<GroupMember>() {});
+        return add("/groups/id/" + groupMember.getGroup().getId() + "/members", groupMember, new TypeReference<GroupMember>() {});
     }
 
     public GroupMember editGroupMember(GroupMember groupMember) throws ClientException {
-        return update("/groups/" + groupMember.getGroup().getId() + "/members/" + groupMember.getId(), groupMember, new TypeReference<GroupMember>() {});
+        return update("/groups/id/" + groupMember.getGroup().getId() + "/members/id/" + groupMember.getId(), groupMember, new TypeReference<GroupMember>() {});
     }
 
     public void removeMemberFromGroup(GroupMember groupMember) throws ClientException {
-        delete("/groups/" + groupMember.getGroup().getId() + "/members/" + groupMember.getId());
+        delete("/groups/id/" + groupMember.getGroup().getId() + "/members/id/" + groupMember.getId());
     }
 
-    public List<User> getUsersNotInGroup(Group group) throws ClientException {
-        return get("/groups/" + group.getId() + "/nonmembers", new TypeReference<List<User>>() {});
+    public List<User> getNonGroupMembers(Group group) throws ClientException {
+        return get("/groups/id/" + group.getId() + "/nonmembers", new TypeReference<List<User>>() {});
     }
 
     public Group addGroup(Group group) throws ClientException {
@@ -65,11 +65,11 @@ public class Groups extends AbstractClient {
     }
 
     public Group updateGroup(Group group) throws ClientException {
-        return update("/groups/" + group.getId(), group, new TypeReference<Group>() {});
+        return update("/groups/id/" + group.getId(), group, new TypeReference<Group>() {});
     }
 
     public void deleteGroup(Group group) throws ClientException {
-        delete("/groups/" + group.getId());
+        delete("/groups/id/" + group.getId());
     }
 
 }

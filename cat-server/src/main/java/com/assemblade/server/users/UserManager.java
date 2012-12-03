@@ -56,7 +56,11 @@ public class UserManager {
 
 		return user;
 	}
-	
+
+    public User getUser(String userId) throws StorageException {
+        return getUserSession().getByEntryDn(new User(), getUserSession().dnFromId(userId));
+    }
+
 	public User updateUser(User user) throws StorageException {
 		getUserSession().update(user);
 		return getUserSession().get(user);
