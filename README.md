@@ -37,7 +37,6 @@ cd to cloned CAT directory.
 gradle build
 ```
 
-
 Binaries
 ========
 
