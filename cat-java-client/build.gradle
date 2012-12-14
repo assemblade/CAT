@@ -20,7 +20,7 @@ configurations {
     jarIncludes
 }
 
-version = '0.0.1'
+version = '0.0.2'
 ext.packaging = 'jar'
 
 def isDevBuild
@@ -29,12 +29,14 @@ def isReleaseBuild
 def sonatypeRepositoryUrl
 
 if (hasProperty("release")) {
+    println 'Release build'
     isReleaseBuild = true
     sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 } else if (hasProperty("ci")) {
     version += "-SNAPSHOT"
     sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
 } else {
+    println 'Dev build'
     isDevBuild = true
 }
 

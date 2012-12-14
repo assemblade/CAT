@@ -147,4 +147,15 @@ public class UsersTest extends AbstractApiTest {
 
         assertEquals("new@assemblade.com", user.getEmailAddress());
     }
+
+    @Test
+    public void deleteUser() throws ClientException {
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+
+        users.deleteUser(user);
+
+        List<User> userList = users.getUsers();
+
+        assertFalse(userList.contains(user));
+    }
 }

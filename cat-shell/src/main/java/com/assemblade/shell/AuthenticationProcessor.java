@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class AuthenticationProcessor {
+    private File assembladeDirectory = new File(System.getProperty("user.home") + "/.assemblade");
     private String url;
     private Login login;
 
@@ -39,7 +40,6 @@ public class AuthenticationProcessor {
 
 
     public Authentication authenticate() {
-
         Scanner scanner = new Scanner(System.in);
 
         System.out.print("Username: ");
@@ -56,8 +56,14 @@ public class AuthenticationProcessor {
 
         try {
             Authentication authentication = login.login(username, password);
-            storeAuthentication(authentication);
-            return authentication;
+            if (authentication != null) {
+                storeAuthentication(authentication);
+                return authentication;
+            } else {
+                System.err.println("");
+                System.err.println("Failed to authenticate");
+                System.err.println("");
+            }
         } catch (ChangePasswordException e) {
         } catch (CallFailedException e) {
             System.err.println("");
@@ -69,8 +75,6 @@ public class AuthenticationProcessor {
     }
 
     private void storeAuthentication(Authentication authentication) {
-        File assembladeDirectory = new File(System.getProperty("user.home") + "/.assemblade");
-
         if (!assembladeDirectory.exists()) {
             assembladeDirectory.mkdirs();
         }
@@ -89,6 +93,8 @@ public class AuthenticationProcessor {
     }
 
     private Authentication retrieveAuthentication() {
+        if (assembladeDirectory.exists()) {
+        }
         return null;
     }
 }

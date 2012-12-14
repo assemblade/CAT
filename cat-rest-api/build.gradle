@@ -55,14 +55,17 @@ ext {
     tomcatDownloadURL = "http://apache.mirror.anlx.net/tomcat/tomcat-6/v${tomcatVersion}/bin/apache-tomcat-${tomcatVersion}.zip"
     tomcatZipDestination = "${buildDir}/apache-tomcat-${tomcatVersion}.zip"
     tomcatHome = "${buildDir}/apache-tomcat-${tomcatVersion}"
-    tomcatZipFile = new File("${tomcatZipDestination}")
+    tomcatZipFile = file("${tomcatZipDestination}")
+    distDir = "${buildDir}/distributions"
+    installDir = "${buildDir}/install"
 }
 
+idea.module.excludeDirs = [ file('.gradle') ]
+
 task fetchTomcat {
+    onlyIf { !file(buildDir).exists() || !tomcatZipFile.exists() }
     doLast {
-        if (!new File("${buildDir}").exists())  {
-            new File("${buildDir}").mkdirs();
-        }
+        mkdir(buildDir)
         if (!tomcatZipFile.exists()) {
             ant.get(src : "${tomcatDownloadURL}", dest: "${tomcatZipDestination}")
         }
@@ -88,8 +91,12 @@ task initialiseTomcat(dependsOn: fetchTomcat) {
             from zipTree("${tomcatZipDestination}")
             into "${buildDir}"
             exclude "**/bin/tomcat-juli.jar"
+            exclude "**/conf/server.xml"
             exclude "**/webapps/docs/**/*"
             exclude "**/webapps/examples/**/*"
+            exclude "**/webapps/host-manager/**/*"
+            exclude "**/webapps/manager/**/*"
+            exclude "**/webapps/ROOT/**/*"
             exclude "**/conf/tomcat-users.xml"
             setIncludeEmptyDirs false
         }
@@ -113,10 +120,12 @@ task initialiseTomcat(dependsOn: fetchTomcat) {
             into "${tomcatHome}/lib"
             include "log4j.properties"
         }
-        copy {
-            from "${projectDir}/conf"
-            into "${tomcatHome}/conf"
-            include "server.xml"
+        ant.copy (file: "${projectDir}/conf/server.xml.template", tofile: "${tomcatHome}/conf/server.xml") {
+            ant.filterset(begintoken: '${', endtoken: '}' ) {
+                ant.filter(token: 'cat.http.port', value: 11080)
+                ant.filter(token: 'cat.ajp.port', value: 11009)
+                ant.filter(token: 'cat.shutdown.port', value: 11005)
+            }
         }
 
         file("${tomcatHome}/logs").mkdirs()
@@ -177,7 +186,7 @@ task startTomcat(dependsOn: deployApplication) {
                     ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
                         ant.and {
                             ant.socket (server: 'localhost', port: 11080)
-                            ant.http(url: 'http://localhost:11080')
+                            ant.http(url: 'http://localhost:11080/cat-rest-api')
 
                         }
                     }
@@ -187,7 +196,53 @@ task startTomcat(dependsOn: deployApplication) {
     }
 }
 
-idea.module.excludeDirs = [ file('.gradle') ]
+task buildDistribution(dependsOn: deployApplication) {
+    doLast {
+        delete(installDir)
+        delete(distDir)
+        mkdir(installDir)
+        mkdir(distDir)
+
+        copy {
+            from "${tomcatHome}"
+            into "${installDir}/cat-server-${version}/cat"
+            exclude "**/conf/server.xml"
+            exclude "**/logs/**/*"
+            exclude "**/work/**/*"
+            exclude "**/temp/**/*"
+            exclude "**/lib/application.properties"
+            exclude "**/webapps/*.war"
+            setIncludeEmptyDirs true
+        }
+        copy {
+            from "${projectDir}/conf"
+            into "${installDir}/cat-server-${version}"
+            include 'installCat'
+            include 'startCat'
+            include 'stopCat'
+        }
+        ant.chmod(file: "${installDir}/cat-server-${version}/installCat", perm: '+x')
+        ant.chmod(file: "${installDir}/cat-server-${version}/startCat", perm: '+x')
+        ant.chmod(file: "${installDir}/cat-server-${version}/stopCat", perm: '+x')
+
+        ant.tar(destfile: "${distDir}/cat-server-${version}.tar.gz", compression: 'gzip') {
+            ant.tarfileset(dir: "${installDir}")  {
+                ant.include(name: "**")
+                ant.exclude(name: "cat-server-${version}/installCat")
+                ant.exclude(name: "cat-server-${version}/startCat")
+                ant.exclude(name: "cat-server-${version}/stopCat")
+                ant.exclude(name: "cat-server-${version}/cat/bin/*.sh")
+            }
+            ant.tarfileset(dir: "${installDir}", filemode: '755')  {
+                ant.include(name: "cat-server-${version}/installCat")
+                ant.include(name: "cat-server-${version}/startCat")
+                ant.include(name: "cat-server-${version}/stopCat")
+                ant.include(name: "cat-server-${version}/cat/bin/*.sh")
+            }
+        }
+    }
+}
+
 
 deployApplication.dependsOn war
 assemble.dependsOn startTomcat

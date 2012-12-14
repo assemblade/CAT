@@ -1,0 +1,3 @@
+#!/bin/bash
+./setCatEnv
+cat/bin/catalina.sh stop

@@ -17,6 +17,13 @@ apply plugin: 'application'
 
 mainClassName = "com.assemblade.shell.CatLauncher"
 
+idea.module.excludeDirs = [ file('.gradle') ]
+
+ext {
+    distDir = "${buildDir}/distributions"
+    installDir = "${buildDir}/install"
+}
+
 dependencies {
     compile project(':cat-java-client')
 
@@ -24,5 +31,19 @@ dependencies {
     compile 'jline:jline:2.8'
 }
 
-build.dependsOn installApp
+task buildTarDistribution(dependsOn: installApp) {
+    doLast {
+        ant.tar(destfile: "${distDir}/cat-shell-${version}.tar.gz", compression: 'gzip') {
+            ant.tarfileset(dir: "${installDir}/${applicationName}", prefix: "${applicationName}-${version}")  {
+                ant.include(name: "**")
+                ant.exclude(name: "bin/**")
+            }
+            ant.tarfileset(dir: "${installDir}/${applicationName}", prefix: "${applicationName}-${version}", filemode: '755')  {
+                ant.include(name: "bin/**")
+            }
+        }
+    }
+}
+
+build.dependsOn buildTarDistribution
 
