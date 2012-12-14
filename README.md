@@ -37,6 +37,11 @@ cd to cloned CAT directory.
 gradle build
 ```
 
+Binaries
+========
+
+Binaries can be downloaded from http://www.assemblade.com/download
+
 
 Use Cases
 =========
