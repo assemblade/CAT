@@ -72,7 +72,7 @@ public class UserManager {
 	}
 	
 	public List<User> getUsers() throws StorageException {
-		return getUserSession().search(new User(), User.ROOT, false).getEntries();
+		return getUserSession().search(new User(), User.ROOT, false);
 	}
 
     public User getAuthenticatedUser() {

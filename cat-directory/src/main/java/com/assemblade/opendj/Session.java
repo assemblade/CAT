@@ -68,14 +68,6 @@ public class Session {
 		this.connection = connection;
 	}
 
-    public void addUser(Storable storable) throws StorageException {
-        AddOperation result = connection.processAdd(storable.getDN(), storable.getObjectClasses(), storable.getUserAttributes(), storable.getOperationalAttributes());
-        if (result.getResultCode() != ResultCode.SUCCESS) {
-            log.error("Failed to add entry [" + storable.getDn().toString() + "] because: " + result.getErrorMessage().toString());
-            throw new StorageException(AssembladeErrorCode.ASB_0003);
-        }
-    }
-
     public void changePassword(String userDn, String currentPassword, String newPassword) throws StorageException {
         ByteStringBuilder builder = new ByteStringBuilder();
         ASN1Writer asn1Writer = ASN1.getWriter(builder);
@@ -103,7 +95,7 @@ public class Session {
         log.debug("Adding " + storable.getDn());
         AddOperation result = connection.processAdd(storable.getDN(), storable.getObjectClasses(), storable.getUserAttributes(), storable.getOperationalAttributes());
         if (result.getResultCode() != ResultCode.SUCCESS) {
-            log.error("Failed to add entry [" + storable.getDn().toString() + "] because: " + result.getErrorMessage().toString());
+            log.error("Failed to add entry [" + storable.getDn() + "] because: " + result.getErrorMessage().toString());
             throw new StorageException(AssembladeErrorCode.ASB_0003);
         }
 
@@ -116,13 +108,14 @@ public class Session {
         log.debug("Adding " + configuration.getDn());
         AddOperation result = connection.processAdd(configuration.getDN(), configuration.getObjectClasses(), configuration.getUserAttributes(), new HashMap<AttributeType, List<Attribute>>());
         if (result.getResultCode() != ResultCode.SUCCESS) {
-            log.error("Failed to add entry [" + configuration.getDn().toString() + "] because: " + result.getErrorMessage().toString());
+            log.error("Failed to add entry [" + configuration.getDn() + "] because: " + result.getErrorMessage().toString());
             throw new StorageException(AssembladeErrorCode.ASB_0003);
         }
     }
 
     public <T extends Storable> void update(T storable) throws StorageException {
-        Entry currentEntry = getRawEntry(storable);
+        log.debug("Updating " + storable.getDn());
+        Entry currentEntry = internalGet(dnFromId(storable.getId()), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames()));
         if (currentEntry != null) {
             if (storable.requiresRename(currentEntry)) {
                 rename(currentEntry.getDN().toString(), storable.getRDN());
@@ -141,7 +134,7 @@ public class Session {
                 if (modifications.size() > 0) {
                     ModifyOperation result = connection.processModify(storable.getDN(), modifications);
                     if (result.getResultCode() != ResultCode.SUCCESS) {
-                        log.error("Failed to update entry [" + storable.getDn().toString() + "] because: " + result.getErrorMessage().toString());
+                        log.error("Failed to update entry [" + storable.getDn() + "] because: " + result.getErrorMessage().toString());
                         throw new StorageException(AssembladeErrorCode.ASB_0005);
                     }
                     if (storable.recordChanges()) {
@@ -153,6 +146,7 @@ public class Session {
 	}
 
     public void update(Configuration configuration) throws StorageException {
+        log.debug("Updating " + configuration.getDn());
         try {
             InternalSearchOperation getResult = connection.processSearch(configuration.getDn(), SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", new LinkedHashSet<String>());
             if (getResult.getResultCode() == ResultCode.SUCCESS) {
@@ -166,7 +160,7 @@ public class Session {
                     if (modifications.size() > 0) {
                         ModifyOperation result = connection.processModify(configuration.getDN(), modifications);
                         if (result.getResultCode() != ResultCode.SUCCESS) {
-                            log.error("Failed to update entry [" + configuration.getDn().toString() + "] because: " + result.getErrorMessage().toString());
+                            log.error("Failed to update entry [" + configuration.getDn() + "] because: " + result.getErrorMessage().toString());
                             throw new StorageException(AssembladeErrorCode.ASB_0005);
                         }
                     }
@@ -179,7 +173,8 @@ public class Session {
     }
 
     public void rename(String dn, String newRdn) throws StorageException {
-		ModifyDNOperation result = connection.processModifyDN(dn, newRdn, true);
+        log.debug("Renaming " + dn + " to " + newRdn);
+        ModifyDNOperation result = connection.processModifyDN(dn, newRdn, true);
 		if (result.getResultCode() != ResultCode.SUCCESS) {
             log.error("Failed to modify DN of entry [" + dn + "->" + newRdn + "] because: " + result.getErrorMessage().toString());
             throw new StorageException(AssembladeErrorCode.ASB_0008);
@@ -187,6 +182,7 @@ public class Session {
 	}
 
     public void move(String dn, String newRdn, String newParent) throws StorageException {
+        log.debug("Moving " + dn + " to " + newParent);
         ModifyDNOperation result = connection.processModifyDN(dn, newRdn, true, newParent);
         if (result.getResultCode() != ResultCode.SUCCESS) {
             log.error("Failed to move entry [" + dn + "] to new parent [" + newParent + "]");
@@ -194,14 +190,6 @@ public class Session {
         }
     }
 
-	public void store(Storable storable) throws StorageException {
-		if (exists(storable)) {
-			update(storable);
-		} else {
-			add(storable);
-		}
-	}
-	
 	public void delete(Storable storable) throws StorageException {
 		delete(storable, false);
 	}
@@ -211,6 +199,7 @@ public class Session {
 	}
 
 	public void delete(String dn, boolean deleteSubTree) throws StorageException {
+        log.debug("Deleting " + dn + (deleteSubTree ? " and whole sub-tree" : ""));
 		List<Control> controls = new ArrayList<Control>();
 		if (deleteSubTree) {
 			controls.add(new SubtreeDeleteControl(true));
@@ -221,369 +210,162 @@ public class Session {
             throw new StorageException(AssembladeErrorCode.ASB_0007);
         }
 	}
-	
-	public boolean exists(Storable storable) {
-		try {
-			InternalSearchOperation result = connection.processSearch(storable.getDn(), SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", new LinkedHashSet<String>());
-			if ((result.getResultCode() == ResultCode.SUCCESS) && (result.getSearchEntries().size() == 1)) {
-				return true;
-			}
-		} catch (DirectoryException e) {
-			log.error("Caught an exception checking the existance of entry: " + storable.getDn(), e);
-		}
-		return false;
-	}
-
-	public boolean exists(String dn) {
-		try {
-			InternalSearchOperation result = connection.processSearch(dn, SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", new LinkedHashSet<String>());
-			if ((result.getResultCode() == ResultCode.SUCCESS) && (result.getSearchEntries().size() == 1)) {
-				return true;
-			}
-		} catch (DirectoryException e) {
-			log.error("Caught an exception checking the existance of entry: " + dn, e);
-		}
-		return false;
-	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends Storable> T get(final T storable) throws StorageException {
-		final SearchResult<T> result = new SearchResult<T>();
-		try {
-			List<Control> controls = new ArrayList<Control>();
-			LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-			attributeSet.addAll(storable.getAttributeNames());
-			if (attributeSet.contains("aclRights")) {
-				controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-			}
-			InternalSearchOperation searchResult = connection.processSearch(storable.getDn(), SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
-				public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
-					result.addEntry((T)storable.getDecorator().decorate(searchEntry));
-				}
-
-				public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-				}
-			});
-			if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-				if (result.size() > 0) {
-					return result.get(0);
-				} else {
-                    log.error("Got multiple entries for what should have been a single entry [" + storable.getDn() + "]");
-                    throw new StorageException(AssembladeErrorCode.ASB_0006);
-                }
-			} else {
-                log.error("Failed to get entry [" + storable.getDn().toString() + "] because: " + searchResult.getErrorMessage().toString());
-                throw new StorageException(AssembladeErrorCode.ASB_0006);
-            }
-		} catch (DirectoryException e) {
-			log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
-            throw new StorageException(AssembladeErrorCode.ASB_9999);
-        }
+        log.debug("Getting " + storable.getDn());
+        return (T)storable.getDecorator().decorate(internalGet(storable.getDn(), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
 	}
-
-    public <T extends Storable> Entry getRawEntry(final T storable) throws StorageException {
-        final List<Entry> result = new ArrayList<Entry>();
-        try {
-            List<Control> controls = new ArrayList<Control>();
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(storable.getAttributeNames());
-            if (attributeSet.contains("aclRights")) {
-                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-            }
-            InternalSearchOperation searchResult = connection.processSearch(dnFromId(storable.getId()), SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
-                    result.add(searchEntry);
-                }
-
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                if (result.size() > 0) {
-                    return result.get(0);
-                }
-            }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + storable.getDn() + "]", e);
-        }
-        return null;
-    }
-
-
-
 
     @SuppressWarnings("unchecked")
     public <T extends Configuration> T get(final T configuration) throws StorageException {
-        final List<T> result = new ArrayList<T>();
-        try {
-            List<Control> controls = new ArrayList<Control>();
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(configuration.getAttributeNames());
-            if (attributeSet.contains("aclRights")) {
-                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-            }
-            InternalSearchOperation searchResult = connection.processSearch(configuration.getDn(), SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
-                    result.add((T) configuration.getDecorator().decorate(searchEntry));
-                }
-
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                if (result.size() > 0) {
-                    return result.get(0);
-                }
-            }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + configuration.getDn() + "]", e);
-        }
-        return null;
+        log.debug("Getting " + configuration.getDn());
+        return (T)configuration.getDecorator().decorate(internalGet(configuration.getDn(), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(configuration.getAttributeNames())));
     }
 
     public Configuration getConfigurationByDn(String dn) throws StorageException {
-        final List<Configuration> result = new ArrayList<Configuration>();
-        try {
-            List<Control> controls = new ArrayList<Control>();
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(Arrays.asList("+", "*"));
-            InternalSearchOperation searchResult = connection.processSearch(dn, SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
-                    ConfigurationDecorator decorator = AbstractConfiguration.getDecorator(searchEntry);
-                    if (decorator != null) {
-                        result.add(decorator.decorate(searchEntry));
-                    }
-                }
-
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                if (result.size() > 0) {
-                    return result.get(0);
-                }
-            }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + dn + "]", e);
+        log.debug("Getting configuration by dn " + dn);
+        Entry entry = internalGet(dn, SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(Arrays.asList("+", "*")));
+        ConfigurationDecorator decorator = AbstractConfiguration.getDecorator(entry);
+        if (decorator == null) {
+            log.error("Failed to get decorator for " + dn);
+            throw new StorageException(AssembladeErrorCode.ASB_0006);
+        } else {
+            return decorator.decorate(entry);
         }
-        return null;
+    }
+
+    public <T extends Storable> T getByEntryDn(final T storable, String dn) throws StorageException {
+        log.debug("Getting entry by dn " + dn);
+        return (T)storable.getDecorator().decorate(internalGet(dn, SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
+    }
+
+    public <T extends Storable> T getByEntryDnAndFilter(T storable, String dn, String filter) throws StorageException {
+        log.debug("Getting entry by dn " + dn + " with filter " + filter);
+        return (T)storable.getDecorator().decorate(internalGet(dn, SearchScope.WHOLE_SUBTREE, filter, new LinkedHashSet<String>(storable.getAttributeNames())));
+    }
+
+    public <T extends Storable> T getByEntryId(T storable, String id) throws StorageException {
+        log.debug("Getting entry by id " + id);
+        return (T)storable.getDecorator().decorate(internalGet("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, "(entryUUID=" + id + ")", new LinkedHashSet<String>(storable.getAttributeNames())));
+    }
+
+    public String dnFromId(String id) throws StorageException {
+        return  internalGet("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, "(entryUUID=" + id + ")", new LinkedHashSet<String>()).getDN().toString();
     }
 
     public List<Configuration> getConfigurationItems(String filter) throws StorageException {
-        final List<Configuration> result = new ArrayList<Configuration>();
+        List<Configuration> result = new ArrayList<Configuration>();
 
-        try {
-            InternalSearchOperation searchResult = connection.processSearch("cn=config", SearchScope.WHOLE_SUBTREE, filter);
-
-            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                for (Entry entry : searchResult.getSearchEntries()) {
-                    ConfigurationDecorator decorator = AbstractConfiguration.getDecorator(entry);
-                    if (decorator != null) {
-                        result.add(decorator.decorate(entry));
-                    }
-                }
-            } else {
-                //TODO: Handle error
+        for (Entry entry : internalSearch("cn=config", true, filter, new LinkedHashSet<String>(Arrays.asList("+", "*")))) {
+            ConfigurationDecorator decorator = AbstractConfiguration.getDecorator(entry);
+            if (decorator != null) {
+                result.add(decorator.decorate(entry));
             }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown while getting configuration items for filter: " + filter, e);
         }
         return result;
     }
 
+    public <T extends Storable> List<T> search(final T storable, String baseDn, boolean subTree) throws StorageException {
+        List<T> result = new ArrayList<T>();
 
-
-
-    public <T extends Storable> T getByEntryDn(final T storable, String dn) throws StorageException {
-        final SearchResult<T> result = new SearchResult<T>();
-        try {
-            List<Control> controls = new ArrayList<Control>();
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(storable.getAttributeNames());
-            if (attributeSet.contains("aclRights")) {
-                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-            }
-            InternalSearchOperation searchResult = connection.processSearch(dn, SearchScope.BASE_OBJECT, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(objectclass=*)", attributeSet, controls, new InternalSearchListener() {
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
-                    result.addEntry((T)storable.getDecorator().decorate(searchEntry));
-                }
-
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                if (result.size() > 0) {
-                    return result.get(0);
-                }
-            }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown getting entry [" + dn + "]", e);
+        for (Entry entry : internalSearch(baseDn, subTree, storable.getSearchFilter(), new LinkedHashSet<String>(storable.getAttributeNames()))) {
+            result.add((T)storable.getDecorator().decorate(entry));
         }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Storable> T getByEntryDnAndFilter(T storable, String dn, String filter) throws StorageException {
-        try {
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(storable.getAttributeNames());
-            InternalSearchOperation result = connection.processSearch(dn, SearchScope.WHOLE_SUBTREE, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, filter, attributeSet);
-            if (result.getResultCode() == ResultCode.SUCCESS) {
-                if (result.getSearchEntries().size() > 0) {
-                    return (T)storable.getDecorator().decorate(result.getSearchEntries().getFirst());
-                }
-            } else {
-                try {
-                    dumpTree("dc=assemblade,dc=com", true, "(objectclass=*)");
-                } catch (Exception e) {
-                }
-            }
-        } catch (DirectoryException e) {
-            log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
-        }
-        return null;
-    }
-
-    public <T extends Storable> T getByEntryId(T storable, String id) throws StorageException {
-        T object = null;
-        try {
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            attributeSet.addAll(storable.getAttributeNames());
-            InternalSearchOperation result = connection.processSearch("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(entryUUID=" + id + ")", attributeSet);
-            if (result.getResultCode() == ResultCode.SUCCESS) {
-                if (result.getSearchEntries().size() > 0) {
-                    object = (T)storable.getDecorator().decorate(result.getSearchEntries().getFirst());
-                }
-            }
-        } catch (DirectoryException e) {
-            log.error("Exception thrown getting entry [" + storable.getDn() + "]", e);
-        }
-        if (object == null) {
-            throw new StorageException(AssembladeErrorCode.ASB_0006);
-        }
-        return object;
-    }
-
-    public String dnFromId(String id) throws StorageException {
-        try {
-            LinkedHashSet<String> attributeSet = new LinkedHashSet<String>();
-            InternalSearchOperation result = connection.processSearch("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, "(entryUUID=" + id + ")", attributeSet);
-            if (result.getResultCode() == ResultCode.SUCCESS) {
-                if (result.getSearchEntries().size() > 0) {
-                    return result.getSearchEntries().getFirst().getDN().toString();
-                }
-            }
-        } catch (DirectoryException e) {
-            log.warn("Exception thrown resolving id [" + id + "]", e);
-        }
-        return null;
-    }
-
-    public <T extends Storable> SearchResult<T> search(final T storable, String baseDn, boolean subTree) throws StorageException {
-		final SearchResult<T> result = new SearchResult<T>();
-
-		List<Control> controls = new ArrayList<Control>();
-		
-		LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(storable.getAttributeNames());
-		
-		try {
-			if (attributeSet.contains("aclRights")) {
-				controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-			}
-			InternalSearchOperation operation = connection.processSearch(baseDn, subTree ? SearchScope.WHOLE_SUBTREE : SearchScope.SINGLE_LEVEL, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, storable.getSearchFilter(), attributeSet, controls, new InternalSearchListener() {
-				@SuppressWarnings("unchecked")
-				public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
-					result.addEntry((T)storable.getDecorator().decorate(entry));
-				}
-
-				public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-				}
-			});
-			if (operation.getResultCode() != ResultCode.SUCCESS) {
-                log.error("Failed to search under [" + storable.getDn().toString() + "] because: " + operation.getErrorMessage().toString());
-                throw new StorageException(AssembladeErrorCode.ASB_0010);
-			} else {
-                result.completedSearch();
-			}
-		} catch (DirectoryException e) {
-            log.error("Caught a directory exception trying to search under [" + storable.getDn().toString() + "]", e);
-            throw new StorageException(AssembladeErrorCode.ASB_9999);
-        }
-		return result;
+        return result;
 	}
 
     public <T extends Storable> List<T> search(final T storable, String baseDn, String searchFilter) throws StorageException {
-        final List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<T>();
 
-        List<Control> controls = new ArrayList<Control>();
-
-        LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(storable.getAttributeNames());
-
-        try {
-            if (attributeSet.contains("aclRights")) {
-                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
-            }
-            InternalSearchOperation operation = connection.processSearch(baseDn, SearchScope.WHOLE_SUBTREE, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, searchFilter, attributeSet, controls, new InternalSearchListener() {
-                @SuppressWarnings("unchecked")
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
-                    result.add((T)storable.getDecorator().decorate(entry));
-                }
-
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (operation.getResultCode() != ResultCode.SUCCESS) {
-
-            }
-        } catch (DirectoryException e) {
+        for (Entry entry : internalSearch(baseDn, true, searchFilter, new LinkedHashSet<String>(storable.getAttributeNames()))) {
+            result.add((T)storable.getDecorator().decorate(entry));
         }
         return result;
     }
 
     public <T extends Configuration> List<T> search(final T configuration, String baseDn) throws StorageException {
-        final List<T> result = new ArrayList<T>();
-        List<Control> controls = new ArrayList<Control>();
-        LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(configuration.getAttributeNames());
-        try {
-            InternalSearchOperation operation = connection.processSearch(baseDn, SearchScope.SINGLE_LEVEL, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, configuration.getSearchFilter(), attributeSet, controls, new InternalSearchListener() {
-                @SuppressWarnings("unchecked")
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
-                    result.add((T) configuration.getDecorator().decorate(entry));
-                }
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (operation.getResultCode() != ResultCode.SUCCESS) {
+        List<T> result = new ArrayList<T>();
 
-            }
-        } catch (DirectoryException e) {
+        for (Entry entry : internalSearch(baseDn, false, configuration.getSearchFilter(), new LinkedHashSet<String>(configuration.getAttributeNames()))) {
+            result.add((T) configuration.getDecorator().decorate(entry));
         }
         return result;
     }
 
     public <T extends Configuration> List<T> search(final T configuration, String baseDn, String searchFilter) throws StorageException {
-        final List<T> result = new ArrayList<T>();
-        List<Control> controls = new ArrayList<Control>();
-        LinkedHashSet<String> attributeSet = new LinkedHashSet<String>(configuration.getAttributeNames());
-        try {
-            InternalSearchOperation operation = connection.processSearch(baseDn, SearchScope.WHOLE_SUBTREE, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, searchFilter, attributeSet, controls, new InternalSearchListener() {
-                @SuppressWarnings("unchecked")
-                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
-                    result.add((T) configuration.getDecorator().decorate(entry));
-                }
-                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
-                }
-            });
-            if (operation.getResultCode() != ResultCode.SUCCESS) {
+        List<T> result = new ArrayList<T>();
 
-            }
-        } catch (DirectoryException e) {
+        for (Entry entry : internalSearch(baseDn, true, searchFilter, new LinkedHashSet<String>(configuration.getAttributeNames()))) {
+            result.add((T) configuration.getDecorator().decorate(entry));
         }
         return result;
     }
 
+    private Entry internalGet(String dn, SearchScope scope, String filter, LinkedHashSet<String> attributes) throws StorageException {
+        final List<Entry> entries = new ArrayList<Entry>();
+        try {
+            List<Control> controls = new ArrayList<Control>();
+            if (attributes.contains("aclRights") || attributes.contains("*")) {
+                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
+            }
+            InternalSearchOperation searchResult = connection.processSearch(dn, scope, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, filter, attributes, controls, new InternalSearchListener() {
+                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry searchEntry) throws DirectoryException {
+                    entries.add(searchEntry);
+                }
+
+                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
+                }
+            });
+            if (searchResult.getResultCode() == ResultCode.SUCCESS) {
+                if (entries.size() > 0) {
+                    return entries.get(0);
+                } else {
+                    log.error("Got multiple entries for what should have been a single entry [" + dn + "]");
+                    throw new StorageException(AssembladeErrorCode.ASB_0006);
+                }
+            } else {
+                log.error("Failed to get entry [" + dn + "] because: " + searchResult.getErrorMessage().toString());
+                throw new StorageException(AssembladeErrorCode.ASB_0006);
+            }
+        } catch (DirectoryException e) {
+            log.error("Exception thrown getting entry [" + dn + "]", e);
+            throw new StorageException(AssembladeErrorCode.ASB_9999);
+        }
+    }
+
+    private List<Entry> internalSearch(String dn, boolean subTree, String filter, LinkedHashSet<String> attributes) throws StorageException {
+        final List<Entry> result = new ArrayList<Entry>();
+        List<Control> controls = new ArrayList<Control>();
+
+        try {
+            if (attributes.contains("aclRights")) {
+                controls.add(new GetEffectiveRightsRequestControl(false, null, new ArrayList<String>()));
+            }
+            InternalSearchOperation operation = connection.processSearch(dn, subTree ? SearchScope.WHOLE_SUBTREE : SearchScope.SINGLE_LEVEL, DereferencePolicy.NEVER_DEREF_ALIASES, 0, 0, false, filter, attributes, controls, new InternalSearchListener() {
+                @SuppressWarnings("unchecked")
+                public void handleInternalSearchEntry(InternalSearchOperation operation, SearchResultEntry entry) throws DirectoryException {
+                    result.add(entry);
+                }
+
+                public void handleInternalSearchReference(InternalSearchOperation operation, SearchResultReference reference) throws DirectoryException {
+                }
+            });
+            if (operation.getResultCode() != ResultCode.SUCCESS) {
+                log.error("Failed to search under [" + dn + "] because: " + operation.getErrorMessage().toString());
+                throw new StorageException(AssembladeErrorCode.ASB_0010);
+            }
+        } catch (DirectoryException e) {
+            log.error("Caught a directory exception trying to search under [" + dn + "]", e);
+            throw new StorageException(AssembladeErrorCode.ASB_9999);
+        }
+
+        return result;
+    }
+
+
     private void addChangeLogEntry(String type, Storable storable) throws StorageException {
-        ChangeLogEntry change = new ChangeLogEntry("add", storable.getDn(), GeneralizedTimeSyntax.format(System.currentTimeMillis()), storable, null, false, null);
+        ChangeLogEntry change = new ChangeLogEntry(type, storable.getDn(), GeneralizedTimeSyntax.format(System.currentTimeMillis()), storable, null, false, null);
 
         AddOperation result = connection.processAdd(change.getDN(), change.getObjectClasses(), change.getUserAttributes(), change.getOperationalAttributes());
 
@@ -593,8 +375,7 @@ public class Session {
         }
     }
 
-
-    public void dumpTree(String dn, boolean subTree, String filter) {
+    private void dumpTree(String dn, boolean subTree, String filter) {
         if (log.isDebugEnabled()) {
             List<Control> controls = new ArrayList<Control>();
 

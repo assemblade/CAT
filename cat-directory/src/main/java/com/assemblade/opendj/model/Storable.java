@@ -42,7 +42,6 @@ public interface Storable {
 	public Map<AttributeType, List<Attribute>> getOperationalAttributes();
 	public List<Modification> getModifications(Entry currentEntry);
 	public boolean recordChanges();
-	public boolean recordDeletions();
     public String getChangeLogDescription();
     public boolean requiresRename(Entry currentEntry);
     public boolean requiresMove(Entry currentEntry);

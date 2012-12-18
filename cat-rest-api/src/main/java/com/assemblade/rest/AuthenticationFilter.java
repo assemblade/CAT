@@ -83,6 +83,7 @@ public class AuthenticationFilter implements Filter {
                                 authentication.setBaseUrl(accessToken.getBaseUrl());
                                 AuthenticationHolder.setAuthentication(authentication);
                                 filterChain.doFilter(servletRequest, servletResponse);
+                                AuthenticationHolder.resetAuthentication();
                             }
                         } else {
                             ((HttpServletResponse)servletResponse).setStatus(401);

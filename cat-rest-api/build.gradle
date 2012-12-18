@@ -21,6 +21,7 @@ configurations {
 
 dependencies {
     compile project(':cat-client-model')
+    compile project(':cat-directory')
     compile project(':cat-server')
 
     compile "org.apache.tomcat:servlet-api:6.0.29"
@@ -129,6 +130,7 @@ task initialiseTomcat(dependsOn: fetchTomcat) {
         }
 
         file("${tomcatHome}/logs").mkdirs()
+        file("${tomcatHome}/webapps").mkdirs()
 
         fileTree(dir: "${tomcatHome}/bin", include: '**/*.sh').each { File f ->
             f.setExecutable(true, true)
@@ -152,7 +154,7 @@ task clearDatastore() {
 }
 
 task deployApplication(dependsOn: [initialiseTomcat, clearDatastore]) {
-    inputs.file  "${buildDir}/libs/${project.name}.war"
+    inputs.file  "${buildDir}/libs/${project.name}-${version}.war"
     outputs.file  "${tomcatHome}/webapps/${project.name}.war"
 
     doLast {
@@ -160,8 +162,9 @@ task deployApplication(dependsOn: [initialiseTomcat, clearDatastore]) {
         ant.delete(dir: "${tomcatHome}/webapps/${project.name}")
 
         copy {
-            from "${buildDir}/libs/${project.name}.war"
+            from "${buildDir}/libs/${project.name}-${version}.war"
             into "${tomcatHome}/webapps"
+            rename "${project.name}-${version}.war", "${project.name}.war"
         }
     }
 }
@@ -186,7 +189,7 @@ task startTomcat(dependsOn: deployApplication) {
                     ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
                         ant.and {
                             ant.socket (server: 'localhost', port: 11080)
-                            ant.http(url: 'http://localhost:11080/cat-rest-api')
+                            ant.http(url: 'http://localhost:11080/cat-rest-api', errorsBeginAt: 402)
 
                         }
                     }

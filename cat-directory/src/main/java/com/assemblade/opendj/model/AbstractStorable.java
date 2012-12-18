@@ -106,10 +106,6 @@ public abstract class AbstractStorable implements Storable, Serializable {
 		return false;
 	}
 	
-	public boolean recordDeletions() {
-		return false;
-	}
-
     public String getChangeLogDescription() {
         return "";
     }

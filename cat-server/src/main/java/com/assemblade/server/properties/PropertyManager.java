@@ -50,20 +50,12 @@ public class PropertyManager {
 
     public List<Folder> getRootFolders() throws StorageException {
         Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
-        if (parentFolder != null) {
-            return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false).getEntries();
-        } else {
-            throw new StorageException(AssembladeErrorCode.ASB_0006);
-        }
+        return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false);
     }
 
     public List<Folder> getFolders(String parentId) throws StorageException {
         Folder parentFolder = userManager.getUserSession().getByEntryId(new Folder(), parentId);
-        if (parentFolder != null) {
-            return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false).getEntries();
-        } else {
-            throw new StorageException(AssembladeErrorCode.ASB_0006);
-        }
+        return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false);
     }
 
     public void deleteFolder(String folderId) throws StorageException {
@@ -73,7 +65,7 @@ public class PropertyManager {
 
     public List<Property> getProperties(String folderId) throws StorageException {
         Folder folder = userManager.getUserSession().getByEntryId(new Folder(), folderId);
-        return userManager.getUserSession().search(new Property(), folder.getDn(), false).getEntries();
+        return userManager.getUserSession().search(new Property(), folder.getDn(), false);
     }
 
 	public Property addProperty(Property property) throws StorageException {

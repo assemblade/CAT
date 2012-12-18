@@ -113,14 +113,14 @@ public class GroupManager {
     }
 
     public List<Group> getGroups() throws StorageException {
-		return userManager.getUserSession().search(new Group(), Group.ROOT, false).getEntries();
+		return userManager.getUserSession().search(new Group(), Group.ROOT, false);
     }
     
     public List<GroupMember> getListOfUsersInGroup(String groupId) throws StorageException {
         Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
         GroupMember groupMember = new GroupMember();
         groupMember.setGroup(group);
-		return userManager.getUserSession().search(groupMember, User.ROOT, false).getEntries();
+		return userManager.getUserSession().search(groupMember, User.ROOT, false);
     }
     
     public List<User> getListOfUsersNotInGroup(String groupId) throws StorageException {

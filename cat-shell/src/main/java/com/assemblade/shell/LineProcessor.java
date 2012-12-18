@@ -19,28 +19,48 @@ import com.assemblade.client.ClientException;
 import com.assemblade.client.Users;
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.User;
+import com.assemblade.shell.commands.AdminCommand;
+import com.assemblade.shell.commands.Command;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LineProcessor {
-    private final AuthenticationProcessor authenticationProcessor;
+    private final static Pattern commandPattern = Pattern.compile("^\\s*([list|add|edit|delete]*)\\s*(.*)$");
 
-    public LineProcessor(AuthenticationProcessor authenticationProcessor) {
-        this.authenticationProcessor = authenticationProcessor;
+    private static final Map<String, Class> commands = new HashMap<String, Class>();
+
+    static {
+        commands.put("admin", AdminCommand.class);
     }
 
     public void processLine(Authentication authentication, String line) {
-        if (line.equals("list users")) {
-            Users users = new Users(authentication);
-            try {
-                List<User> userList = users.getUsers();
-                for (User user : userList) {
-                    System.out.println(user.getUserId() + "," + user.getFullName() + "," + user.getEmailAddress());
-                }
-            } catch (ClientException e) {
-                e.printStackTrace();
+        Matcher commandMatcher = commandPattern.matcher(line);
+        if (commandMatcher.matches()) {
+            String command = commandMatcher.group(1);
+
+            System.out.println("command = " + command);
+            System.out.println("parameters = " + commandMatcher.group(2));
+
+            if (commands.containsKey(command)) {
+
             }
+
         }
+//        if (line.equals("list users")) {
+//            Users users = new Users(authentication);
+//            try {
+//                List<User> userList = users.getUsers();
+//                for (User user : userList) {
+//                    System.out.println(user.getUserId() + "," + user.getFullName() + "," + user.getEmailAddress());
+//                }
+//            } catch (ClientException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
     }
 }

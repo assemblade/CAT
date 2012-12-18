@@ -42,7 +42,7 @@ public class ViewManager {
     }
 
     public List<View> getViews() throws StorageException {
-        return userManager.getUserSession().search(new View(), userManager.getViewsDn(), false).getEntries();
+        return userManager.getUserSession().search(new View(), userManager.getViewsDn(), false);
     }
 
     public View getView(String viewId) throws StorageException {

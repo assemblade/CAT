@@ -18,6 +18,8 @@ package com.assemblade.opendj;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -39,7 +41,7 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		
 		session.add(storable);
 		
-		SearchResult<TestStorable> result = session.search(storable, "cn=properties,dc=assemblade,dc=com", false);
+		List<TestStorable> result = session.search(storable, "cn=properties,dc=assemblade,dc=com", false);
 		
 		assertEquals(1, result.size());
 		assertTrue(result.get(0) instanceof TestStorable);

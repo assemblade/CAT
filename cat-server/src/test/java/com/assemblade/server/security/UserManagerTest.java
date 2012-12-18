@@ -22,6 +22,8 @@ import com.assemblade.server.model.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -46,7 +48,7 @@ public class UserManagerTest extends AbstractUserManagementTest {
 		addUser("test1", "test1 user", "test1@example.com", "password");
 		addUser("test2", "test2 user", "test2@example.com", "password");
 
-		SearchResult<User> users = userManager.getUserSession().search(new User(), User.ROOT, false);
+		List<User> users = userManager.getUserSession().search(new User(), User.ROOT, false);
     	
     	assertEquals(3, users.size());
 	}

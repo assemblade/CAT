@@ -28,7 +28,7 @@ public class InputProcessor {
 
     public InputProcessor(AuthenticationProcessor authenticationProcessor) {
         this.authenticationProcessor = authenticationProcessor;
-        this.lineProcessor = new LineProcessor(authenticationProcessor);
+        this.lineProcessor = new LineProcessor();
     }
 
     public void readInput() {
