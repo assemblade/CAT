@@ -22,6 +22,7 @@ import com.assemblade.client.Login;
 import com.assemblade.client.Users;
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.User;
+import jline.console.ConsoleReader;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -47,22 +48,44 @@ import java.util.Scanner;
 
 public class AuthenticationProcessor {
     private File assembladeDirectory = new File(System.getProperty("user.home") + "/.assemblade");
-    private String url;
-    private Login login;
+    private Context context;
+    private Authentication authentication;
 
-    public AuthenticationProcessor(String url) {
-        this.url = url;
-        this.login = new Login(url);
+    public AuthenticationProcessor(Context context) {
+        this.context = context;
+        this.authentication = retrieveAuthentication();
+        if (authentication != null) {
+            this.context.setUrl(authentication.getBaseUrl());
+        }
     }
 
+    public Authentication getAuthentication() {
+        return authentication;
+    }
 
-    public Authentication authenticate() {
+    public boolean hasAuthentication() {
+        return authentication != null;
+    }
+
+    public boolean changePassword(String oldPassword, String newPassword) {
+        Users users = new Users(authentication);
+        try {
+            User user = users.getAuthenticatedUser();
+            Login login = new Login(context.getUrl());
+            return login.changePassword(user.getUserId(), oldPassword, newPassword);
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public Authentication authenticate(ConsoleReader reader) throws IOException {
         Authentication authentication = null;
 
         while (authentication == null) {
             authentication = retrieveAuthentication();
             if (authentication == null) {
-                authentication = readAuthenticationFromUser();
+                authentication = readAuthenticationFromUser(reader);
             }
             if (authentication != null) {
                 Users users = new Users(authentication);
@@ -84,22 +107,15 @@ public class AuthenticationProcessor {
         return null;
     }
 
-    private Authentication readAuthenticationFromUser() {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
-
-        System.out.print("Password: ");
-        String password = null;
-
-        if (System.console() != null) {
-            password = String.valueOf(System.console().readPassword());
-        } else {
-            password = scanner.nextLine();
-        }
+    private Authentication readAuthenticationFromUser(ConsoleReader reader) throws IOException {
+        reader.println();
+        reader.println("Please log in");
+        reader.println();
+        String username = reader.readLine("Username: ");
+        String password = reader.readLine("Password: ", '*');
 
         try {
+            Login login = new Login(context.getUrl());
             Authentication authentication = login.login(username, password);
             if (authentication != null) {
                 storeAuthentication(authentication);
@@ -186,7 +202,7 @@ public class AuthenticationProcessor {
         return null;
     }
 
-    private void clearStoredAuthentication() {
+    public void clearStoredAuthentication() {
         File authenticationFile = new File(assembladeDirectory.getAbsolutePath() + "/authentication");
         if (authenticationFile.exists()) {
             authenticationFile.delete();

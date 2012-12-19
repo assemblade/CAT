@@ -17,6 +17,7 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.lang.StringUtils;
@@ -134,8 +135,8 @@ public class AccessToken extends AbstractStorable {
         }
 
         @Override
-        public AccessToken decorate(Entry entry) {
-            AccessToken token = super.decorate(entry);
+        public AccessToken decorate(Session session, Entry entry) {
+            AccessToken token = super.decorate(session, entry);
 
             token.token = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-token"));
             token.uid = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("uid"));

@@ -17,6 +17,7 @@ package com.assemblade.opendj.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
+import com.assemblade.opendj.Session;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
@@ -90,8 +91,8 @@ public class Trash extends AbstractStorable implements Serializable {
         }
 
         @Override
-        public Trash decorate(Entry entry) {
-            Trash trash = super.decorate(entry);
+        public Trash decorate(Session session, Entry entry) {
+            Trash trash = super.decorate(session, entry);
             trash.parentDn = entry.getDN().getParent().toString();
             trash.id = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             return trash;

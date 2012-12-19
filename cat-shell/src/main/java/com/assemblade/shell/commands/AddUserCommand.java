@@ -20,29 +20,20 @@ import com.assemblade.shell.Context;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AdminCommand implements Command {
-    private CommandFactory commandFactory;
-    private Pattern commandPattern;
-
-    public AdminCommand() {
-        commandFactory = new AdminCommandFactory();
-        commandPattern = Pattern.compile(commandFactory.getCommandRegex());
-    }
+public class AddUserCommand implements Command {
+    private Pattern pattern = Pattern.compile("^\\s*([^,]),([^,])");
 
     @Override
     public CommandStatus run(Context context, String body) {
-        Matcher commandMatcher = commandPattern.matcher(body);
+        Matcher commandMatcher = pattern.matcher(body);
         if (commandMatcher.matches()) {
-            String command = commandMatcher.group(1);
+            String userId = commandMatcher.group(1);
+            String fullName = commandMatcher.group(2);
 
-            Command commandInstance = commandFactory.get(command);
-
-            if (commandInstance == null) {
-                System.err.println("Did not understand command: " + command);
-            } else {
-                return commandInstance.run(context, commandMatcher.group(2));
-            }
+            System.out.println(userId);
+            System.out.println(fullName);
         }
+
         return CommandStatus.Continue;
     }
 }

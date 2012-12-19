@@ -17,6 +17,8 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
+import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,8 +89,9 @@ public class View extends AbstractFolder {
         return attributeMap;
     }
 
-    public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = super.getModifications(currentEntry);
+    @Override
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(session, currentEntry);
 
         LdapUtils.createMultipleEntryModification(modifications, currentEntry, "asb-view-point", getViewPoints());
 
@@ -100,13 +103,15 @@ public class View extends AbstractFolder {
         return new Decorator();
     }
 
-    public boolean requiresMove(Entry currentEntry) {
+    @Override
+    public boolean requiresMove(Session session, Entry currentEntry) {
         return false;
     }
 
-    public boolean requiresUpdate(Entry currentEntry) {
-        if (!super.requiresUpdate(currentEntry)) {
-            View currentView = getDecorator().decorate(currentEntry);
+    @Override
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
+        if (!super.requiresUpdate(session, currentEntry)) {
+            View currentView = getDecorator().decorate(session, currentEntry);
             Iterator<Folder> newIterator = folders.iterator();
             Iterator<Folder> currentIterator = currentView.folders.iterator();
             while (newIterator.hasNext()) {
@@ -147,19 +152,17 @@ public class View extends AbstractFolder {
         }
 
         @Override
-        public View decorate(Entry entry) {
-            View view = super.decorate(entry);
+        public View decorate(Session session, Entry entry) {
+            View view = super.decorate(session, entry);
 
             Collection<String> viewPoints = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("asb-view-point"));
 
             List<Folder> folders = new ArrayList<Folder>();
 
-            StorableDecorator<Folder> decorator = new Folder().getDecorator();
-
             for (String viewPoint : viewPoints) {
                 try {
-                    folders.add(decorator.decorate(DirectoryServer.getEntry(DN.decode(viewPoint))));
-                } catch (DirectoryException e) {
+                    folders.add(session.getByEntryDn(new Folder(), viewPoint));
+                } catch (StorageException e) {
                 }
             }
 

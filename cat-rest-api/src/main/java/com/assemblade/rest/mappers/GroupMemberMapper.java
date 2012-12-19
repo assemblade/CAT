@@ -45,7 +45,6 @@ public class GroupMemberMapper {
         serverGroupMember.setGroup(groupMapper.toServer(clientGroupMember.getGroup()));
         serverGroupMember.setUserId(clientGroupMember.getUserId());
         serverGroupMember.setParentDn(User.ROOT);
-        serverGroupMember.setAdministrator(clientGroupMember.isAdministrator());
         return serverGroupMember;
     }
 

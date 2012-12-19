@@ -26,6 +26,7 @@ import org.opends.server.controls.GetEffectiveRightsRequestControl;
 import org.opends.server.controls.SubtreeDeleteControl;
 import org.opends.server.core.AddOperation;
 import org.opends.server.core.DeleteOperation;
+import org.opends.server.core.DirectoryServer;
 import org.opends.server.core.ExtendedOperation;
 import org.opends.server.core.ModifyDNOperation;
 import org.opends.server.core.ModifyOperation;
@@ -117,20 +118,20 @@ public class Session {
         log.debug("Updating " + storable.getDn());
         Entry currentEntry = internalGet(dnFromId(storable.getId()), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames()));
         if (currentEntry != null) {
-            if (storable.requiresRename(currentEntry)) {
+            if (storable.requiresRename(this, currentEntry)) {
                 rename(currentEntry.getDN().toString(), storable.getRDN());
                 if (storable.recordChanges()) {
                     addChangeLogEntry("rename", storable);
                 }
             }
-            if (storable.requiresMove(currentEntry)) {
+            if (storable.requiresMove(this, currentEntry)) {
                 move(currentEntry.getDN().toString(), currentEntry.getDN().getRDN().toString(), storable.getParentDn());
                 if (storable.recordChanges()) {
                     addChangeLogEntry("move", storable);
                 }
             }
-            if (storable.requiresUpdate(currentEntry)) {
-                List<Modification> modifications = storable.getModifications(currentEntry);
+            if (storable.requiresUpdate(this, currentEntry)) {
+                List<Modification> modifications = storable.getModifications(this, currentEntry);
                 if (modifications.size() > 0) {
                     ModifyOperation result = connection.processModify(storable.getDN(), modifications);
                     if (result.getResultCode() != ResultCode.SUCCESS) {
@@ -214,7 +215,7 @@ public class Session {
 	@SuppressWarnings("unchecked")
 	public <T extends Storable> T get(final T storable) throws StorageException {
         log.debug("Getting " + storable.getDn());
-        return (T)storable.getDecorator().decorate(internalGet(storable.getDn(), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
+        return (T)storable.getDecorator().decorate(this, internalGet(storable.getDn(), SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
 	}
 
     @SuppressWarnings("unchecked")
@@ -237,17 +238,17 @@ public class Session {
 
     public <T extends Storable> T getByEntryDn(final T storable, String dn) throws StorageException {
         log.debug("Getting entry by dn " + dn);
-        return (T)storable.getDecorator().decorate(internalGet(dn, SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
+        return (T)storable.getDecorator().decorate(this, internalGet(dn, SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(storable.getAttributeNames())));
     }
 
     public <T extends Storable> T getByEntryDnAndFilter(T storable, String dn, String filter) throws StorageException {
         log.debug("Getting entry by dn " + dn + " with filter " + filter);
-        return (T)storable.getDecorator().decorate(internalGet(dn, SearchScope.WHOLE_SUBTREE, filter, new LinkedHashSet<String>(storable.getAttributeNames())));
+        return (T)storable.getDecorator().decorate(this, internalGet(dn, SearchScope.WHOLE_SUBTREE, filter, new LinkedHashSet<String>(storable.getAttributeNames())));
     }
 
     public <T extends Storable> T getByEntryId(T storable, String id) throws StorageException {
         log.debug("Getting entry by id " + id);
-        return (T)storable.getDecorator().decorate(internalGet("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, "(entryUUID=" + id + ")", new LinkedHashSet<String>(storable.getAttributeNames())));
+        return (T)storable.getDecorator().decorate(this, internalGet("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, "(entryUUID=" + id + ")", new LinkedHashSet<String>(storable.getAttributeNames())));
     }
 
     public String dnFromId(String id) throws StorageException {
@@ -270,7 +271,7 @@ public class Session {
         List<T> result = new ArrayList<T>();
 
         for (Entry entry : internalSearch(baseDn, subTree, storable.getSearchFilter(), new LinkedHashSet<String>(storable.getAttributeNames()))) {
-            result.add((T)storable.getDecorator().decorate(entry));
+            result.add((T)storable.getDecorator().decorate(this, entry));
         }
         return result;
 	}
@@ -279,7 +280,7 @@ public class Session {
         List<T> result = new ArrayList<T>();
 
         for (Entry entry : internalSearch(baseDn, true, searchFilter, new LinkedHashSet<String>(storable.getAttributeNames()))) {
-            result.add((T)storable.getDecorator().decorate(entry));
+            result.add((T)storable.getDecorator().decorate(this, entry));
         }
         return result;
     }
@@ -326,6 +327,7 @@ public class Session {
                 }
             } else {
                 log.error("Failed to get entry [" + dn + "] because: " + searchResult.getErrorMessage().toString());
+                dumpTree("dc=assemblade,dc=com", true, "(objectclass=*)");
                 throw new StorageException(AssembladeErrorCode.ASB_0006);
             }
         } catch (DirectoryException e) {

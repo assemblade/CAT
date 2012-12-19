@@ -63,6 +63,15 @@ ext {
 
 idea.module.excludeDirs = [ file('.gradle') ]
 
+def boolean isTomcatRunning() {
+    ant.exec (executable: '/bin/bash', spawn: 'false', output: "${project.buildDir}/tmp/tomcatStatus.txt") {
+        ant.arg (value: '-c')
+        ant.arg (value: "ps -efl | grep java | grep ${tomcatHome} | awk '{print \$22}'")
+    }
+
+    return new File("${project.buildDir}/tmp/tomcatStatus.txt").getText('UTF-8').contains("${tomcatHome}");
+}
+
 task fetchTomcat {
     onlyIf { !file(buildDir).exists() || !tomcatZipFile.exists() }
     doLast {
@@ -74,6 +83,7 @@ task fetchTomcat {
 }
 
 task stopTomcat {
+    onlyIf { isTomcatRunning() }
     doLast {
         ant.exec (executable: '/bin/bash', spawn: 'false') {
             ant.arg (value: '-c')
@@ -170,28 +180,22 @@ task deployApplication(dependsOn: [initialiseTomcat, clearDatastore]) {
 }
 
 task startTomcat(dependsOn: deployApplication) {
+    onlyIf { !isTomcatRunning() }
     doLast {
-        ant.exec (executable: '/bin/bash', spawn: 'false', outputProperty: 'tomcatOutput') {
-            ant.arg (value: '-c')
-            ant.arg (value: "ps -efl | grep java | grep ${tomcatHome} | awk '{print \$22}'")
-        }
-
-        if (ant.properties.tomcatOutput.indexOf("${tomcatHome}") == -1) {
-            println("Starting tomcat")
-            ant.parallel {
-                ant.sequential {
-                    ant.exec (executable: '/bin/bash', spawn: 'true') {
-                        ant.arg (value: '-c')
-                        ant.arg (value: "export CATALINA_PID=${tomcatHome}/tomcat.pid; export JAVA_HOME=${System.properties['java.home']}; export JAVA_OPTS=\"-Xmx2048m -XX:MaxPermSize=512m\"; export JPDA_ADDRESS=2345; export JPDA_TRANSPORT=dt_socket; export CATALINA_OPTS=-Djavax.net.debug=ssl,handshake; ${tomcatHome}/bin/catalina.sh jpda start")
-                    }
+        println("Starting tomcat")
+        ant.parallel {
+            ant.sequential {
+                ant.exec (executable: '/bin/bash', spawn: 'true') {
+                    ant.arg (value: '-c')
+                    ant.arg (value: "export CATALINA_PID=${tomcatHome}/tomcat.pid; export JAVA_HOME=${System.properties['java.home']}; export JAVA_OPTS=\"-Xmx2048m -XX:MaxPermSize=512m\"; export JPDA_ADDRESS=2345; export JPDA_TRANSPORT=dt_socket; export CATALINA_OPTS=-Djavax.net.debug=ssl,handshake; ${tomcatHome}/bin/catalina.sh jpda start")
                 }
-                ant.sequential {
-                    ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
-                        ant.and {
-                            ant.socket (server: 'localhost', port: 11080)
-                            ant.http(url: 'http://localhost:11080/cat-rest-api', errorsBeginAt: 402)
+            }
+            ant.sequential {
+                ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
+                    ant.and {
+                        ant.socket (server: 'localhost', port: 11080)
+                        ant.http(url: 'http://localhost:11080/cat-rest-api', errorsBeginAt: 402)
 
-                        }
                     }
                 }
             }

@@ -16,6 +16,8 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.acis.AccessControlItem;
 import com.assemblade.opendj.acis.AciFactory;
 import com.assemblade.opendj.acis.CompositeSubject;
@@ -110,21 +112,21 @@ public abstract class AbstractFolder extends AbstractStorable {
         return attributeMap;
     }
 
-    public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = super.getModifications(currentEntry);
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(session, currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-template", template);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
         LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", generatePermissionAcis());
         return modifications;
     }
 
-    public boolean requiresRename(Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) {
         return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override
-    public boolean requiresUpdate(Entry currentEntry) {
-        Folder currentFolder = new Folder().getDecorator().decorate(currentEntry);
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
+        Folder currentFolder = new Folder().getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(template, currentFolder.getTemplate())
                 || !StringUtils.equals(description, currentFolder.getDescription())
                 || (inherit != currentFolder.inherit)
@@ -230,8 +232,8 @@ public abstract class AbstractFolder extends AbstractStorable {
 
     protected abstract class Decorator<T extends AbstractFolder> extends AbstractStorable.Decorator<T> {
         @Override
-        public T decorate(Entry entry) {
-            T folder = super.decorate(entry);
+        public T decorate(Session session, Entry entry) {
+            T folder = super.decorate(session, entry);
 
             folder.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             folder.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
@@ -248,15 +250,15 @@ public abstract class AbstractFolder extends AbstractStorable {
                     } else if (aci.getName().equals("read")) {
                         for (String dn : aci.getPermissions().get(0).getSubject().getDns()) {
                             try {
-                                folder.readGroups.add(new Group().getDecorator().decorate(DirectoryServer.getEntry(DN.decode(dn))));
-                            } catch (DirectoryException e) {
+                                folder.readGroups.add(session.getByEntryDn(new Group(), dn));
+                            } catch (StorageException e) {
                             }
                         }
                     } else if (aci.getName().equals("write")) {
                         for (String dn : aci.getPermissions().get(0).getSubject().getDns()) {
                             try {
-                                folder.writeGroups.add(new Group().getDecorator().decorate(DirectoryServer.getEntry(DN.decode(dn))));
-                            } catch (DirectoryException e) {
+                                folder.writeGroups.add(session.getByEntryDn(new Group(), dn));
+                            } catch (StorageException e) {
                             }
                         }
                     }

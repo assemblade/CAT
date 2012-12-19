@@ -47,9 +47,9 @@ public class PropertyManagerTest extends AbstractUserManagementTest {
 	public void setup() throws Exception {
 		test = new PropertyManager(userManager);
         userLogin("admin");
-        group1 = addGroup("group1", "");
-        group2 = addGroup("group2", "");
-        group3 = addGroup("group3", "");
+        group1 = addGroup("group1", "description");
+        group2 = addGroup("group2", "description");
+        group3 = addGroup("group3", "description");
         user1 = addUser("user1", "User1", "user1@example.com", "password");
         user2 = addUser("user2", "User2", "user2@example.com", "password");
         user3 = addUser("user3", "User3", "user3@example.com", "password");

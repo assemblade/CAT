@@ -15,6 +15,7 @@
  */
 package com.assemblade.opendj.model;
 
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.StorageException;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
@@ -40,12 +41,12 @@ public interface Storable {
 	public StorableDecorator getDecorator();
 	public Map<AttributeType, List<Attribute>> getUserAttributes();
 	public Map<AttributeType, List<Attribute>> getOperationalAttributes();
-	public List<Modification> getModifications(Entry currentEntry);
+	public List<Modification> getModifications(Session session, Entry currentEntry);
 	public boolean recordChanges();
     public String getChangeLogDescription();
-    public boolean requiresRename(Entry currentEntry);
-    public boolean requiresMove(Entry currentEntry);
-    public boolean requiresUpdate(Entry currentEntry);
+    public boolean requiresRename(Session session, Entry currentEntry);
+    public boolean requiresMove(Session session, Entry currentEntry);
+    public boolean requiresUpdate(Session session, Entry currentEntry);
     public boolean isAddable();
     public boolean isWritable();
     public boolean isDeletable();

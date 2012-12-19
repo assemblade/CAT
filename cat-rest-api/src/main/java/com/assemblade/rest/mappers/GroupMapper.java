@@ -23,7 +23,7 @@ public class GroupMapper {
         Group clientGroup = new Group();
         clientGroup.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/id/" + serverGroup.getId());
         clientGroup.setId(serverGroup.getId());
-        clientGroup.setName(serverGroup.getDisplayName());
+        clientGroup.setName(serverGroup.getName());
         clientGroup.setDescription(serverGroup.getDescription());
         clientGroup.setWritable(serverGroup.isWritable());
         clientGroup.setDeletable(serverGroup.isDeletable());

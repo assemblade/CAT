@@ -17,6 +17,7 @@ package com.assemblade.opendj.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
+import com.assemblade.opendj.Session;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.opends.server.core.DirectoryServer;
@@ -179,8 +180,8 @@ public class ChangeLogEntry extends AbstractStorable {
         }
 
         @Override
-        public ChangeLogEntry decorate(Entry entry) {
-            ChangeLogEntry changeLogEntry = super.decorate(entry);
+        public ChangeLogEntry decorate(Session session, Entry entry) {
+            ChangeLogEntry changeLogEntry = super.decorate(session, entry);
 
             changeLogEntry.sequence = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("changeNumber"));
             changeLogEntry.type = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("changetype"));

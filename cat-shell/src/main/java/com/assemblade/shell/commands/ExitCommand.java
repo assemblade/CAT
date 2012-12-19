@@ -18,6 +18,9 @@ package com.assemblade.shell.commands;
 import com.assemblade.shell.Context;
 import jline.console.ConsoleReader;
 
-public interface Command {
-    public CommandStatus run(Context context, String parameters);
+public class ExitCommand implements Command {
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        return CommandStatus.Finish;
+    }
 }

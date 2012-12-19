@@ -16,7 +16,7 @@
 package com.assemblade.shell.commands;
 
 public enum CommandStatus {
-    Complete,
-    Incomplete,
-    Failed
+    Continue,
+    NeedAuthentication,
+    Finish
 }

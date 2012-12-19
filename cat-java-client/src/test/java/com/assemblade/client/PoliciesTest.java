@@ -17,6 +17,7 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.client.model.AuthenticationPolicy;
+import com.assemblade.client.model.LdapPassthroughPolicy;
 import com.assemblade.client.model.PasswordPolicy;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,5 +40,11 @@ public class PoliciesTest extends AbstractApiTest {
         policy.setName("Change on reset");
         policies.addAuthenticationPolicy(policy);
         policies.deleteAuthenticationPolicy(policy);
+    }
+
+    @Test
+    public void addLdapPassthroughPolicyTest() throws ClientException {
+        LdapPassthroughPolicy policy = new LdapPassthroughPolicy();
+
     }
 }

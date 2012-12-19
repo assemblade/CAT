@@ -16,6 +16,7 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.collections.CollectionUtils;
@@ -81,18 +82,20 @@ public class Property extends AbstractStorable implements Serializable {
         return new Decorator();
 	}
 
-    public boolean requiresRename(Entry currentEntry) {
+    @Override
+    public boolean requiresRename(Session session, Entry currentEntry) {
         return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override
-    public boolean requiresUpdate(Entry currentEntry) {
-        Property currentProperty = (Property)getDecorator().decorate(currentEntry);
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
+        Property currentProperty = (Property)getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(description, currentProperty.getDescription()) || !StringUtils.equals(value, currentProperty.getValue());
     }
 
-    public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = super.getModifications(currentEntry);
+    @Override
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(session, currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-value", value);
         return modifications;
@@ -133,8 +136,8 @@ public class Property extends AbstractStorable implements Serializable {
         }
 
         @Override
-        public Property decorate(Entry entry) {
-            Property property = super.decorate(entry);
+        public Property decorate(Session session, Entry entry) {
+            Property property = super.decorate(session, entry);
 
             property.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             property.value = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-value"));

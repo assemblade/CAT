@@ -15,6 +15,7 @@
  */
 package com.assemblade.server.model;
 
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -78,8 +79,8 @@ public class Folder extends AbstractFolder {
         }
 
         @Override
-        public Folder decorate(Entry entry) {
-            return super.decorate(entry);
+        public Folder decorate(Session session, Entry entry) {
+            return super.decorate(session, entry);
         }
     }
 }

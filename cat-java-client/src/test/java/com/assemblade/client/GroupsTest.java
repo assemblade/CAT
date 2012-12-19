@@ -79,7 +79,7 @@ public class GroupsTest extends AbstractApiTest {
     public void getAllGroupsTest() throws ClientException {
         List<Group> groupList = groups.getAllGroups();
 
-        assertEquals(2, groupList.size());
+        assertEquals(3, groupList.size());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class GroupsTest extends AbstractApiTest {
 
         assertNotNull(group);
         assertEquals("Application Administrators", group.getName());
-        assertEquals("admingroup", group.getType());
+        assertEquals("admins", group.getType());
         assertFalse(group.isDeletable());
         assertFalse(group.isWritable());
     }

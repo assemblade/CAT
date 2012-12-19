@@ -16,6 +16,7 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.StorableDecorator;
 import com.assemblade.opendj.permissions.EntryPermissions;
 import org.opends.server.core.DirectoryServer;
@@ -50,16 +51,8 @@ public class GroupMember extends AbstractUser {
 		this.group = group;
 	}
 	
-	public boolean isEnabled() {
-		return true;
-	}
-	
 	public boolean isAdministrator() {
 		return administrator;
-	}
-
-	public void setAdministrator(boolean administrator) {
-		this.administrator = administrator;
 	}
 
     private class Decorator extends AbstractUser.Decorator<GroupMember> {
@@ -71,14 +64,13 @@ public class GroupMember extends AbstractUser {
         }
 
         @Override
-        public GroupMember decorate(Entry entry) {
-            GroupMember member = super.decorate(entry);
-            String adminGroupDn = "cn=admins," + group.getDn();
+        public GroupMember decorate(Session session, Entry entry) {
+            GroupMember member = super.decorate(session, entry);
             List<Attribute> attributes = entry.getOperationalAttribute(DirectoryServer.getAttributeType("ismemberof"));
             if (attributes != null) {
                 for (Attribute attribute : attributes) {
                     for (AttributeValue value : attribute) {
-                        if (adminGroupDn.equals(value.getValue().toString())) {
+                        if (Group.GROUP_ADMIN_DN.equals(value.getValue().toString())) {
                             member.administrator = true;
                         }
                     }

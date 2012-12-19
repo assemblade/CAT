@@ -15,9 +15,7 @@
  */
 package com.assemblade.shell.commands;
 
-import com.assemblade.shell.Context;
-import jline.console.ConsoleReader;
-
-public interface Command {
-    public CommandStatus run(Context context, String parameters);
+public interface CommandFactory {
+    public Command get(String commandName);
+    public String getCommandRegex();
 }

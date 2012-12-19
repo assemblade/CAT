@@ -75,40 +75,4 @@ public class GroupMembersTest extends AbstractApiTest {
 
         assertEquals(0, groupMemberList.size());
     }
-
-    @Test
-    public void editGroupMemberTest() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
-        Group group = groups.addGroup(createGroup("group", "group description"));
-
-        GroupMember groupMember = createGroupMember(group, user);
-
-        groupMember = groups.addMemberToGroup(groupMember);
-
-        assertFalse(groupMember.isAdministrator());
-
-        groupMember.setAdministrator(true);
-
-        groupMember = groups.editGroupMember(groupMember);
-
-        assertTrue(groupMember.isAdministrator());
-
-        List<GroupMember> groupMemberList = groups.getGroupMembers(group);
-
-        groupMember = groupMemberList.get(groupMemberList.indexOf(groupMember));
-
-        assertTrue(groupMember.isAdministrator());
-
-        groupMember.setAdministrator(false);
-
-        groupMember = groups.editGroupMember(groupMember);
-
-        assertFalse(groupMember.isAdministrator());
-
-        groupMemberList = groups.getGroupMembers(group);
-
-        groupMember = groupMemberList.get(groupMemberList.indexOf(groupMember));
-
-        assertFalse(groupMember.isAdministrator());
-    }
 }

@@ -29,6 +29,7 @@ dependencies {
 
     compile 'commons-cli:commons-cli:1.2'
     compile 'jline:jline:2.8'
+    compile 'commons-lang:commons-lang:2.6'
 }
 
 task buildTarDistribution(dependsOn: installApp) {

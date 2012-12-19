@@ -7,10 +7,11 @@ objectClass: domain
 aci: (targetcontrol="1.2.840.113556.1.4.805")(version 3.0; acl "Give everyone access to the subtree delete control"; allow(read) userdn="ldap:///anyone";)
 aci: (target="ldap:///dc=assemblade,dc=com")(targetattr="* || +")(version 3.0; acl "Admin Access"; allow(all,import,export) groupdn="ldap:///cn=globaladmin,ou=groups,dc=assemblade,dc=com";)
 aci: (target="ldap:///cn=globaladmin,ou=groups,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop admin group being deleted"; deny(delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///cn=groupadmin,ou=groups,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop group admin group being deleted"; deny(delete,export) userdn="ldap:///anyone";)
 aci: (target="ldap:///cn=user,ou=groups,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop user group being deleted"; deny(delete,export) userdn="ldap:///anyone";)
 aci: (target="ldap:///uid=admin,ou=users,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop admin user being deleted"; deny(delete,export) userdn="ldap:///anyone";)
-aci: (target="ldap:///ou=groups,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || member || isMemberOf || aclRights")(targetfilter="(!(cn=globaladmin))")(version 3.0; acl "Allow everyone to see into the group tree"; allow(read,search,compare) userdn="ldap:///anyone";)
-aci: (target="ldap:///ou=users,dc=assemblade,dc=com")(targetscope="subordinate")(targetattr="objectclass || entryUUID || uid || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Allow groupadmin to see into the user tree"; allow(read,search,compare) groupdn="ldap:///cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com";)
+aci: (target="ldap:///ou=groups,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || member || isMemberOf || aclRights")(targetfilter="(&(!(cn=globaladmin))(!(cn=groupadmin))(!(cn=user)))")(version 3.0; acl "Allow everyone to see into the group tree"; allow(read,search,compare) userdn="ldap:///anyone";)
+aci: (target="ldap:///ou=users,dc=assemblade,dc=com")(targetscope="subordinate")(targetattr="objectclass || entryUUID || uid || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Allow groupadmin to see into the user tree"; allow(read,search,compare) groupdn="ldap:///cn=groupadmin,ou=groups,dc=assemblade,dc=com";)
 aci: (target="ldap:///cn=views,*,ou=users,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || aclRights")(version 3.0; acl "Allow users to see their views"; allow(all) userdn="ldap:///parent";)
 aci: (targetattr="objectclass || uid || entryUUID || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Self entry read"; allow (read,search,compare) userdn="ldap:///self";)
 aci: (target="ldap:///cn=properties,dc=assemblade,dc=com")(targetscope="base")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights || asb-no-inheritance")(version 3.0; acl "Allow anyone to read and search properties"; allow(read,search) userdn="ldap:///anyone";)
@@ -58,14 +59,15 @@ objectClass: organizationalUnit
 dn: cn=globaladmin,ou=groups,dc=assemblade,dc=com
 changetype: add
 cn: globaladmin
-description: This is the application administrator group. Members of this group have complete access to all aspects of the system.
+description: Application Administrators/This is the application administrator group. Members of this group have complete access to all aspects of the system.
 objectClass: top
 objectClass: groupOfNames
 member: uid=admin,ou=users,dc=assemblade,dc=com
 
-dn: cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com
+dn: cn=groupadmin,ou=groups,dc=assemblade,dc=com
 changetype: add
 cn: groupadmin
+description: Group Administrators/This is the groups administrator group. Members of this group can add and remove members from groups they are members of.
 objectClass: top
 objectClass: groupOfNames
 member: uid=admin,ou=users,dc=assemblade,dc=com
@@ -73,6 +75,7 @@ member: uid=admin,ou=users,dc=assemblade,dc=com
 dn: cn=user,ou=groups,dc=assemblade,dc=com
 changetype: add
 cn: user
+description: All Users/This is the users group. All users are a member of this group.
 objectClass: top
 objectClass: groupOfNames
 member: uid=admin,ou=users,dc=assemblade,dc=com

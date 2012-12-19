@@ -17,6 +17,7 @@ package com.assemblade.opendj.model;
 
 import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.permissions.EntryPermissions;
 import org.apache.commons.lang.StringUtils;
@@ -92,7 +93,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
     }
 
     @Override
-    public List<Modification> getModifications(Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
 		return new ArrayList<Modification>();
 	}
 
@@ -110,15 +111,18 @@ public abstract class AbstractStorable implements Storable, Serializable {
         return "";
     }
 
-    public boolean requiresRename(Entry currentEntry) {
+    @Override
+    public boolean requiresRename(Session session, Entry currentEntry) {
         return false;
     }
 
-    public boolean requiresMove(Entry currentEntry) {
+    @Override
+    public boolean requiresMove(Session session, Entry currentEntry) {
         return !getParentDn().equals(currentEntry.getDN().getParent().toString());
     }
 
-    public boolean requiresUpdate(Entry currentEntry) {
+    @Override
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
         return false;
     }
 
@@ -165,7 +169,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
 
     protected abstract class Decorator<T extends AbstractStorable> implements StorableDecorator<T> {
         @Override
-        public T decorate(Entry entry) {
+        public T decorate(Session session, Entry entry) {
             T storable = newInstance();
 
             storable.id = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("entryuuid"));

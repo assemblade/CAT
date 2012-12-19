@@ -16,7 +16,9 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.acis.AccessControlItem;
+import com.assemblade.opendj.acis.CompositeSubject;
 import com.assemblade.opendj.acis.Permission;
 import com.assemblade.opendj.acis.PermissionSubject;
 import com.assemblade.opendj.acis.Subject;
@@ -46,9 +48,10 @@ public class Group extends AbstractStorable {
 
 	public static final String ROOT = "ou=groups,dc=assemblade,dc=com";
 	public static final String GLOBAL_ADMIN_DN = "cn=globaladmin,ou=groups,dc=assemblade,dc=com";
-    public static final String GROUP_ADMIN_DN = "cn=groupadmin,cn=globaladmin,ou=groups,dc=assemblade,dc=com";
+    public static final String GROUP_ADMIN_DN = "cn=groupadmin,ou=groups,dc=assemblade,dc=com";
     public static final String USER_DN = "cn=user,ou=groups,dc=assemblade,dc=com";
 
+    private String groupId;
     private String name;
     private String description;
     protected List<Storable> addMembers = new ArrayList<Storable>();
@@ -73,8 +76,8 @@ public class Group extends AbstractStorable {
     public Map<AttributeType, List<Attribute>> getUserAttributes() {
         Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
 
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", groupId);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", encodeDescription());
 
         return attributeMap;
     }
@@ -83,14 +86,16 @@ public class Group extends AbstractStorable {
     public Map<AttributeType, List<Attribute>> getOperationalAttributes() {
         Map<AttributeType, List<Attribute>> attributeMap = new HashMap<AttributeType, List<Attribute>>();
 
-        Subject groupsExclusion = new PermissionSubject("groupdn", Arrays.asList(GLOBAL_ADMIN_DN, "cn=admins," + getDn(), getDn()), "!=");
+        Subject groupsExclusion = new PermissionSubject("groupdn", Arrays.asList(GLOBAL_ADMIN_DN, getDn()), "!=");
         Target allAttributes = new Target("targetattr", "=", "* || +");
         Permission deny = new Permission("deny", "all", groupsExclusion);
         AccessControlItem denyAci = new AccessControlItem("deny", Arrays.asList(allAttributes), Arrays.asList(deny));
 
-        Subject groupsInclusion = new PermissionSubject("groupdn", Arrays.asList("cn=admins," + getDn()), "=");
+        Subject groupAdminInclusion = new PermissionSubject("groupdn", Arrays.asList(GROUP_ADMIN_DN), "=");
+        Subject groupInclusion = new PermissionSubject("groupdn", Arrays.asList(getDn()), "=");
+        Subject bothGroupsInclusion = new CompositeSubject(groupAdminInclusion, groupInclusion, "AND");
         Target memberAttribute = new Target("targetattr", "=", "member");
-        Permission allow = new Permission("allow", "write,delete", groupsInclusion);
+        Permission allow = new Permission("allow", "write,delete", bothGroupsInclusion);
         AccessControlItem allowAci = new AccessControlItem("allow", Arrays.asList(memberAttribute), Arrays.asList(allow));
 
         LdapUtils.addMultipleValueAttributeToMap(attributeMap, "aci", allowAci.toString(), denyAci.toString());
@@ -107,10 +112,10 @@ public class Group extends AbstractStorable {
     }
 
     @Override
-    public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = super.getModifications(currentEntry);
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(session, currentEntry);
 
-        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", encodeDescription());
 
         for (Storable newMember : addMembers) {
             modifications.add(LdapUtils.createMultipleEntryAddModification("member", newMember.getDn()));
@@ -123,30 +128,36 @@ public class Group extends AbstractStorable {
         return modifications;
     }
 
-    public boolean requiresRename(Entry currentEntry) {
-        return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
-    }
-
     @Override
-    public boolean requiresUpdate(Entry currentEntry) {
-        Group currentGroup = getDecorator().decorate(currentEntry);
-        return !StringUtils.equals(description, currentGroup.getDescription()) || CollectionUtils.isNotEmpty(addMembers) || CollectionUtils.isNotEmpty(deleteMembers);
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
+        Group currentGroup = getDecorator().decorate(session, currentEntry);
+        return !StringUtils.equals(name, currentGroup.getName()) || !StringUtils.equals(description, currentGroup.getDescription()) || CollectionUtils.isNotEmpty(addMembers) || CollectionUtils.isNotEmpty(deleteMembers);
     }
 
     @Override
     public String getRDN() {
-        return "cn=" + name;
+        return "cn=" + groupId;
     }
 
     public String getType() {
         if (getDn().equals(GLOBAL_ADMIN_DN)) {
-            return "admingroup";
+            return "admins";
+        } else if (getDn().equals(GROUP_ADMIN_DN)) {
+            return "groupadmins";
         } else if (getDn().equals(USER_DN)) {
-            return "allusers";
+            return "users";
         } else {
             return "group";
         }
 	}
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
     public String getName() {
         return name;
@@ -162,10 +173,6 @@ public class Group extends AbstractStorable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getDisplayName() {
-        return Localiser.getInstance().translate(getName());
     }
 
     public void addMember(Storable member) {
@@ -188,18 +195,24 @@ public class Group extends AbstractStorable {
         }
 
         @Override
-        public Group decorate(Entry entry) {
-            Group group = super.decorate(entry);
-
-            group.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
-            group.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
-
-            //TODO: This should be handled by an ACI
-            if (group.getDn().equals(GLOBAL_ADMIN_DN) || group.getDn().equals(USER_DN)) {
-                group.writable = false;
+        public Group decorate(Session session, Entry entry) {
+            Group group = super.decorate(session, entry);
+            group.groupId = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
+            String nameDescription = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
+            if (nameDescription.contains("/")) {
+                group.name = nameDescription.substring(0, nameDescription.indexOf('/'));
+                group.description = nameDescription.substring(nameDescription.indexOf('/') + 1, nameDescription.length());
             }
-
+            group.writable = group.getType().equals("group");
             return group;
+        }
+    }
+
+    private String encodeDescription() {
+        if (StringUtils.isNotEmpty(description)) {
+            return name + "/" + description;
+        } else {
+            return name;
         }
     }
 }

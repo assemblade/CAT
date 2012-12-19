@@ -40,3 +40,11 @@ subprojects {
 }
 
 task stop(dependsOn: [':cat-rest-api:stopTomcat', ':cat-directory:stopOpenDJ'])
+task start(dependsOn: [':cat-rest-api:startTomcat', ':cat-directory:startOpenDJ'])
+
+task restart {
+    doLast {
+        stop.execute()
+        start.execute()
+    }
+}

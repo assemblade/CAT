@@ -22,6 +22,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
 
 public class CatLauncher {
     private Options options;
@@ -51,9 +54,33 @@ public class CatLauncher {
         } else {
             String url = commandLine.getOptionValue("url");
 
-            AuthenticationProcessor authenticationProcessor = new AuthenticationProcessor(url);
+            Context context = new Context();
 
-            new InputProcessor(authenticationProcessor).readInput();
+            if (StringUtils.isNotEmpty(url)) {
+                context.setUrl(url);
+            }
+
+            AuthenticationProcessor authenticationProcessor = new AuthenticationProcessor(context);
+
+            if (StringUtils.isEmpty(url) && !authenticationProcessor.hasAuthentication()) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp( "cat-shell", options );
+            } else {
+
+                System.out.println();
+                System.out.println();
+
+                try {
+                    context.setAuthenticationProcessor(authenticationProcessor);
+                    LineProcessor lineProcessor = new LineProcessor(context);
+                    while (lineProcessor.processing());
+                } catch (IOException e) {
+                }
+
+                System.out.println();
+                System.out.println("bye!!");
+                System.out.println();
+            }
         }
     }
 

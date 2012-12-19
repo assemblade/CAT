@@ -15,52 +15,54 @@
  */
 package com.assemblade.shell;
 
-import com.assemblade.client.ClientException;
-import com.assemblade.client.Users;
 import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.User;
-import com.assemblade.shell.commands.AdminCommand;
 import com.assemblade.shell.commands.Command;
+import com.assemblade.shell.commands.InteractiveCommandFactory;
+import jline.console.ConsoleReader;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LineProcessor {
-    private final static Pattern commandPattern = Pattern.compile("^\\s*([list|add|edit|delete]*)\\s*(.*)$");
+    private Context context;
+    private Authentication authentication;
+    private InteractiveCommandFactory commandFactory;
+    private Pattern commandPattern;
 
-    private static final Map<String, Class> commands = new HashMap<String, Class>();
-
-    static {
-        commands.put("admin", AdminCommand.class);
+    public LineProcessor(Context context) throws IOException {
+        this.context = context;
+        this.context.setConsoleReader(new ConsoleReader());
+        commandFactory = new InteractiveCommandFactory();
+        commandPattern = Pattern.compile(commandFactory.getCommandRegex());
     }
 
-    public void processLine(Authentication authentication, String line) {
-        Matcher commandMatcher = commandPattern.matcher(line);
+    public boolean processing() throws IOException {
+        if (authentication == null) {
+            authentication = context.getAuthenticationProcessor().authenticate(context.getConsoleReader());
+        }
+        Matcher commandMatcher = commandPattern.matcher(context.getConsoleReader().readLine("> "));
         if (commandMatcher.matches()) {
             String command = commandMatcher.group(1);
+            String body = commandMatcher.group(2);
 
-            System.out.println("command = " + command);
-            System.out.println("parameters = " + commandMatcher.group(2));
+            Command commandInstance = commandFactory.get(command);
 
-            if (commands.containsKey(command)) {
-
+            if (commandInstance == null) {
+                System.err.println("Did not understand command: " + command);
+            } else {
+                switch (commandInstance.run(context, body)) {
+                    case Continue:
+                        return true;
+                    case NeedAuthentication:
+                        authentication = null;
+                        context.getAuthenticationProcessor().clearStoredAuthentication();
+                        return true;
+                    case Finish:
+                        return false;
+                }
             }
-
         }
-//        if (line.equals("list users")) {
-//            Users users = new Users(authentication);
-//            try {
-//                List<User> userList = users.getUsers();
-//                for (User user : userList) {
-//                    System.out.println(user.getUserId() + "," + user.getFullName() + "," + user.getEmailAddress());
-//                }
-//            } catch (ClientException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
+        return true;
     }
 }

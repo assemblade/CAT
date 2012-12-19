@@ -15,9 +15,10 @@
  */
 package com.assemblade.shell.commands;
 
-import com.assemblade.shell.Context;
-import jline.console.ConsoleReader;
-
-public interface Command {
-    public CommandStatus run(Context context, String parameters);
+public class InteractiveCommandFactory extends AbstractCommandFactory {
+    public InteractiveCommandFactory() {
+        commands.put("admin", AdminCommand.class);
+        commands.put("add", AddCommand.class);
+        commands.put("exit", ExitCommand.class);
+    }
 }

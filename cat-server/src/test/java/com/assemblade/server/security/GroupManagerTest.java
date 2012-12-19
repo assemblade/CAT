@@ -29,6 +29,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(OpenDJTestRunner.class)
 public class GroupManagerTest extends AbstractUserManagementTest {
@@ -49,7 +50,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 
 		List<Group> groups = groupManager.getGroups();
 		
-		assertEquals(2, groups.size());
+		assertEquals(3, groups.size());
 	}
 	
 	@Test
@@ -58,7 +59,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 
 		Group expected = addGroup("Test1", "Test1 Description");
 
-		assertEquals(3, groupManager.getGroups().size());
+		assertEquals(4, groupManager.getGroups().size());
 
 		Group actual = userManager.getUserSession().get(expected);
 		
@@ -74,16 +75,14 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 
 		groupManager.deleteGroup(expected.getId());
 		
-		assertEquals(2, groupManager.getGroups().size());
-		
-//		assertFalse(userManager.getUserSession().exists(expected));
+		assertEquals(3, groupManager.getGroups().size());
 	}
 	
 	@Test(expected=StorageException.class)
 	public void adminCannotDeleteAdminGroup() throws Exception {
 		userLogin("admin");
 
-        Group adminGroup = userManager.getUserSession().getByEntryDn(new Group(), "cn=globaladmin,ou=groups,dc=assemblade,dc=com");
+        Group adminGroup = groupManager.getAdministratorGroup();
 
 		groupManager.deleteGroup(adminGroup.getId());
 	}
@@ -98,7 +97,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		userLogin("test1");
 		
-		assertEquals(2, groupManager.getGroups().size());
+		assertEquals(3, groupManager.getGroups().size());
 	}
 	
 	@Test
@@ -145,10 +144,8 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
 		List<GroupMember> groupMembers = groupManager.getListOfUsersInGroup(group.getId());
 		
@@ -165,10 +162,8 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
-
-        groupMember = groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
 		List<GroupMember> groupMembers = groupManager.getListOfUsersInGroup(group.getId());
 		
@@ -176,9 +171,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		assertEquals("test1", groupMembers.get(0).getUserId());
 		assertTrue(groupMembers.get(0).isAdministrator());
 
-        groupMember.setAdministrator(false);
-
-		groupManager.setGroupMemberAdministrativeRights(groupMember);
+        groupManager.removeMemberFromGroup(groupManager.getGroupAdministratorGroup().getId(), user.getId());
 
 		groupMembers = groupManager.getListOfUsersInGroup(group.getId());
 
@@ -188,7 +181,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 	}
 
 	@Test
-	public void userCannotSeeAdminGroup() throws Exception {
+	public void userCannotSeeGroups() throws Exception {
 		userLogin("admin");
 
 		addUser("test1", "Test1", "test1@example.com", "password");
@@ -197,7 +190,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 
         List<Group> groups = groupManager.getGroups();
 
-		assertEquals(1, groups.size());
+		assertEquals(0, groups.size());
 	}
 
 	@Test
@@ -257,12 +250,10 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
-        groupManager.addMemberToGroup(groupMember);
-
-		userLogin("test1");
+        userLogin("test1");
 		
 		List<Group> groups = groupManager.getGroups();
 
@@ -277,10 +268,8 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
         List<GroupMember> groupMembers = groupManager.getListOfUsersInGroup(group.getId());
 		
@@ -288,7 +277,7 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 	}
 	
 	@Test
-	public void userWithGroupAdminRightsCannotSeeOtherGroup() throws Exception {
+	public void userWithGroupAdminRightsCannotSeeOtherGroups() throws Exception {
 		userLogin("admin");
 
 		Group group = addGroup("Group1", "Group1 Description");
@@ -296,21 +285,19 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
         userLogin("test1");
 		
 		List<Group> groups = groupManager.getGroups();
 		
-		assertEquals(2, groups.size());
-		assertEquals("Group1", groups.get(1).getName());
+		assertEquals(1, groups.size());
+		assertTrue(groups.contains(group));
 	}
 
 	@Test
-	public void userWithGroupAdminRightsOfOneGroupDoesNotHaveAdminRightsOfOtherGroupsTheyAreAMemberOf() throws Exception {
+	public void userWithGroupAdminRightsHasAdminRightsToAllGroupsTheyAreAMemberOf() throws Exception {
 		userLogin("admin");
 
 		Group group1 = addGroup("Group1", "Group1 Description");
@@ -318,16 +305,14 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group1, user);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group1, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
         groupManager.addMemberToGroup(createGroupMember(group2, user));
 
         List<GroupMember> groupMembers = groupManager.getListOfUsersInGroup(group2.getId());
 		
-		assertFalse(groupMembers.get(0).isAdministrator());
+		assertTrue(groupMembers.get(0).isAdministrator());
 	}
 
 	@Test
@@ -337,10 +322,8 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		Group group = addGroup("Group1", "Group1 Description");
 		User user = addUser("test1", "Test1", "test1@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user));
 
         userLogin("test1");
 		
@@ -357,10 +340,8 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		User user1 = addUser("test1", "Test1", "test1@example.com", "password");
 		User user2 = addUser("test2", "Test2", "test2@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user1);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user1));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user1));
 
         userLogin("test1");
 
@@ -379,12 +360,10 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 		User user1 = addUser("test1", "Test1", "test1@example.com", "password");
 		User user2 = addUser("test2", "Test2", "test2@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user1);
-        groupMember.setAdministrator(true);
+        groupManager.addMemberToGroup(createGroupMember(group, user1));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user1));
 
-        groupManager.addMemberToGroup(groupMember);
-
-		userLogin("test1");
+        userLogin("test1");
 
         groupManager.addMemberToGroup(createGroupMember(group, user2));
 
@@ -396,28 +375,24 @@ public class GroupManagerTest extends AbstractUserManagementTest {
 	}
 	
 	@Test
-	public void userWithGroupAdminRightsCanAssignGroupAdminRightsToAnotherUser() throws Exception {
+	public void userWithGroupAdminRightsCannotAssignGroupAdminRightsToAnotherUser() throws Exception {
 		userLogin("admin");
 
 		Group group = addGroup("Group1", "Group1 Description");
 		User user1 = addUser("test1", "Test1", "test1@example.com", "password");
 		User user2 = addUser("test2", "Test2", "test2@example.com", "password");
 
-        GroupMember groupMember = createGroupMember(group, user1);
-        groupMember.setAdministrator(true);
-
-        groupManager.addMemberToGroup(groupMember);
+        groupManager.addMemberToGroup(createGroupMember(group, user1));
+        groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user1));
 
         userLogin("test1");
 
-        groupMember = createGroupMember(group, user2);
-        groupMember.setAdministrator(true);
+        groupManager.addMemberToGroup(createGroupMember(group, user2));
 
-        groupManager.addMemberToGroup(groupMember);
-
-        userLogin("test2");
-
-		assertEquals(2, groupManager.getGroups().size());
-		assertEquals(2, groupManager.getListOfUsersInGroup(group.getId()).size());
+        try {
+            groupManager.addMemberToGroup(createGroupMember(groupManager.getGroupAdministratorGroup(), user2));
+            fail();
+        } catch (StorageException e) {
+        }
 	}
 }

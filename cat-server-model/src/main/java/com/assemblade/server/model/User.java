@@ -15,6 +15,7 @@
  */
 package com.assemblade.server.model;
 
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.opends.server.types.Entry;
 
@@ -34,10 +35,6 @@ public class User extends AbstractUser {
 		return false;
 	}
 	
-	public boolean recordDeletions() {
-		return false;
-	}
-
     protected class Decorator extends AbstractUser.Decorator<User> {
         @Override
         public User newInstance() {
@@ -45,8 +42,8 @@ public class User extends AbstractUser {
         }
 
         @Override
-        public User decorate(Entry entry) {
-            User user = super.decorate(entry);
+        public User decorate(Session session, Entry entry) {
+            User user = super.decorate(session, entry);
             return user;
         }
     }

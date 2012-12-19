@@ -119,20 +119,20 @@ public class Groups {
         }
     }
 
-    @PUT
-    @Path("/id/{groupId}/members/id/{memberId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response editGroupMember(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId, GroupMember groupMember) {
-        try {
-            return Response.ok(groupMemberMapper.toClient(groupManager.setGroupMemberAdministrativeRights(groupMemberMapper.toServer(groupMember)))).build();
-        } catch (StorageException e) {
-            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
-        }
-    }
+//    @PUT
+//    @Path("/id/{groupId}/members/id/{memberId}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response editGroupMember(@PathParam("groupId") String groupId, @PathParam("memberId") String memberId, GroupMember groupMember) {
+//        try {
+//            return Response.ok(groupMemberMapper.toClient(groupManager.setGroupMemberAdministrativeRights(groupMemberMapper.toServer(groupMember)))).build();
+//        } catch (StorageException e) {
+//            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+//                return Response.status(Response.Status.NOT_FOUND).build();
+//            } else {
+//                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+//            }
+//        }
+//    }
 
     @DELETE
     @Path("/id/{groupId}/members/id/{memberId}")

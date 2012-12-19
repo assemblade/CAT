@@ -132,7 +132,7 @@ public class TestStorable extends AbstractStorable implements Serializable {
         }
 
         @Override
-        public TestStorable decorate(Entry entry) {
+        public TestStorable decorate(Session session, Entry entry) {
             TestStorable storable = new TestStorable();
             storable.entry = entry;
             return storable;

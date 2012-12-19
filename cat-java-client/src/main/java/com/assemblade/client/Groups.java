@@ -48,10 +48,6 @@ public class Groups extends AbstractClient {
         return add("/groups/id/" + groupMember.getGroup().getId() + "/members", groupMember, new TypeReference<GroupMember>() {});
     }
 
-    public GroupMember editGroupMember(GroupMember groupMember) throws ClientException {
-        return update("/groups/id/" + groupMember.getGroup().getId() + "/members/id/" + groupMember.getId(), groupMember, new TypeReference<GroupMember>() {});
-    }
-
     public void removeMemberFromGroup(GroupMember groupMember) throws ClientException {
         delete("/groups/id/" + groupMember.getGroup().getId() + "/members/id/" + groupMember.getId());
     }
@@ -71,5 +67,4 @@ public class Groups extends AbstractClient {
     public void deleteGroup(Group group) throws ClientException {
         delete("/groups/id/" + group.getId());
     }
-
 }

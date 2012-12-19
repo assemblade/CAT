@@ -15,10 +15,11 @@
  */
 package com.assemblade.opendj.model;
 
+import com.assemblade.opendj.Session;
 import org.opends.server.types.Entry;
 
 
 public interface StorableDecorator<T extends Storable> {
     public T newInstance();
-	public T decorate(Entry entry);
+	public T decorate(Session session, Entry entry);
 }

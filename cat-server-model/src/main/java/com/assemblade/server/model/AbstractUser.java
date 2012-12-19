@@ -16,6 +16,7 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
+import com.assemblade.opendj.Session;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.permissions.EntryPermissions;
 import org.apache.commons.lang.StringUtils;
@@ -108,21 +109,21 @@ public abstract class AbstractUser extends AbstractStorable {
     }
 
     @Override
-    public boolean requiresRename(Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) {
         return !StringUtils.equals(userId, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("uid")));
     }
 
     @Override
-    public boolean requiresUpdate(Entry currentEntry) {
-        User user = new User().getDecorator().decorate(currentEntry);
+    public boolean requiresUpdate(Session session, Entry currentEntry) {
+        User user = new User().getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(fullName, user.fullName) || !StringUtils.equals(emailAddress, user.emailAddress) || !StringUtils.equals(authenticationPolicy, user.authenticationPolicy);
     }
 
     @Override
-    public List<Modification> getModifications(Entry currentEntry) {
-        List<Modification> modifications = super.getModifications(currentEntry);
+    public List<Modification> getModifications(Session session, Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(session, currentEntry);
 
-        User currentUser = (User)getDecorator().decorate(currentEntry);
+        User currentUser = (User)getDecorator().decorate(session, currentEntry);
 
         if (!StringUtils.equals(currentUser.getFullName(), fullName)) {
             LdapUtils.createSingleEntryModification(modifications, currentEntry, "cn", fullName);
@@ -197,8 +198,8 @@ public abstract class AbstractUser extends AbstractStorable {
 
     protected abstract class Decorator<T extends AbstractUser> extends AbstractStorable.Decorator<T> {
         @Override
-        public T decorate(Entry entry) {
-            T user = super.decorate(entry);
+        public T decorate(Session session, Entry entry) {
+            T user = super.decorate(session, entry);
             user.userId = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("uid"));
             user.fullName = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             user.password = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("userPassword"));

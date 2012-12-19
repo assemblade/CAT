@@ -20,15 +20,14 @@ import com.assemblade.shell.Context;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AdminCommand implements Command {
+public class AddCommand implements Command {
     private CommandFactory commandFactory;
     private Pattern commandPattern;
 
-    public AdminCommand() {
-        commandFactory = new AdminCommandFactory();
+    public AddCommand() {
+        commandFactory = new AddCommandFactory();
         commandPattern = Pattern.compile(commandFactory.getCommandRegex());
     }
-
     @Override
     public CommandStatus run(Context context, String body) {
         Matcher commandMatcher = commandPattern.matcher(body);
@@ -43,6 +42,7 @@ public class AdminCommand implements Command {
                 return commandInstance.run(context, commandMatcher.group(2));
             }
         }
+
         return CommandStatus.Continue;
     }
 }

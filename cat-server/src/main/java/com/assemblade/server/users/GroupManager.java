@@ -15,6 +15,7 @@
  */
 package com.assemblade.server.users;
 
+import com.assemblade.opendj.SequenceNumberGenerator;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.Group;
 import com.assemblade.server.model.GroupMember;
@@ -41,15 +42,8 @@ public class GroupManager {
     }
 
     public Group addGroup(Group group) throws StorageException {
+        group.setGroupId(SequenceNumberGenerator.getNextSequenceNumber());
     	userManager.getUserSession().add(group);
-    	
-    	Group adminGroup = createAdminGroup(group);
-    	userManager.getUserSession().add(adminGroup);
-
-		Group groupAdminGroup = getGroupAdministratorGroup();
-    	groupAdminGroup.addMember(adminGroup);
-    	userManager.getUserSession().update(groupAdminGroup);
-
     	return userManager.getUserSession().get(group);
     }
 
@@ -62,44 +56,20 @@ public class GroupManager {
     }
 
     public Group updateGroup(Group group) throws StorageException {
+        group.setGroupId(userManager.getUserSession().getByEntryId(group, group.getId()).getGroupId());
         userManager.getUserSession().update(group);
         return userManager.getUserSession().get(group);
     }
 
     public void deleteGroup(String groupId) throws StorageException {
 		Group group = userManager.getUserSession().getByEntryId(new Group(), groupId);
-        Group adminGroup = null;
-        try {
-            adminGroup = userManager.getUserSession().get(createAdminGroup(group));
-        } catch (StorageException e) {
-        }
-        if (adminGroup != null) {
-            Group groupAdminGroup = getGroupAdministratorGroup();
-            groupAdminGroup.deleteMember(adminGroup);
-            userManager.getUserSession().update(groupAdminGroup);
-        }
-
-        userManager.getUserSession().delete(group, true);
+        userManager.getUserSession().delete(group);
     }
 
     public GroupMember addMemberToGroup(GroupMember groupMember) throws StorageException {
+        groupMember.getGroup().setGroupId(userManager.getUserSession().getByEntryId(groupMember.getGroup(), groupMember.getGroup().getId()).getGroupId());
         groupMember.getGroup().addMember(groupMember);
         userManager.getUserSession().update(groupMember.getGroup());
-        if (groupMember.isAdministrator()) {
-            return setGroupMemberAdministrativeRights(groupMember);
-        } else {
-            return userManager.getUserSession().get(groupMember);
-        }
-    }
-
-    public GroupMember setGroupMemberAdministrativeRights(GroupMember groupMember) throws StorageException {
-        Group adminGroup = userManager.getUserSession().get(createAdminGroup(groupMember.getGroup()));
-		if (groupMember.isAdministrator()) {
-			adminGroup.addMember(groupMember);
-		} else {
-			adminGroup.deleteMember(groupMember);
-		}
-    	userManager.getUserSession().update(adminGroup);
         return userManager.getUserSession().get(groupMember);
     }
 
@@ -127,13 +97,5 @@ public class GroupManager {
         String groupDn = userManager.getUserSession().dnFromId(groupId);
         String searchFilter = searchFilterFormat.format(new Object[] {groupDn});
         return userManager.getUserSession().search(new User(), User.ROOT, searchFilter);
-    }
-
-    private Group createAdminGroup(Group group) {
-        Group adminGroup = new Group();
-        adminGroup.setParentDn(group.getDn());
-        adminGroup.setName("admins");
-
-        return adminGroup;
     }
 }
