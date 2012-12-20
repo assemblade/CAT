@@ -15,11 +15,15 @@
  */
 package com.assemblade.server.model;
 
+import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.permissions.EntryPermissions;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
@@ -39,6 +43,7 @@ import java.util.Map;
 
 public abstract class AbstractUser extends AbstractStorable {
     private static final long serialVersionUID = 1L;
+    private Log log = LogFactory.getLog(AbstractUser.class);
 
     public static final String ROOT = "ou=users,dc=assemblade,dc=com";
 
@@ -109,18 +114,18 @@ public abstract class AbstractUser extends AbstractStorable {
     }
 
     @Override
-    public boolean requiresRename(Session session, Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) throws StorageException {
         return !StringUtils.equals(userId, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("uid")));
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         User user = new User().getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(fullName, user.fullName) || !StringUtils.equals(emailAddress, user.emailAddress) || !StringUtils.equals(authenticationPolicy, user.authenticationPolicy);
     }
 
     @Override
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
 
         User currentUser = (User)getDecorator().decorate(session, currentEntry);
@@ -198,7 +203,7 @@ public abstract class AbstractUser extends AbstractStorable {
 
     protected abstract class Decorator<T extends AbstractUser> extends AbstractStorable.Decorator<T> {
         @Override
-        public T decorate(Session session, Entry entry) {
+        public T decorate(Session session, Entry entry) throws StorageException {
             T user = super.decorate(session, entry);
             user.userId = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("uid"));
             user.fullName = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
@@ -209,16 +214,15 @@ public abstract class AbstractUser extends AbstractStorable {
                 for (Attribute attribute : attributes) {
                     for (AttributeValue value : attribute) {
                         try {
-                            DN groupDN = DN.decode(value.getValue());
-                            if (groupDN.toString().equals(Group.GLOBAL_ADMIN_DN)) {
+                            String groupDn = DN.decode(value.getValue()).toString();
+                            if (groupDn.toString().equals(Group.GLOBAL_ADMIN_DN)) {
                                 user.globalAdministrator = true;
-                            }
-                            RDN groupRDN = groupDN.getRDN();
-                            String groupName = groupRDN.getAttributeValue(0).toString();
-                            if ((groupName.equals("admins")) && !groupDN.getParent().toString().equals(Group.ROOT)) {
+                            } else if (groupDn.equals(Group.GROUP_ADMIN_DN)) {
                                 user.groupAdministrator = true;
                             }
                         } catch (DirectoryException e) {
+                            log.error("Failed to set administrator flags on user", e);
+                            throw new StorageException(AssembladeErrorCode.ASB_9999);
                         }
                     }
                 }
@@ -230,6 +234,8 @@ public abstract class AbstractUser extends AbstractStorable {
                     user.authenticationPolicy = authenticationPolicyDN.getRDN().getAttributeValue(0).toString();
                 }
             } catch (DirectoryException e) {
+                log.error("Failed to determine the authentication policy for a user", e);
+                throw new StorageException(AssembladeErrorCode.ASB_9999);
             }
             EntryPermissions permissions = LdapUtils.getEntryPermissions(entry.getAttributes());
             user.writable = permissions.canWrite();

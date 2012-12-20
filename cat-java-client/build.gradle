@@ -140,4 +140,12 @@ uploadArchives {
     }
 }
 
+test {
+    exclude "com/assemblade/client/soak/**"
+}
+
+task soakTest(type: Test) {
+    include "com/assemblade/client/soak/**"
+}
+
 test.dependsOn ':cat-rest-api:assemble', ':cat-directory:assemble', 'cleanTest'

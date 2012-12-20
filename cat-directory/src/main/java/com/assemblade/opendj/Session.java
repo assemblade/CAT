@@ -255,6 +255,10 @@ public class Session {
         return  internalGet("dc=assemblade,dc=com", SearchScope.WHOLE_SUBTREE, "(entryUUID=" + id + ")", new LinkedHashSet<String>()).getDN().toString();
     }
 
+    public String idfromdn(String dn) throws StorageException {
+        return LdapUtils.getSingleAttributeStringValue(internalGet(dn, SearchScope.BASE_OBJECT, "(objectclass=*)", new LinkedHashSet<String>(Arrays.asList("entryUUID"))).getAttribute("entryuuid"));
+    }
+
     public List<Configuration> getConfigurationItems(String filter) throws StorageException {
         List<Configuration> result = new ArrayList<Configuration>();
 
@@ -319,10 +323,10 @@ public class Session {
                 }
             });
             if (searchResult.getResultCode() == ResultCode.SUCCESS) {
-                if (entries.size() > 0) {
+                if (entries.size() == 1) {
                     return entries.get(0);
                 } else {
-                    log.error("Got multiple entries for what should have been a single entry [" + dn + "]");
+                    log.debug("Got " + entries.size() + " entries for what should have been a single entry [" + dn + "]");
                     throw new StorageException(AssembladeErrorCode.ASB_0006);
                 }
             } else {

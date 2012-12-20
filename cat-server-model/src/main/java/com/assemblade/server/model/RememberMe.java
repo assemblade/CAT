@@ -18,6 +18,7 @@ package com.assemblade.server.model;
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.opends.server.core.DirectoryServer;
@@ -107,7 +108,7 @@ public class RememberMe extends AbstractStorable {
         }
 
         @Override
-        public RememberMe decorate(Session session, Entry entry) {
+        public RememberMe decorate(Session session, Entry entry) throws StorageException {
             RememberMe token = super.decorate(session, entry);
 
             token.sequence = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-sequence"));

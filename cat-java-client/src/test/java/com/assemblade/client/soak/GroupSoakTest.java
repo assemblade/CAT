@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.assemblade.client.scenarios.users;
+package com.assemblade.client.soak;
 
 import com.assemblade.client.AbstractApiTest;
 import com.assemblade.client.model.Group;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class GroupSoakTest extends AbstractApiTest {
     @Test
     public void groupRenameSoak() throws Exception {

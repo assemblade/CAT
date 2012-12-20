@@ -17,6 +17,7 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.opends.server.core.DirectoryServer;
@@ -72,7 +73,7 @@ public class Views extends AbstractStorable {
         }
 
         @Override
-        public Views decorate(Session session, Entry entry) {
+        public Views decorate(Session session, Entry entry) throws StorageException {
             return super.decorate(session, entry);
         }
     }

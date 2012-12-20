@@ -17,6 +17,7 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.StorableDecorator;
 import com.assemblade.opendj.permissions.EntryPermissions;
 import org.opends.server.core.DirectoryServer;
@@ -64,7 +65,7 @@ public class GroupMember extends AbstractUser {
         }
 
         @Override
-        public GroupMember decorate(Session session, Entry entry) {
+        public GroupMember decorate(Session session, Entry entry) throws StorageException {
             GroupMember member = super.decorate(session, entry);
             List<Attribute> attributes = entry.getOperationalAttribute(DirectoryServer.getAttributeType("ismemberof"));
             if (attributes != null) {

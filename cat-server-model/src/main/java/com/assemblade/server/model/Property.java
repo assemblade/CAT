@@ -17,6 +17,7 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.AbstractStorable;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.apache.commons.collections.CollectionUtils;
@@ -83,18 +84,18 @@ public class Property extends AbstractStorable implements Serializable {
 	}
 
     @Override
-    public boolean requiresRename(Session session, Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) throws StorageException {
         return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         Property currentProperty = (Property)getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(description, currentProperty.getDescription()) || !StringUtils.equals(value, currentProperty.getValue());
     }
 
     @Override
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-value", value);
@@ -136,7 +137,7 @@ public class Property extends AbstractStorable implements Serializable {
         }
 
         @Override
-        public Property decorate(Session session, Entry entry) {
+        public Property decorate(Session session, Entry entry) throws StorageException {
             Property property = super.decorate(session, entry);
 
             property.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));

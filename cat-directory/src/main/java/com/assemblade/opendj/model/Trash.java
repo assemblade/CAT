@@ -18,6 +18,7 @@ package com.assemblade.opendj.model;
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
@@ -91,7 +92,7 @@ public class Trash extends AbstractStorable implements Serializable {
         }
 
         @Override
-        public Trash decorate(Session session, Entry entry) {
+        public Trash decorate(Session session, Entry entry) throws StorageException {
             Trash trash = super.decorate(session, entry);
             trash.parentDn = entry.getDN().getParent().toString();
             trash.id = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));

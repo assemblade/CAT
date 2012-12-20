@@ -93,7 +93,7 @@ public abstract class AbstractStorable implements Storable, Serializable {
     }
 
     @Override
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
 		return new ArrayList<Modification>();
 	}
 
@@ -112,17 +112,17 @@ public abstract class AbstractStorable implements Storable, Serializable {
     }
 
     @Override
-    public boolean requiresRename(Session session, Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) throws StorageException {
         return false;
     }
 
     @Override
-    public boolean requiresMove(Session session, Entry currentEntry) {
+    public boolean requiresMove(Session session, Entry currentEntry) throws StorageException {
         return !getParentDn().equals(currentEntry.getDN().getParent().toString());
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         return false;
     }
 
@@ -169,16 +169,12 @@ public abstract class AbstractStorable implements Storable, Serializable {
 
     protected abstract class Decorator<T extends AbstractStorable> implements StorableDecorator<T> {
         @Override
-        public T decorate(Session session, Entry entry) {
+        public T decorate(Session session, Entry entry) throws StorageException {
             T storable = newInstance();
 
             storable.id = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("entryuuid"));
             storable.parentDn = entry.getDN().getParent().toString();
-
-            try {
-                storable.parentId = LdapUtils.getSingleAttributeStringValue(DirectoryServer.getEntry(entry.getDN().getParent()).getAttribute("entryuuid"));
-            } catch (DirectoryException e) {
-            }
+            storable.parentId = session.idfromdn(storable.parentDn);
 
             EntryPermissions permissions = LdapUtils.getEntryPermissions(entry.getAttributes());
             if (permissions != null) {

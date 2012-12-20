@@ -16,10 +16,11 @@
 package com.assemblade.opendj.model;
 
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import org.opends.server.types.Entry;
 
 
 public interface StorableDecorator<T extends Storable> {
     public T newInstance();
-	public T decorate(Session session, Entry entry);
+	public T decorate(Session session, Entry entry) throws StorageException;
 }

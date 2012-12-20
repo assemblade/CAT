@@ -17,6 +17,7 @@ package com.assemblade.server.model;
 
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.acis.AccessControlItem;
 import com.assemblade.opendj.acis.CompositeSubject;
 import com.assemblade.opendj.acis.Permission;
@@ -95,10 +96,10 @@ public class Group extends AbstractStorable {
         Subject groupInclusion = new PermissionSubject("groupdn", Arrays.asList(getDn()), "=");
         Subject bothGroupsInclusion = new CompositeSubject(groupAdminInclusion, groupInclusion, "AND");
         Target memberAttribute = new Target("targetattr", "=", "member");
-        Permission allow = new Permission("allow", "write,delete", bothGroupsInclusion);
-        AccessControlItem allowAci = new AccessControlItem("allow", Arrays.asList(memberAttribute), Arrays.asList(allow));
+        Permission allowEdit = new Permission("allow", "write,delete", bothGroupsInclusion);
+        AccessControlItem allowEditAci = new AccessControlItem("allowedit", Arrays.asList(memberAttribute), Arrays.asList(allowEdit));
 
-        LdapUtils.addMultipleValueAttributeToMap(attributeMap, "aci", allowAci.toString(), denyAci.toString());
+        LdapUtils.addMultipleValueAttributeToMap(attributeMap, "aci", allowEditAci.toString(), denyAci.toString());
 
         return attributeMap;
     }
@@ -112,7 +113,7 @@ public class Group extends AbstractStorable {
     }
 
     @Override
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
 
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", encodeDescription());
@@ -129,7 +130,7 @@ public class Group extends AbstractStorable {
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         Group currentGroup = getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(name, currentGroup.getName()) || !StringUtils.equals(description, currentGroup.getDescription()) || CollectionUtils.isNotEmpty(addMembers) || CollectionUtils.isNotEmpty(deleteMembers);
     }
@@ -195,7 +196,7 @@ public class Group extends AbstractStorable {
         }
 
         @Override
-        public Group decorate(Session session, Entry entry) {
+        public Group decorate(Session session, Entry entry) throws StorageException {
             Group group = super.decorate(session, entry);
             group.groupId = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             String nameDescription = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));

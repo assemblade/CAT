@@ -112,7 +112,7 @@ public abstract class AbstractFolder extends AbstractStorable {
         return attributeMap;
     }
 
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-template", template);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
@@ -120,12 +120,12 @@ public abstract class AbstractFolder extends AbstractStorable {
         return modifications;
     }
 
-    public boolean requiresRename(Session session, Entry currentEntry) {
+    public boolean requiresRename(Session session, Entry currentEntry) throws StorageException {
         return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         Folder currentFolder = new Folder().getDecorator().decorate(session, currentEntry);
         return !StringUtils.equals(template, currentFolder.getTemplate())
                 || !StringUtils.equals(description, currentFolder.getDescription())
@@ -232,7 +232,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
     protected abstract class Decorator<T extends AbstractFolder> extends AbstractStorable.Decorator<T> {
         @Override
-        public T decorate(Session session, Entry entry) {
+        public T decorate(Session session, Entry entry) throws StorageException {
             T folder = super.decorate(session, entry);
 
             folder.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));

@@ -15,9 +15,11 @@
  */
 package com.assemblade.opendj.model;
 
+import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.LdapUtils;
 import com.assemblade.opendj.SequenceNumberGenerator;
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.opends.server.core.DirectoryServer;
@@ -180,7 +182,7 @@ public class ChangeLogEntry extends AbstractStorable {
         }
 
         @Override
-        public ChangeLogEntry decorate(Session session, Entry entry) {
+        public ChangeLogEntry decorate(Session session, Entry entry) throws StorageException {
             ChangeLogEntry changeLogEntry = super.decorate(session, entry);
 
             changeLogEntry.sequence = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("changeNumber"));
@@ -195,6 +197,7 @@ public class ChangeLogEntry extends AbstractStorable {
                     changeLogEntry.changeObject =  (Storable)new ObjectInputStream(new ByteArrayInputStream(changes)).readObject();
                 } catch (Exception e) {
                     log.error("Failed to deserialize a change object", e);
+                    throw new StorageException(AssembladeErrorCode.ASB_9999);
                 }
             }
             changeLogEntry.newRDN = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("newrdn"));

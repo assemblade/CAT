@@ -41,12 +41,12 @@ public interface Storable {
 	public StorableDecorator getDecorator();
 	public Map<AttributeType, List<Attribute>> getUserAttributes();
 	public Map<AttributeType, List<Attribute>> getOperationalAttributes();
-	public List<Modification> getModifications(Session session, Entry currentEntry);
+	public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException;
 	public boolean recordChanges();
     public String getChangeLogDescription();
-    public boolean requiresRename(Session session, Entry currentEntry);
-    public boolean requiresMove(Session session, Entry currentEntry);
-    public boolean requiresUpdate(Session session, Entry currentEntry);
+    public boolean requiresRename(Session session, Entry currentEntry) throws StorageException;
+    public boolean requiresMove(Session session, Entry currentEntry) throws StorageException;
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException;
     public boolean isAddable();
     public boolean isWritable();
     public boolean isDeletable();

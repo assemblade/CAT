@@ -90,7 +90,7 @@ public class View extends AbstractFolder {
     }
 
     @Override
-    public List<Modification> getModifications(Session session, Entry currentEntry) {
+    public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
 
         LdapUtils.createMultipleEntryModification(modifications, currentEntry, "asb-view-point", getViewPoints());
@@ -104,12 +104,12 @@ public class View extends AbstractFolder {
     }
 
     @Override
-    public boolean requiresMove(Session session, Entry currentEntry) {
+    public boolean requiresMove(Session session, Entry currentEntry) throws StorageException {
         return false;
     }
 
     @Override
-    public boolean requiresUpdate(Session session, Entry currentEntry) {
+    public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         if (!super.requiresUpdate(session, currentEntry)) {
             View currentView = getDecorator().decorate(session, currentEntry);
             Iterator<Folder> newIterator = folders.iterator();
@@ -152,7 +152,7 @@ public class View extends AbstractFolder {
         }
 
         @Override
-        public View decorate(Session session, Entry entry) {
+        public View decorate(Session session, Entry entry) throws StorageException {
             View view = super.decorate(session, entry);
 
             Collection<String> viewPoints = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("asb-view-point"));
@@ -160,10 +160,7 @@ public class View extends AbstractFolder {
             List<Folder> folders = new ArrayList<Folder>();
 
             for (String viewPoint : viewPoints) {
-                try {
-                    folders.add(session.getByEntryDn(new Folder(), viewPoint));
-                } catch (StorageException e) {
-                }
+                folders.add(session.getByEntryDn(new Folder(), viewPoint));
             }
 
             view.setFolders(folders);

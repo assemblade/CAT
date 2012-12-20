@@ -16,6 +16,7 @@
 package com.assemblade.server.model;
 
 import com.assemblade.opendj.Session;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.StorableDecorator;
 import org.opends.server.types.Entry;
 
@@ -42,7 +43,7 @@ public class User extends AbstractUser {
         }
 
         @Override
-        public User decorate(Session session, Entry entry) {
+        public User decorate(Session session, Entry entry) throws StorageException {
             User user = super.decorate(session, entry);
             return user;
         }
