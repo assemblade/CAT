@@ -79,43 +79,48 @@ public class AuthenticationProcessor {
         return false;
     }
 
-    public Authentication authenticate(ConsoleReader reader) throws IOException {
-        Authentication authentication = null;
-
+    public void authenticate() throws IOException {
         while (authentication == null) {
             authentication = retrieveAuthentication();
             if (authentication == null) {
-                authentication = readAuthenticationFromUser(reader);
+                authentication = readAuthenticationFromUser(context.getConsoleReader());
             }
-            if (authentication != null) {
-                Users users = new Users(authentication);
-                try {
-                    User authenticatedUser = users.getAuthenticatedUser();
-                    if (authenticatedUser != null) {
-                        System.out.println("Welcome " + authenticatedUser.getFullName());
-                        return authentication;
-                    } else {
-                        authentication = null;
-                        clearStoredAuthentication();
-                    }
-                } catch (ClientException e) {
+            welcomeUser();
+        }
+    }
+
+    public void welcomeUser() {
+        if (authentication != null) {
+            Users users = new Users(authentication);
+            try {
+                User authenticatedUser = users.getAuthenticatedUser();
+                if (authenticatedUser != null) {
+                    System.out.println("Welcome " + authenticatedUser.getFullName());
+                } else {
                     authentication = null;
                     clearStoredAuthentication();
                 }
+            } catch (ClientException e) {
+                authentication = null;
+                clearStoredAuthentication();
             }
         }
-        return null;
     }
 
     private Authentication readAuthenticationFromUser(ConsoleReader reader) throws IOException {
         reader.println();
         reader.println("Please log in");
         reader.println();
+        String url = context.getUrl();
+        if (url == null) {
+            url = reader.readLine("Server URL: ");
+            context.setUrl(url);
+        }
         String username = reader.readLine("Username: ");
         String password = reader.readLine("Password: ", '*');
 
         try {
-            Login login = new Login(context.getUrl());
+            Login login = new Login(url);
             Authentication authentication = login.login(username, password);
             if (authentication != null) {
                 storeAuthentication(authentication);
@@ -203,6 +208,7 @@ public class AuthenticationProcessor {
     }
 
     public void clearStoredAuthentication() {
+        authentication = null;
         File authenticationFile = new File(assembladeDirectory.getAbsolutePath() + "/authentication");
         if (authenticationFile.exists()) {
             authenticationFile.delete();

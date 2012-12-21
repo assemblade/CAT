@@ -13,37 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.assemblade.client;
+package com.assemblade.client.scenarios.users;
 
-import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.AuthenticationPolicy;
+import com.assemblade.client.AbstractApiTest;
 import com.assemblade.client.model.LdapPassthroughPolicy;
-import com.assemblade.client.model.PasswordPolicy;
-import org.junit.Before;
+import com.assemblade.client.model.User;
 import org.junit.Test;
 
-import java.util.List;
+import static org.junit.Assert.assertNotNull;
 
-import static org.junit.Assert.assertTrue;
-
-public class PoliciesTest extends AbstractApiTest {
+public class CanAuthenticateUserAgainstRemoteLdap extends AbstractApiTest {
     @Test
-    public void getAuthenticationPoliciesTest() throws ClientException {
-        List<AuthenticationPolicy> policyList = policies.getAuthenticationPolicies();
-
-        assertTrue(policyList.size() > 0);
-    }
-
-    @Test
-    public void deleteAuthenticationPolicy() throws ClientException {
-        PasswordPolicy policy = new PasswordPolicy();
-        policy.setName("Change on reset");
-        policies.addAuthenticationPolicy(policy);
-        policies.deleteAuthenticationPolicy(policy);
-    }
-
-    @Test
-    public void addLdapPassthroughPolicyTest() throws ClientException {
+    public void userCanAuthenticateAgainstRemoteLdap() throws Exception {
         LdapPassthroughPolicy policy = new LdapPassthroughPolicy();
         policy.setName("Passthrough");
         policy.setPrimaryRemoteServer("localhost:1389");
@@ -53,6 +34,11 @@ public class PoliciesTest extends AbstractApiTest {
         policy.setMappingAttribute("uid");
 
         policies.addAuthenticationPolicy(policy);
-        policies.deleteAuthenticationPolicy(policy);
+
+        User user = createUser("test1", "Test User", "test1@example.com", "Passthrough", null);
+
+        users.addUser(user);
+
+        assertNotNull(login.login("test1", "password"));
     }
 }

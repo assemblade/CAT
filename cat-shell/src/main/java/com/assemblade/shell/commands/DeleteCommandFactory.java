@@ -15,7 +15,8 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+public class DeleteCommandFactory extends AbstractCommandFactory {
+    public DeleteCommandFactory() {
+        commands.put("policy", DeletePolicyCommand.class);
+    }
 }

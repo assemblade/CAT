@@ -18,6 +18,7 @@ package com.assemblade.shell.commands;
 import com.assemblade.client.ClientException;
 import com.assemblade.client.Policies;
 import com.assemblade.client.model.LdapPassthroughPolicy;
+import com.assemblade.client.model.PasswordPolicy;
 import com.assemblade.shell.Context;
 import org.apache.commons.lang.StringUtils;
 
@@ -34,11 +35,16 @@ public class AddPolicyCommand implements Command {
             Policies policies = new Policies(context.getAuthenticationProcessor().getAuthentication());
 
             if (StringUtils.equals(type, "2")) {
+                String forceReset = context.getConsoleReader().readLine("Should password be changed on first use [yes|no]: ");
 
+                PasswordPolicy policy = new PasswordPolicy();
+                policy.setName(name);
+                policy.setForceChangeOnReset(forceReset.equals("yes"));
+                policies.addAuthenticationPolicy(policy);
             } else {
-                String primaryRemoteServer = context.getConsoleReader().readLine("Enter the primary remote server url [http://localhost:1389]: ");
+                String primaryRemoteServer = context.getConsoleReader().readLine("Enter the primary remote server url [localhost:389]: ");
                 if (StringUtils.isEmpty(primaryRemoteServer)) {
-                    primaryRemoteServer = "http://localhost:1389";
+                    primaryRemoteServer = "localhost:389";
                 }
                 String secondaryRemoteServer = context.getConsoleReader().readLine("Enter the secondary remote server url []: ");
                 String searchBase = context.getConsoleReader().readLine("Enter the search base on the remote server []: ");

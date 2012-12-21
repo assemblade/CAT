@@ -15,7 +15,26 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+public class ListColumn {
+    private String name;
+    private int width;
+    private String method;
+
+    public ListColumn(String name, int width, String method) {
+        this.name = name;
+        this.width = width;
+        this.method = method;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public String getMethod() {
+        return method;
+    }
 }

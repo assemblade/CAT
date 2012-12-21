@@ -17,6 +17,8 @@ package com.assemblade.shell.commands;
 
 public class AddCommandFactory extends AbstractCommandFactory {
     public AddCommandFactory() {
+        commands.put("policy", AddPolicyCommand.class);
         commands.put("user", AddUserCommand.class);
+
     }
 }

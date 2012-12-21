@@ -15,7 +15,5 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+public class EditCommandFactory extends AbstractCommandFactory {
 }

@@ -19,6 +19,10 @@ public class InteractiveCommandFactory extends AbstractCommandFactory {
     public InteractiveCommandFactory() {
         commands.put("admin", AdminCommand.class);
         commands.put("add", AddCommand.class);
+        commands.put("edit", EditCommand.class);
+        commands.put("delete", DeleteCommand.class);
+        commands.put("list", ListCommand.class);
+        commands.put("logout", LogoutCommand.class);
         commands.put("exit", ExitCommand.class);
     }
 }

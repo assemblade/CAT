@@ -15,7 +15,22 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+import java.util.ArrayList;
+import java.util.List;
+
+public class ListReportDefinition {
+    private String title;
+    private List<ListColumn> columns = new ArrayList<ListColumn>();
+
+    public ListReportDefinition(String title) {
+        this.title = title;
+    }
+
+    public void addColumn(ListColumn column) {
+        columns.add(column);
+    }
+
+    public List<ListColumn> getColumns() {
+        return columns;
+    }
 }

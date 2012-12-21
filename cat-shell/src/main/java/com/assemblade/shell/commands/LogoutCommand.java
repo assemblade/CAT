@@ -15,7 +15,13 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+import com.assemblade.shell.Context;
+
+public class LogoutCommand implements Command {
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        context.getAuthenticationProcessor().clearStoredAuthentication();
+        context.setUrl(null);
+        return CommandStatus.Continue;
+    }
 }

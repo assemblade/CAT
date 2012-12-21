@@ -15,7 +15,13 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+import com.assemblade.shell.Context;
+
+public class DeleteCommand implements Command {
+    private CommandFactory commandFactory = new DeleteCommandFactory();
+
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        return commandFactory.process(context, parameters);
+    }
 }

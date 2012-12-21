@@ -15,7 +15,13 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+import com.assemblade.shell.Context;
+
+public class ListCommand implements Command {
+    private CommandFactory commandFactory = new ListCommandFactory();
+
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        return commandFactory.process(context, parameters);
+    }
 }

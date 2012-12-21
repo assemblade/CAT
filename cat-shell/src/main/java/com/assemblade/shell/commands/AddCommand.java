@@ -21,28 +21,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AddCommand implements Command {
-    private CommandFactory commandFactory;
-    private Pattern commandPattern;
+    private CommandFactory commandFactory = new AddCommandFactory();
 
-    public AddCommand() {
-        commandFactory = new AddCommandFactory();
-        commandPattern = Pattern.compile(commandFactory.getCommandRegex());
-    }
     @Override
     public CommandStatus run(Context context, String body) {
-        Matcher commandMatcher = commandPattern.matcher(body);
-        if (commandMatcher.matches()) {
-            String command = commandMatcher.group(1);
-
-            Command commandInstance = commandFactory.get(command);
-
-            if (commandInstance == null) {
-                System.err.println("Did not understand command: " + command);
-            } else {
-                return commandInstance.run(context, commandMatcher.group(2));
-            }
-        }
-
-        return CommandStatus.Continue;
+        return commandFactory.process(context, body);
     }
 }

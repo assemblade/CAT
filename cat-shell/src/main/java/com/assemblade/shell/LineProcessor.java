@@ -17,6 +17,7 @@ package com.assemblade.shell;
 
 import com.assemblade.client.model.Authentication;
 import com.assemblade.shell.commands.Command;
+import com.assemblade.shell.commands.CommandStatus;
 import com.assemblade.shell.commands.InteractiveCommandFactory;
 import jline.console.ConsoleReader;
 
@@ -26,43 +27,17 @@ import java.util.regex.Pattern;
 
 public class LineProcessor {
     private Context context;
-    private Authentication authentication;
     private InteractiveCommandFactory commandFactory;
-    private Pattern commandPattern;
 
     public LineProcessor(Context context) throws IOException {
         this.context = context;
         this.context.setConsoleReader(new ConsoleReader());
         commandFactory = new InteractiveCommandFactory();
-        commandPattern = Pattern.compile(commandFactory.getCommandRegex());
     }
 
     public boolean processing() throws IOException {
-        if (authentication == null) {
-            authentication = context.getAuthenticationProcessor().authenticate(context.getConsoleReader());
-        }
-        Matcher commandMatcher = commandPattern.matcher(context.getConsoleReader().readLine("> "));
-        if (commandMatcher.matches()) {
-            String command = commandMatcher.group(1);
-            String body = commandMatcher.group(2);
-
-            Command commandInstance = commandFactory.get(command);
-
-            if (commandInstance == null) {
-                System.err.println("Did not understand command: " + command);
-            } else {
-                switch (commandInstance.run(context, body)) {
-                    case Continue:
-                        return true;
-                    case NeedAuthentication:
-                        authentication = null;
-                        context.getAuthenticationProcessor().clearStoredAuthentication();
-                        return true;
-                    case Finish:
-                        return false;
-                }
-            }
-        }
-        return true;
+        context.getAuthenticationProcessor().authenticate();
+        String line = context.getConsoleReader().readLine("> ");
+        return commandFactory.process(context, line) == CommandStatus.Continue;
     }
 }

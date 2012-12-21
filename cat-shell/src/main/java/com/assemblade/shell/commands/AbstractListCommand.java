@@ -15,7 +15,18 @@
  */
 package com.assemblade.shell.commands;
 
-public enum CommandStatus {
-    Continue,
-    Finish
+public abstract class AbstractListCommand implements Command {
+
+
+
+
+    protected String pad(String text, int length) {
+        if (text.length() > length) {
+            return text.substring(0, length);
+        }
+        for (int count = text.length(); count < length; count++) {
+            text += " ";
+        }
+        return text;
+    }
 }

@@ -15,14 +15,44 @@
  */
 package com.assemblade.shell.commands;
 
+import com.assemblade.shell.Context;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractCommandFactory implements CommandFactory {
     protected final Map<String, Class> commands = new HashMap<String, Class>();
 
     @Override
-    public Command get(String commandName) {
+    public CommandStatus process(Context context, String input) {
+        input = input.trim();
+        if (StringUtils.isNotEmpty(input)) {
+            Matcher matcher = Pattern.compile(getCommandRegex()).matcher(input);
+            if (matcher.matches()) {
+                String command = matcher.group(1);
+
+                Command commandInstance = get(command);
+
+                if (commandInstance == null) {
+                    System.err.println("Did not understand: " + command);
+                } else {
+                    return commandInstance.run(context, matcher.group(2));
+                }
+            } else {
+                System.err.println("Did not understand: " + input);
+            }
+        } else {
+            printHelp(context);
+        }
+        return CommandStatus.Continue;
+    }
+
+
+    private Command get(String commandName) {
         Command command = null;
         if (commands.containsKey(commandName)) {
             Class commandClass = commands.get(commandName);
@@ -35,8 +65,7 @@ public abstract class AbstractCommandFactory implements CommandFactory {
         return command;
     }
 
-    @Override
-    public String getCommandRegex() {
+    private String getCommandRegex() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("\\s*([");
         boolean first = true;
@@ -50,5 +79,16 @@ public abstract class AbstractCommandFactory implements CommandFactory {
         }
         buffer.append("]*)\\s*(.*)");
         return buffer.toString();
+    }
+
+    private void printHelp(Context context) {
+        try {
+            context.getConsoleReader().println("Commands:");
+            for (String command : commands.keySet()) {
+                context.getConsoleReader().println("\t" + command);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

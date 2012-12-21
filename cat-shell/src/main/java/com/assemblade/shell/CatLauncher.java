@@ -70,6 +70,10 @@ public class CatLauncher {
                 System.out.println();
                 System.out.println();
 
+                if (authenticationProcessor.hasAuthentication()) {
+                    authenticationProcessor.welcomeUser();
+                }
+
                 try {
                     context.setAuthenticationProcessor(authenticationProcessor);
                     LineProcessor lineProcessor = new LineProcessor(context);

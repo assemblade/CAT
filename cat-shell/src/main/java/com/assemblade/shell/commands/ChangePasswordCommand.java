@@ -27,7 +27,7 @@ public class ChangePasswordCommand implements Command {
             String oldPassword = context.getConsoleReader().readLine("Current password: ", '*');
             String newPassword = context.getConsoleReader().readLine("New password: ", '*');
             if (context.getAuthenticationProcessor().changePassword(oldPassword, newPassword)) {
-                return CommandStatus.NeedAuthentication;
+                context.getAuthenticationProcessor().clearStoredAuthentication();
             }
         } catch (IOException e) {
             e.printStackTrace();

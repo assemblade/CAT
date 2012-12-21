@@ -15,7 +15,8 @@
  */
 package com.assemblade.shell.commands;
 
+import com.assemblade.shell.Context;
+
 public interface CommandFactory {
-    public Command get(String commandName);
-    public String getCommandRegex();
+    public CommandStatus process(Context context, String input);
 }
