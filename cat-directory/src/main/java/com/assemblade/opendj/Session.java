@@ -94,6 +94,10 @@ public class Session {
 
 	public void add(Storable storable) throws StorageException {
         log.debug("Adding " + storable.getDn());
+        if (!storable.isValid(this)) {
+            log.error("Failed to add entry [" + storable.getDn() + "] because: The storable object is invalid");
+            throw new StorageException(AssembladeErrorCode.ASB_0013);
+        }
         AddOperation result = connection.processAdd(storable.getDN(), storable.getObjectClasses(), storable.getUserAttributes(), storable.getOperationalAttributes());
         if (result.getResultCode() != ResultCode.SUCCESS) {
             log.error("Failed to add entry [" + storable.getDn() + "] because: " + result.getErrorMessage().toString());

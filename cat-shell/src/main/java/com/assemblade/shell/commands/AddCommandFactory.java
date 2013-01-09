@@ -19,6 +19,9 @@ public class AddCommandFactory extends AbstractCommandFactory {
     public AddCommandFactory() {
         commands.put("policy", AddPolicyCommand.class);
         commands.put("user", AddUserCommand.class);
-
+        commands.put("group", AddGroupCommand.class);
+        commands.put("folder", AddFolderCommand.class);
+        commands.put("property", AddPropertyCommand.class);
+        commands.put("view", AddViewCommand.class);
     }
 }

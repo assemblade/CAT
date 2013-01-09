@@ -82,13 +82,9 @@ public abstract class AbstractCommandFactory implements CommandFactory {
     }
 
     private void printHelp(Context context) {
-        try {
-            context.getConsoleReader().println("Commands:");
-            for (String command : commands.keySet()) {
-                context.getConsoleReader().println("\t" + command);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        context.println("Commands:");
+        for (String command : commands.keySet()) {
+            context.println("\t" + command);
         }
     }
 }

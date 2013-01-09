@@ -74,16 +74,16 @@ public class AuthenticationProcessor {
             Login login = new Login(context.getUrl());
             return login.changePassword(user.getUserId(), oldPassword, newPassword);
         } catch (ClientException e) {
-            e.printStackTrace();
+            e.printStackTrace(context.getWriter());
         }
         return false;
     }
 
-    public void authenticate() throws IOException {
+    public void authenticate() {
         while (authentication == null) {
             authentication = retrieveAuthentication();
             if (authentication == null) {
-                authentication = readAuthenticationFromUser(context.getConsoleReader());
+                authentication = readAuthenticationFromUser(context);
             }
             welcomeUser();
         }
@@ -107,17 +107,17 @@ public class AuthenticationProcessor {
         }
     }
 
-    private Authentication readAuthenticationFromUser(ConsoleReader reader) throws IOException {
-        reader.println();
-        reader.println("Please log in");
-        reader.println();
+    private Authentication readAuthenticationFromUser(Context context) {
+        context.println();
+        context.println("Please log in");
+        context.println();
         String url = context.getUrl();
         if (url == null) {
-            url = reader.readLine("Server URL: ");
+            url = context.readLine("Server URL: ");
             context.setUrl(url);
         }
-        String username = reader.readLine("Username: ");
-        String password = reader.readLine("Password: ", '*');
+        String username = context.readLine("Username: ");
+        String password = context.readLine("Password: ", '*');
 
         try {
             Login login = new Login(url);

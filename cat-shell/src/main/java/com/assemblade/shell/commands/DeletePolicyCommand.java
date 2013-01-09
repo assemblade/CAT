@@ -28,11 +28,7 @@ public class DeletePolicyCommand implements Command {
     public CommandStatus run(Context context, String parameters) {
         String policyName = parameters.trim();
         if (StringUtils.isEmpty(policyName)) {
-            try {
-                policyName = context.getConsoleReader().readLine("Enter the name of the authentication policy to delete: ");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            policyName = context.readLine("Enter the name of the authentication policy to delete: ");
         }
         if (StringUtils.isNotEmpty(policyName)) {
             Policies policies = new Policies(context.getAuthenticationProcessor().getAuthentication());
@@ -44,11 +40,7 @@ public class DeletePolicyCommand implements Command {
                 e.printStackTrace();
             }
         } else {
-            try {
-                context.getConsoleReader().println("\tDoing nothing");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            context.println("\tDoing nothing");
         }
         return CommandStatus.Continue;
     }

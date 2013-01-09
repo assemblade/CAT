@@ -28,29 +28,29 @@ public class AddPolicyCommand implements Command {
     @Override
     public CommandStatus run(Context context, String parameters) {
         try {
-            context.getConsoleReader().println();
-            String name = context.getConsoleReader().readLine("Enter policy name []: ");
-            String type = context.getConsoleReader().readLine("Enter policy type, 1-passthrough, 2-password [1]: ");
+            context.println();
+            String name = context.readLine("Enter policy name []: ");
+            String type = context.readLine("Enter policy type, 1-passthrough, 2-password [1]: ");
 
             Policies policies = new Policies(context.getAuthenticationProcessor().getAuthentication());
 
             if (StringUtils.equals(type, "2")) {
-                String forceReset = context.getConsoleReader().readLine("Should password be changed on first use [yes|no]: ");
+                String forceReset = context.readLine("Should password be changed on first use [yes|no]: ");
 
                 PasswordPolicy policy = new PasswordPolicy();
                 policy.setName(name);
                 policy.setForceChangeOnReset(forceReset.equals("yes"));
                 policies.addAuthenticationPolicy(policy);
             } else {
-                String primaryRemoteServer = context.getConsoleReader().readLine("Enter the primary remote server url [localhost:389]: ");
+                String primaryRemoteServer = context.readLine("Enter the primary remote server url [localhost:389]: ");
                 if (StringUtils.isEmpty(primaryRemoteServer)) {
                     primaryRemoteServer = "localhost:389";
                 }
-                String secondaryRemoteServer = context.getConsoleReader().readLine("Enter the secondary remote server url []: ");
-                String searchBase = context.getConsoleReader().readLine("Enter the search base on the remote server []: ");
-                String bindDn = context.getConsoleReader().readLine("Enter the bind DN on the remote server []: ");
-                String bindPassword = context.getConsoleReader().readLine("Enter the bind password on the remote server []: ");
-                String mappingAttribute = context.getConsoleReader().readLine("Enter the mapping attribute name [uid]: ");
+                String secondaryRemoteServer = context.readLine("Enter the secondary remote server url []: ");
+                String searchBase = context.readLine("Enter the search base on the remote server []: ");
+                String bindDn = context.readLine("Enter the bind DN on the remote server []: ");
+                String bindPassword = context.readLine("Enter the bind password on the remote server []: ");
+                String mappingAttribute = context.readLine("Enter the mapping attribute name [uid]: ");
 
                 LdapPassthroughPolicy policy = new LdapPassthroughPolicy();
                 policy.setName(name);
@@ -63,8 +63,6 @@ public class AddPolicyCommand implements Command {
 
                 policies.addAuthenticationPolicy(policy);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ClientException e) {
             e.printStackTrace();
         }

@@ -46,6 +46,10 @@ public abstract class AbstractStorable implements Storable, Serializable {
     public AbstractStorable() {
     }
 
+    public boolean isValid(Session session) throws StorageException {
+        return true;
+    }
+
     public DN getDN() throws StorageException {
         try {
             return DN.decode(getDn());

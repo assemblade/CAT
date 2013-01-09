@@ -22,15 +22,11 @@ import java.io.IOException;
 public class ChangePasswordCommand implements Command {
     @Override
     public CommandStatus run(Context context, String parameters) {
-        try {
-            context.getConsoleReader().println();
-            String oldPassword = context.getConsoleReader().readLine("Current password: ", '*');
-            String newPassword = context.getConsoleReader().readLine("New password: ", '*');
-            if (context.getAuthenticationProcessor().changePassword(oldPassword, newPassword)) {
-                context.getAuthenticationProcessor().clearStoredAuthentication();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        context.println();
+        String oldPassword = context.readLine("Current password: ", '*');
+        String newPassword = context.readLine("New password: ", '*');
+        if (context.getAuthenticationProcessor().changePassword(oldPassword, newPassword)) {
+            context.getAuthenticationProcessor().clearStoredAuthentication();
         }
         return CommandStatus.Continue;
     }

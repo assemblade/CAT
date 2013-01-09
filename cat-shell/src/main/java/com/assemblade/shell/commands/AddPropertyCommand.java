@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Mike Adamson
+ * Copyright 2013 Mike Adamson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
  */
 package com.assemblade.shell.commands;
 
-public abstract class AbstractListCommand implements Command {
+import com.assemblade.shell.Context;
 
-
-
-
-    protected String pad(String text, int length) {
-        if (text.length() > length) {
-            return text.substring(0, length);
-        }
-        for (int count = text.length(); count < length; count++) {
-            text += " ";
-        }
-        return text;
+public class AddPropertyCommand implements Command {
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface Storable {
+    public boolean isValid(Session session) throws StorageException;
     public String getId();
     public String getParentId();
     public String getRDN();

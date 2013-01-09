@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Mike Adamson
+ * Copyright 2013 Mike Adamson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.assemblade.shell.commands;
 
-public class ListCommandFactory extends AbstractCommandFactory {
-    public ListCommandFactory() {
-        commands.put("policies", ListPolicyCommand.class);
-        commands.put("users", ListUserCommand.class);
-        commands.put("groups", ListGroupCommand.class);
+import com.assemblade.shell.Context;
+
+public class AddViewCommand implements Command {
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        throw new UnsupportedOperationException();
     }
 }

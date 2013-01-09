@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Mike Adamson
+ * Copyright 2013 Mike Adamson
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
  */
 package com.assemblade.shell.commands;
 
-public class InteractiveCommandFactory extends AbstractCommandFactory {
-    public InteractiveCommandFactory() {
-        commands.put("admin", AdminCommand.class);
-        commands.put("add", AddCommand.class);
-        commands.put("edit", EditCommand.class);
-        commands.put("delete", DeleteCommand.class);
-        commands.put("list", ListCommand.class);
-        commands.put("logout", LogoutCommand.class);
-        commands.put("exit", ExitCommand.class);
+import com.assemblade.shell.Context;
+
+public class AddFolderCommand implements Command {
+    @Override
+    public CommandStatus run(Context context, String parameters) {
+        throw new UnsupportedOperationException();
     }
 }

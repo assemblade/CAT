@@ -58,6 +58,13 @@ public class Group extends AbstractStorable {
     protected List<Storable> addMembers = new ArrayList<Storable>();
     protected List<Storable> deleteMembers = new ArrayList<Storable>();
 
+    public boolean isValid(Session session) throws StorageException {
+        if (StringUtils.isNotEmpty(name)) {
+            return session.search(new Group(), ROOT, "(businessCategory=" + name + ")").size() == 0;
+        }
+        return false;
+    }
+
 	public StorableDecorator<Group> getDecorator() {
         return new Decorator();
 	}
@@ -78,7 +85,8 @@ public class Group extends AbstractStorable {
         Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
 
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", groupId);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", encodeDescription());
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "businessCategory", name);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
 
         return attributeMap;
     }
@@ -108,7 +116,7 @@ public class Group extends AbstractStorable {
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
 
-        attributeNames.addAll(Arrays.asList("cn", "description", "aclRights", "aci", "member", "isMemberOf"));
+        attributeNames.addAll(Arrays.asList("cn", "businessCategory", "description", "aclRights", "aci", "member", "isMemberOf"));
         return attributeNames;
     }
 
@@ -116,7 +124,10 @@ public class Group extends AbstractStorable {
     public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
 
-        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", encodeDescription());
+        if (StringUtils.isNotEmpty(name)) {
+            LdapUtils.createSingleEntryModification(modifications, currentEntry, "businesscategory", name);
+        }
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
 
         for (Storable newMember : addMembers) {
             modifications.add(LdapUtils.createMultipleEntryAddModification("member", newMember.getDn()));
@@ -199,21 +210,10 @@ public class Group extends AbstractStorable {
         public Group decorate(Session session, Entry entry) throws StorageException {
             Group group = super.decorate(session, entry);
             group.groupId = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
-            String nameDescription = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
-            if (nameDescription.contains("/")) {
-                group.name = nameDescription.substring(0, nameDescription.indexOf('/'));
-                group.description = nameDescription.substring(nameDescription.indexOf('/') + 1, nameDescription.length());
-            }
+            group.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("businesscategory"));
+            group.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
             group.writable = group.getType().equals("group");
             return group;
-        }
-    }
-
-    private String encodeDescription() {
-        if (StringUtils.isNotEmpty(description)) {
-            return name + "/" + description;
-        } else {
-            return name;
         }
     }
 }

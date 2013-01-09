@@ -15,6 +15,8 @@
  */
 package com.assemblade.shell;
 
+import com.assemblade.shell.commands.CommandStatus;
+import com.assemblade.shell.commands.RootCommandFactory;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -31,12 +33,16 @@ public class CatLauncher {
     private CommandLine commandLine;
 
     private CatLauncher(String[] args) {
-        Option help = new Option( "help", "print this message" );
-        Option url = new Option( "url", true, "the url of the CAT rest API");
+        Option help = new Option( "h", "help", true, "print this message" );
+        Option url = new Option( "u", "url", true, "the url of the CAT rest API");
+        Option script = new Option("s", "script", true, "path to a script file");
+        Option output = new Option("o", "output", true, "path to output file");
 
         options = new Options();
         options.addOption(help);
         options.addOption(url);
+        options.addOption(script);
+        options.addOption(output);
 
         CommandLineParser parser = new GnuParser();
         try {
@@ -52,13 +58,11 @@ public class CatLauncher {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "cat-shell", options );
         } else {
-            String url = commandLine.getOptionValue("url");
+            String url = commandLine.getOptionValue("u");
+            String script = commandLine.getOptionValue("s");
+            String output = commandLine.getOptionValue("o");
 
-            Context context = new Context();
-
-            if (StringUtils.isNotEmpty(url)) {
-                context.setUrl(url);
-            }
+            Context context = new Context(url, script, output);
 
             AuthenticationProcessor authenticationProcessor = new AuthenticationProcessor(context);
 
@@ -66,19 +70,22 @@ public class CatLauncher {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "cat-shell", options );
             } else {
-
-                System.out.println();
+                context.println();
                 System.out.println();
 
                 if (authenticationProcessor.hasAuthentication()) {
                     authenticationProcessor.welcomeUser();
                 }
 
-                try {
-                    context.setAuthenticationProcessor(authenticationProcessor);
-                    LineProcessor lineProcessor = new LineProcessor(context);
-                    while (lineProcessor.processing());
-                } catch (IOException e) {
+                context.setAuthenticationProcessor(authenticationProcessor);
+
+                RootCommandFactory commandFactory = new RootCommandFactory();
+
+                CommandStatus status = CommandStatus.Continue;
+
+                while (status == CommandStatus.Continue) {
+                    context.getAuthenticationProcessor().authenticate();
+                    status = commandFactory.process(context, context.readLine("> "));
                 }
 
                 System.out.println();
@@ -89,8 +96,6 @@ public class CatLauncher {
     }
 
     public static void main(String[] args) {
-        CatLauncher launcher = new CatLauncher(args);
-
-        launcher.run();
+        new CatLauncher(args).run();
     }
 }
