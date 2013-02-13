@@ -64,6 +64,7 @@ ext {
 idea.module.excludeDirs = [ file('.gradle') ]
 
 def boolean isTomcatRunning() {
+    mkdir("${buildDir}/tmp")
     ant.exec (executable: '/bin/bash', spawn: 'false', output: "${project.buildDir}/tmp/tomcatStatus.txt") {
         ant.arg (value: '-c')
         ant.arg (value: "ps -efl | grep java | grep ${tomcatHome} | awk '{print \$22}'")

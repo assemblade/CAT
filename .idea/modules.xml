@@ -8,7 +8,6 @@
       <module fileurl="file://$PROJECT_DIR$/cat-rest-api/cat-rest-api.iml" filepath="$PROJECT_DIR$/cat-rest-api/cat-rest-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/cat-server/cat-server.iml" filepath="$PROJECT_DIR$/cat-server/cat-server.iml" />
       <module fileurl="file://$PROJECT_DIR$/cat-server-model/cat-server-model.iml" filepath="$PROJECT_DIR$/cat-server-model/cat-server-model.iml" />
-      <module fileurl="file://$PROJECT_DIR$/cat-shell/cat-shell.iml" filepath="$PROJECT_DIR$/cat-shell/cat-shell.iml" />
       <module fileurl="file://$PROJECT_DIR$/cat-utils/cat-utils.iml" filepath="$PROJECT_DIR$/cat-utils/cat-utils.iml" />
     </modules>
   </component>
