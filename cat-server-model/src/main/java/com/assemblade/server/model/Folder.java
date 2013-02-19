@@ -29,7 +29,7 @@ import java.util.Map;
 public class Folder extends AbstractFolder {
 	private static final long serialVersionUID = 1L;
 	
-	public static final String FOLDER_ROOT = "cn=properties,dc=assemblade,dc=com";
+	public static final String FOLDER_ROOT = "ou=properties,dc=assemblade,dc=com";
 
     @Override
     public String getSearchFilter() {

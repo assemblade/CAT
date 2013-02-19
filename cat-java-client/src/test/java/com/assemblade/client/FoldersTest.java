@@ -78,6 +78,16 @@ public class FoldersTest extends AbstractApiTest {
     }
 
     @Test
+    public void getFoldersTest() throws ClientException {
+        folders.addFolder(createFolder("folder1", "folder1 description", "properties"));
+
+        List<Folder> folders = this.folders.getFolders();
+
+        assertEquals(1, folders.size());
+
+    }
+
+    @Test
     public void getRootFoldersTest() throws ClientException {
         folders.addRootFolder(createFolder("folder1", "folder1 description", "properties"));
 

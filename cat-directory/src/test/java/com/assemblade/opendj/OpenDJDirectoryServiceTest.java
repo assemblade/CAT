@@ -31,7 +31,7 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		TestStorable storable = new TestStorable();
 		
 		storable.rdn = "cn=test";
-		storable.setParentDn("cn=properties,dc=assemblade,dc=com");
+		storable.setParentDn("ou=properties,dc=assemblade,dc=com");
 		storable.searchFilter = "(objectClass=asb-folder)";
 		storable.addUserAttribute("cn", "test");
 		storable.addObjectClasses("asb-folder");
@@ -41,7 +41,7 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		
 		session.add(storable);
 		
-		List<TestStorable> result = session.search(storable, "cn=properties,dc=assemblade,dc=com", false);
+		List<TestStorable> result = session.search(storable, "ou=properties,dc=assemblade,dc=com", false);
 		
 		assertEquals(1, result.size());
 		assertTrue(result.get(0) instanceof TestStorable);

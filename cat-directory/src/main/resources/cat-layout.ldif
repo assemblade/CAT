@@ -16,8 +16,8 @@ aci: (target="ldap:///ou=groups,dc=assemblade,dc=com")(targetattr="objectclass |
 aci: (target="ldap:///ou=users,dc=assemblade,dc=com")(targetscope="subordinate")(targetattr="objectclass || entryUUID || uid || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Allow groupadmin to see into the user tree"; allow(read,search,compare) groupdn="ldap:///cn=groupadmin,ou=groups,dc=assemblade,dc=com";)
 aci: (target="ldap:///cn=views,*,ou=users,dc=assemblade,dc=com")(targetattr="objectclass || entryUUID || cn || description || aclRights")(version 3.0; acl "Allow users to see their views"; allow(all) userdn="ldap:///parent";)
 aci: (targetattr="objectclass || uid || entryUUID || cn || userPassword || mail || isMemberOf || aclRights")(version 3.0; acl "Self entry read"; allow (read,search,compare) userdn="ldap:///self";)
-aci: (target="ldap:///cn=properties,dc=assemblade,dc=com")(targetscope="base")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights || asb-no-inheritance")(version 3.0; acl "Allow anyone to read and search properties"; allow(read,search) userdn="ldap:///anyone";)
-aci: (target="ldap:///cn=properties,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop root properties folder being edited or deleted"; deny(write,delete,export) userdn="ldap:///anyone";)
+aci: (target="ldap:///ou=properties,dc=assemblade,dc=com")(targetscope="base")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights || asb-no-inheritance")(version 3.0; acl "Allow anyone to read and search properties"; allow(read,search) userdn="ldap:///anyone";)
+aci: (target="ldap:///ou=properties,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop root properties folder being edited or deleted"; deny(write,delete,export) userdn="ldap:///anyone";)
 
 dn: cn=config,dc=assemblade,dc=com
 changetype: add
@@ -120,11 +120,8 @@ ou: accesstokens
 objectClass: top
 objectClass: organizationalUnit
 
-dn: cn=properties,dc=assemblade,dc=com
+dn: ou=properties,dc=assemblade,dc=com
 changetype: add
-cn: properties
+ou: properties
 objectClass: top
-objectClass: extensibleObject
-objectClass: asb-object
-objectClass: asb-folder
-description: The base folder for properties
+objectClass: organizationalUnit

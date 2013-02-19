@@ -30,16 +30,24 @@ public class Folders extends AbstractClient {
         return getFromUrl(url, new TypeReference<Folder>() {});
     }
 
-    public List<Folder> getRootFolders() throws ClientException {
+    public List<Folder> getFolders() throws ClientException {
         return get("/folders", new TypeReference<List<Folder>>() {});
+    }
+
+    public List<Folder> getRootFolders() throws ClientException {
+        return get("/folders/root", new TypeReference<List<Folder>>() {});
     }
 
     public List<Folder> getChildFolders(Folder parent) throws ClientException {
         return get("/folders/id/" + parent.getId() + "/folders", new TypeReference<List<Folder>>() {});
     }
 
-    public Folder addRootFolder(Folder folder) throws ClientException {
+    public Folder addFolder(Folder folder) throws ClientException {
         return add("/folders", folder, new TypeReference<Folder>() {});
+    }
+
+    public Folder addRootFolder(Folder folder) throws ClientException {
+        return add("/folders/root", folder, new TypeReference<Folder>() {});
     }
 
     public Folder addChildFolder(Folder parent, Folder folder) throws ClientException {

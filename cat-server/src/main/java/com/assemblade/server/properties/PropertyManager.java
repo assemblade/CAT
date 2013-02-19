@@ -49,8 +49,13 @@ public class PropertyManager {
 	}
 
     public List<Folder> getRootFolders() throws StorageException {
-        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
-        return userManager.getUserSession().search(parentFolder, parentFolder.getDn(), false);
+//        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
+        return userManager.getUserSession().search(new Folder(), Folder.FOLDER_ROOT, false);
+    }
+
+    public List<Folder> getAllFolders() throws StorageException {
+//        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
+        return userManager.getUserSession().search(new Folder(), Folder.FOLDER_ROOT, true);
     }
 
     public List<Folder> getFolders(String parentId) throws StorageException {

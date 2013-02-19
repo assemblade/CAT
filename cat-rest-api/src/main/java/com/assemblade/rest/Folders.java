@@ -50,6 +50,25 @@ public class Folders {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllFolders() {
+        try {
+            List<Folder> folders = new ArrayList<Folder>();
+            for (com.assemblade.server.model.Folder folder : propertyManager.getAllFolders()) {
+                folders.add(folderMapper.toClient(folder));
+            }
+            return Response.ok(folders).build();
+        } catch (StorageException e) {
+            if ((e.getErrorCode() == AssembladeErrorCode.ASB_0006) || (e.getErrorCode() == AssembladeErrorCode.ASB_0010)) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @GET
+    @Path("/root")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getRootFolders() {
         try {
             List<Folder> folders = new ArrayList<Folder>();
@@ -135,6 +154,23 @@ public class Folders {
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addFolder(Folder folder) {
+        try {
+            folder = folderMapper.toClient(propertyManager.addFolder(folderMapper.toServer(folder)));
+            return Response.ok().entity(folder).build();
+        } catch (StorageException e) {
+            if (e.getErrorCode() == AssembladeErrorCode.ASB_0003) {
+                return Response.status(Response.Status.CONFLICT).build();
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+
+    @POST
+    @Path("/root")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addRootFolder(Folder folder) {
