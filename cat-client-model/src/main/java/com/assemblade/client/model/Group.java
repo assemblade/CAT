@@ -1,6 +1,9 @@
 package com.assemblade.client.model;
 
-public class Group {
+import java.io.Serializable;
+
+public class Group implements Identifiable,Serializable {
+    private static final long serialVersionUID = 2857877972492219341L;
     private String url;
     private String id;
     private String name;

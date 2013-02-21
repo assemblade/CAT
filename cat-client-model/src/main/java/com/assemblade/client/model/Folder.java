@@ -15,9 +15,11 @@
  */
 package com.assemblade.client.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Folder {
+public class Folder implements Identifiable,Serializable {
+    private static final long serialVersionUID = -180041601797180497L;
     private Folder parent;
     private String url;
     private String name;

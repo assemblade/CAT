@@ -15,7 +15,10 @@
  */
 package com.assemblade.client.model;
 
-public class Property {
+import java.io.Serializable;
+
+public class Property implements Identifiable,Serializable {
+    private static final long serialVersionUID = 8031343993035061521L;
     private String url;
     private Folder folder;
     private String id;

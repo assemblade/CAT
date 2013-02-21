@@ -1,6 +1,11 @@
 package com.assemblade.client.model;
 
-public class GroupMember {
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+import java.io.Serializable;
+
+public class GroupMember implements Identifiable,Serializable {
+    private static final long serialVersionUID = -7597413975127218170L;
     private String url;
     private String id;
     private Group group;
@@ -19,6 +24,11 @@ public class GroupMember {
 
     public String getId() {
         return id;
+    }
+
+    @JsonIgnore
+    public String getName() {
+        return fullName;
     }
 
     public void setId(String id) {

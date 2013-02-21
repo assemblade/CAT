@@ -15,9 +15,11 @@
  */
 package com.assemblade.client.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class View {
+public class View implements Identifiable,Serializable {
+    private static final long serialVersionUID = 7511239307216896341L;
     private String url;
     private String name;
     private String description;

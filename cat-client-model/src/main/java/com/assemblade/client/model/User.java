@@ -15,7 +15,12 @@
  */
 package com.assemblade.client.model;
 
-public class User {
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+import java.io.Serializable;
+
+public class User implements Identifiable,Serializable {
+    private static final long serialVersionUID = -5338301750779161147L;
     private String url;
     private String id;
     private String userId;
@@ -38,6 +43,11 @@ public class User {
 
     public String getId() {
         return id;
+    }
+
+    @JsonIgnore
+    public String getName() {
+        return fullName;
     }
 
     public void setId(String id) {

@@ -32,7 +32,7 @@ if (hasProperty("release")) {
     println 'Release build'
     isReleaseBuild = true
     sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-} else if (hasProperty("ci")) {
+} else if (hasProperty("snapshot")) {
     version += "-SNAPSHOT"
     sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
 } else {
