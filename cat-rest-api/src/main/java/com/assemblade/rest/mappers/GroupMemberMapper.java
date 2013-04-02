@@ -16,6 +16,7 @@
 package com.assemblade.rest.mappers;
 
 import com.assemblade.client.model.GroupMember;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.User;
 import com.assemblade.server.security.AuthenticationHolder;
 
@@ -39,7 +40,7 @@ public class GroupMemberMapper {
         return clientGroupMember;
     }
 
-    public com.assemblade.server.model.GroupMember toServer(GroupMember clientGroupMember) {
+    public com.assemblade.server.model.GroupMember toServer(GroupMember clientGroupMember) throws StorageException {
         com.assemblade.server.model.GroupMember serverGroupMember = new com.assemblade.server.model.GroupMember();
         serverGroupMember.setId(clientGroupMember.getId());
         serverGroupMember.setGroup(groupMapper.toServer(clientGroupMember.getGroup()));

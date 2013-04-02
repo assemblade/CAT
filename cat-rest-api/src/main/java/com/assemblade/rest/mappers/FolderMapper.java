@@ -89,6 +89,10 @@ public class FolderMapper {
                 serverFolder.getWriteGroups().add(groupMapper.toServer(writeGroup));
             }
         }
+        if (!serverFolder.getReadGroups().isEmpty() || !serverFolder.getWriteGroups().isEmpty()) {
+            serverFolder.setInherit(false);
+        }
+
         return serverFolder;
     }
 

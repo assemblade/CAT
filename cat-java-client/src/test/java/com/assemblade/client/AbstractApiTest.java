@@ -40,18 +40,13 @@ public class AbstractApiTest {
 
     @Before
     public void initialise_client_for_admin() throws ClientException {
-        login = new Login(baseUrl);
-        Authentication authentication = login.login("admin", "password");
-        policies = new Policies(authentication);
-        users = new Users(authentication);
-        groups = new Groups(authentication);
-        folders = new Folders(authentication);
-        properties = new Properties(authentication);
-        views = new Views(authentication);
+        login("admin", "password");
     }
 
     @After
     public void delete_everything() throws ClientException {
+        login("admin", "password");
+
         for (View view : views.getViews()) {
             views.deleteView(view);
         }
@@ -74,6 +69,17 @@ public class AbstractApiTest {
                 policies.deleteAuthenticationPolicy(policy);
             }
         }
+    }
+
+    protected void login(String userId, String password) throws ClientException  {
+        login = new Login(baseUrl);
+        Authentication authentication = login.login(userId, password);
+        policies = new Policies(authentication);
+        users = new Users(authentication);
+        groups = new Groups(authentication);
+        folders = new Folders(authentication);
+        properties = new Properties(authentication);
+        views = new Views(authentication);
     }
 
     protected User createUser(String userId, String fullName, String emailAddress, String authenticationPolicy, String password) {

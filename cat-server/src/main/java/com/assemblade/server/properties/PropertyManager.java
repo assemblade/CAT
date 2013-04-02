@@ -43,18 +43,18 @@ public class PropertyManager {
     }
 	
 	public Folder updateFolder(Folder updatedFolder) throws StorageException {
+        updatedFolder.setOwner(userManager.getAuthenticatedUserDn());
+
         userManager.getUserSession().update(updatedFolder);
 
         return userManager.getUserSession().get(updatedFolder);
 	}
 
     public List<Folder> getRootFolders() throws StorageException {
-//        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
         return userManager.getUserSession().search(new Folder(), Folder.FOLDER_ROOT, false);
     }
 
     public List<Folder> getAllFolders() throws StorageException {
-//        Folder parentFolder = userManager.getUserSession().getByEntryDn(new Folder(), Folder.FOLDER_ROOT);
         return userManager.getUserSession().search(new Folder(), Folder.FOLDER_ROOT, true);
     }
 

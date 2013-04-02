@@ -16,9 +16,19 @@
 package com.assemblade.rest.mappers;
 
 import com.assemblade.client.model.Group;
+import com.assemblade.opendj.StorageException;
 import com.assemblade.server.security.AuthenticationHolder;
+import com.assemblade.server.users.UserManager;
+import org.apache.commons.lang.StringUtils;
 
 public class GroupMapper {
+    private final UserManager userManager;
+
+    public GroupMapper(UserManager userManager) {
+        this.userManager = userManager;
+    }
+
+
     public Group toClient(com.assemblade.server.model.Group serverGroup) {
         Group clientGroup = new Group();
         clientGroup.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/groups/id/" + serverGroup.getId());
@@ -32,10 +42,15 @@ public class GroupMapper {
         return clientGroup;
     }
 
-    public com.assemblade.server.model.Group toServer(Group clientGroup) {
+    public com.assemblade.server.model.Group toServer(Group clientGroup) throws StorageException {
         com.assemblade.server.model.Group serverGroup = new com.assemblade.server.model.Group();
         serverGroup.setId(clientGroup.getId());
         serverGroup.setParentDn(com.assemblade.server.model.Group.ROOT);
+
+        if (StringUtils.isNotEmpty(serverGroup.getId())) {
+            serverGroup.setGroupId(userManager.getUserSession().getByEntryId(new com.assemblade.server.model.Group(), serverGroup.getId()).getGroupId());
+        }
+
         serverGroup.setName(clientGroup.getName());
         serverGroup.setDescription(clientGroup.getDescription());
 

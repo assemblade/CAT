@@ -62,7 +62,9 @@
         <constructor-arg ref="propertyManager"/>
     </bean>
 
-    <bean id="groupMapper" class="com.assemblade.rest.mappers.GroupMapper"/>
+    <bean id="groupMapper" class="com.assemblade.rest.mappers.GroupMapper">
+        <constructor-arg ref="userManager"/>
+    </bean>
 
     <bean id="userMapper" class="com.assemblade.rest.mappers.UserMapper"/>
 
