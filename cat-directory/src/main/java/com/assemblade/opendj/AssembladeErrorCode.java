@@ -32,6 +32,7 @@ public enum AssembladeErrorCode implements Serializable {
     ASB_0011("ASB_0011", "Failed to change password"),
     ASB_0012("ASB_0012", "Failed to encode a URL"),
     ASB_0013("ASB_0013", "Storable object is invalid"),
+    ASB_0014("ASB_0014", "Failed to access a remote user"),
     ASB_9999("ASB_9999", "General error");
     ;
 

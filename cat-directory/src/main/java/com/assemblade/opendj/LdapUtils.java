@@ -50,6 +50,21 @@ public class LdapUtils {
         }
     }
 
+    public static void createSingleEntryModification(List<Modification> modifications, Entry currentEntry, String attributeName, boolean value) {
+        AttributeType type = DirectoryServer.getAttributeType(attributeName);
+        AttributeBuilder builder = new AttributeBuilder(type);
+        if (currentEntry.hasAttribute(type)) {
+            boolean oldValue = getSingleAttributeBooleanValue(currentEntry.getAttribute(attributeName));
+            if (oldValue != value) {
+                builder.add(value ? "true" : "false");
+                modifications.add(new Modification(ModificationType.REPLACE, builder.toAttribute()));
+            }
+        } else {
+            builder.add(value ? "true" : "false");
+            modifications.add(new Modification(ModificationType.ADD, builder.toAttribute()));
+        }
+    }
+
     public static void createMultipleEntryModifications(List<Modification> modifications, String attributeName, Collection<String> deleteEntries, Collection<String> addEntries) {
         AttributeType type = DirectoryServer.getAttributeType(attributeName);
         if (deleteEntries.size() > 0) {

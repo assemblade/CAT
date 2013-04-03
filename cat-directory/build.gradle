@@ -28,6 +28,7 @@ dependencies {
     compile "commons-collections:commons-collections:3.2.1"
     compile "commons-io:commons-io:2.0.1"
     compile "org.springframework:spring-web:${springVersion}"
+    compile "org.forgerock.opendj:opendj-ldap-sdk:3.0.0-Xpress1"
 }
 
 task fetchOpenDJ {

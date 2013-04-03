@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 public class NonGroupMembersTest extends AbstractApiTest {
     @Test
     public void getNonGroupMembers_userNotInGroup() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group = groups.addGroup(createGroup("group", "group description"));
 
         List<User> nonGroupMemberList = groups.getNonGroupMembers(group);
@@ -37,7 +37,7 @@ public class NonGroupMembersTest extends AbstractApiTest {
 
     @Test
     public void getNonGroupMembers_userInGroup() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group = groups.addGroup(createGroup("group", "group description"));
 
         groups.addMemberToGroup(createGroupMember(group, user));

@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 public class UsersTest extends AbstractApiTest {
     @Test
     public void addUserTest() throws ClientException {
-        User user = createUser("test", "Test User", "test@assemblade.com", null, "password");
+        User user = createUser("test", "Test User", "test@assemblade.com", "password");
 
         user = users.addUser(user);
 
@@ -60,7 +60,7 @@ public class UsersTest extends AbstractApiTest {
 
     @Test
     public void getUser() throws ClientException {
-        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", "password"));
 
         user = users.getUser(user.getUrl());
 
@@ -90,7 +90,7 @@ public class UsersTest extends AbstractApiTest {
 
     @Test
     public void updateUserTest_rename() throws ClientException {
-        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", "password"));
 
         user.setUserId("test2");
 
@@ -110,7 +110,7 @@ public class UsersTest extends AbstractApiTest {
 
     @Test
     public void updateUserTest_changeFullName() throws ClientException {
-        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", "password"));
 
         user.setFullName("New Name");
 
@@ -130,7 +130,7 @@ public class UsersTest extends AbstractApiTest {
 
     @Test
     public void updateUserTest_changeEmailAddress() throws ClientException {
-        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", "password"));
 
         user.setEmailAddress("new@assemblade.com");
 
@@ -150,7 +150,7 @@ public class UsersTest extends AbstractApiTest {
 
     @Test
     public void deleteUser() throws ClientException {
-        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("test", "Test User", "test@assemblade.com", "password"));
 
         users.deleteUser(user);
 

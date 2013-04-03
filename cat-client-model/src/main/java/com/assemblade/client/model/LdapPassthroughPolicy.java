@@ -15,17 +15,50 @@
  */
 package com.assemblade.client.model;
 
-public class LdapPassthroughPolicy extends AuthenticationPolicy {
+import java.io.Serializable;
+
+public class LdapPassthroughPolicy implements Serializable {
+    private static final long serialVersionUID = 5075640253300253277L;
+
+    private String url;
     private String primaryRemoteServer;
-    private String secondaryRemoteServer;
     private String searchBase;
     private String bindDn;
     private String bindPassword;
-    private String mappingAttribute;
+    private String searchAttribute;
+    private String nameAttribute;
+    private String mailAttribute;
 
-    @Override
-    public String getType() {
-        return "passthrough";
+    public String getSearchAttribute() {
+        return searchAttribute;
+    }
+
+    public void setSearchAttribute(String searchAttribute) {
+        this.searchAttribute = searchAttribute;
+    }
+
+    public String getNameAttribute() {
+        return nameAttribute;
+    }
+
+    public void setNameAttribute(String nameAttribute) {
+        this.nameAttribute = nameAttribute;
+    }
+
+    public String getMailAttribute() {
+        return mailAttribute;
+    }
+
+    public void setMailAttribute(String mailAttribute) {
+        this.mailAttribute = mailAttribute;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getPrimaryRemoteServer() {
@@ -34,14 +67,6 @@ public class LdapPassthroughPolicy extends AuthenticationPolicy {
 
     public void setPrimaryRemoteServer(String primaryRemoteServer) {
         this.primaryRemoteServer = primaryRemoteServer;
-    }
-
-    public String getSecondaryRemoteServer() {
-        return secondaryRemoteServer;
-    }
-
-    public void setSecondaryRemoteServer(String secondaryRemoteServer) {
-        this.secondaryRemoteServer = secondaryRemoteServer;
     }
 
     public String getSearchBase() {
@@ -66,13 +91,5 @@ public class LdapPassthroughPolicy extends AuthenticationPolicy {
 
     public void setBindPassword(String bindPassword) {
         this.bindPassword = bindPassword;
-    }
-
-    public String getMappingAttribute() {
-        return mappingAttribute;
-    }
-
-    public void setMappingAttribute(String mappingAttribute) {
-        this.mappingAttribute = mappingAttribute;
     }
 }

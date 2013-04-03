@@ -18,6 +18,7 @@ objectClass: inetOrgPerson
 uid: test1
 cn: Test1 User
 sn: User
+mail: test1@example.com
 userPassword: password
 
 dn: uid=test2,ou=users,dc=example,dc=com
@@ -28,4 +29,5 @@ objectClass: inetOrgPerson
 uid: test2
 cn: Test2 User
 sn: User
+mail: test2@example.com
 userPassword: password

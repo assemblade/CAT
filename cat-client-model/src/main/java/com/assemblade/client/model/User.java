@@ -28,7 +28,7 @@ public class User implements Identifiable,Serializable {
     private String emailAddress;
     private boolean globalAdministrator;
     private boolean groupAdministrator;
-    private String authenticationPolicy;
+    private boolean remoteUser;
     private String password;
     private boolean writable;
     private boolean deletable;
@@ -94,14 +94,6 @@ public class User implements Identifiable,Serializable {
         this.groupAdministrator = groupAdministrator;
     }
 
-    public String getAuthenticationPolicy() {
-        return authenticationPolicy;
-    }
-
-    public void setAuthenticationPolicy(String authenticationPolicy) {
-        this.authenticationPolicy = authenticationPolicy;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -124,6 +116,14 @@ public class User implements Identifiable,Serializable {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
+    }
+
+    public boolean isRemoteUser() {
+        return remoteUser;
+    }
+
+    public void setRemoteUser(boolean remoteUser) {
+        this.remoteUser = remoteUser;
     }
 
     @Override

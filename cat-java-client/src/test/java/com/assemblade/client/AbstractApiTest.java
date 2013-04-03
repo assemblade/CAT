@@ -16,10 +16,10 @@
 package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
 import com.assemblade.client.model.GroupMember;
+import com.assemblade.client.model.PasswordPolicy;
 import com.assemblade.client.model.Property;
 import com.assemblade.client.model.User;
 import com.assemblade.client.model.View;
@@ -64,11 +64,10 @@ public class AbstractApiTest {
                 users.deleteUser(user);
             }
         }
-        for (AuthenticationPolicy policy : policies.getAuthenticationPolicies()) {
-            if (!policy.getName().startsWith("Default")) {
-                policies.deleteAuthenticationPolicy(policy);
-            }
-        }
+
+        PasswordPolicy policy = policies.getLocalPasswordPolicy();
+        policy.setForceChangeOnReset(false);
+        policies.updateLocalPasswordPolicy(policy);
     }
 
     protected void login(String userId, String password) throws ClientException  {
@@ -82,19 +81,21 @@ public class AbstractApiTest {
         views = new Views(authentication);
     }
 
-    protected User createUser(String userId, String fullName, String emailAddress, String authenticationPolicy, String password) {
+    protected User createUser(String userId, String fullName, String emailAddress, String password) {
         User user = new User();
         user.setUserId(userId);
         user.setFullName(fullName);
-        if (emailAddress != null) {
-            user.setEmailAddress(emailAddress);
-        }
-        if (authenticationPolicy != null) {
-            user.setAuthenticationPolicy(authenticationPolicy);
-        }
-        if (password != null) {
-            user.setPassword(password);
-        }
+        user.setEmailAddress(emailAddress);
+        user.setPassword(password);
+
+        return user;
+    }
+
+    protected User createRemoteUser(String userId) {
+        User user = new User();
+        user.setUserId(userId);
+        user.setRemoteUser(true);
+
         return user;
     }
 

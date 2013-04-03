@@ -17,18 +17,9 @@ package com.assemblade.client.scenarios.folders;
 
 import com.assemblade.client.AbstractApiTest;
 import com.assemblade.client.ClientException;
-import com.assemblade.client.Folders;
-import com.assemblade.client.Groups;
-import com.assemblade.client.Policies;
-import com.assemblade.client.Users;
-import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.Folder;
 import com.assemblade.client.model.Group;
-import com.assemblade.client.model.GroupMember;
 import com.assemblade.client.model.User;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -40,7 +31,7 @@ import static junit.framework.Assert.assertTrue;
 public class AdminCanAssignReadAndWritePermissionsToUsers extends AbstractApiTest {
     @Test
     public void adminCanAssignReadPermissionsToAUser() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group1 = groups.addGroup(createGroup("group1", "group1 description"));
         groups.addMemberToGroup(createGroupMember(group1, user));
         Group group2 = groups.addGroup(createGroup("group2", "group1 description"));

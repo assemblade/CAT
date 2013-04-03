@@ -54,7 +54,8 @@ public abstract class AbstractUser extends AbstractStorable {
     protected String password;
     protected String emailAddress;
     protected String searchFilter = DEFAULT_SEARCH_STRING;
-    protected String authenticationPolicy;
+    protected boolean remoteUser;
+    protected String remoteDn;
     protected boolean globalAdministrator;
     protected boolean groupAdministrator;
 
@@ -83,7 +84,7 @@ public abstract class AbstractUser extends AbstractStorable {
     @Override
     public Map<ObjectClass, String> getObjectClasses() {
         Map<ObjectClass, String> objectClasses = super.getObjectClasses();
-        objectClasses.put(DirectoryServer.getObjectClass("asb-user"), "asb-user");
+        objectClasses.put(DirectoryServer.getObjectClass("inetorgperson"), "inetOrgPerson");
         return objectClasses;
     }
 
@@ -92,12 +93,14 @@ public abstract class AbstractUser extends AbstractStorable {
         Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
 
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "uid", userId);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "sAMAccountName", userId);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", fullName);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "sn", userId);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "mail", emailAddress);
         if (StringUtils.isNotEmpty(password)) {
             LdapUtils.addSingleValueAttributeToMap(attributeMap, "userPassword", password);
+        }
+        if (remoteUser && StringUtils.isNotEmpty(remoteDn)) {
+            LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", remoteDn);
         }
         return attributeMap;
     }
@@ -106,8 +109,8 @@ public abstract class AbstractUser extends AbstractStorable {
     public Map<AttributeType, List<Attribute>> getOperationalAttributes() {
         Map<AttributeType, List<Attribute>> attributeMap = super.getOperationalAttributes();
 
-        if (StringUtils.isNotEmpty(authenticationPolicy)) {
-            LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-pwp-password-policy-dn", "cn=" + authenticationPolicy + ",cn=Password Policies,cn=config");
+        if (remoteUser) {
+            LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-pwp-password-policy-dn", "cn=Remote User Authentication Policy,cn=Password Policies,cn=config");
         }
 
         return attributeMap;
@@ -121,7 +124,7 @@ public abstract class AbstractUser extends AbstractStorable {
     @Override
     public boolean requiresUpdate(Session session, Entry currentEntry) throws StorageException {
         User user = new User().getDecorator().decorate(session, currentEntry);
-        return !StringUtils.equals(fullName, user.fullName) || !StringUtils.equals(emailAddress, user.emailAddress) || !StringUtils.equals(authenticationPolicy, user.authenticationPolicy);
+        return !StringUtils.equals(fullName, user.fullName) || !StringUtils.equals(emailAddress, user.emailAddress) || (remoteUser != user.remoteUser);
     }
 
     @Override
@@ -193,12 +196,20 @@ public abstract class AbstractUser extends AbstractStorable {
         this.groupAdministrator = groupAdministrator;
     }
 
-    public String getAuthenticationPolicy() {
-        return authenticationPolicy;
+    public boolean isRemoteUser() {
+        return remoteUser;
     }
 
-    public void setAuthenticationPolicy(String authenticationPolicy) {
-        this.authenticationPolicy = authenticationPolicy;
+    public void setRemoteUser(boolean remoteUser) {
+        this.remoteUser = remoteUser;
+    }
+
+    public String getRemoteDn() {
+        return remoteDn;
+    }
+
+    public void setRemoteDn(String remoteDn) {
+        this.remoteDn = remoteDn;
     }
 
     protected abstract class Decorator<T extends AbstractUser> extends AbstractStorable.Decorator<T> {
@@ -227,16 +238,9 @@ public abstract class AbstractUser extends AbstractStorable {
                     }
                 }
             }
-            try {
-                String authenticationPolicy = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("pwdpolicysubentry"));
-                if (StringUtils.isNotEmpty(authenticationPolicy)) {
-                    DN authenticationPolicyDN = DN.decode(LdapUtils.getSingleAttributeStringValue(entry.getAttribute("pwdpolicysubentry")));
-                    user.authenticationPolicy = authenticationPolicyDN.getRDN().getAttributeValue(0).toString();
-                }
-            } catch (DirectoryException e) {
-                log.error("Failed to determine the authentication policy for a user", e);
-                throw new StorageException(AssembladeErrorCode.ASB_9999);
-            }
+            String authenticationPolicy = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("pwdpolicysubentry"));
+            user.remoteUser = StringUtils.isNotEmpty(authenticationPolicy) && authenticationPolicy.equals("cn=Remote User Authentication Policy,cn=Password Policies,cn=config");
+            user.remoteDn = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
             EntryPermissions permissions = LdapUtils.getEntryPermissions(entry.getAttributes());
             user.writable = permissions.canWrite();
             user.deletable = permissions.canDelete();

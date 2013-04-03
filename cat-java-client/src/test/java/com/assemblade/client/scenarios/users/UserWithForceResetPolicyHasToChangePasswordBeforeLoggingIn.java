@@ -18,14 +18,9 @@ package com.assemblade.client.scenarios.users;
 import com.assemblade.client.AbstractApiTest;
 import com.assemblade.client.ChangePasswordException;
 import com.assemblade.client.ClientException;
-import com.assemblade.client.Policies;
-import com.assemblade.client.Users;
 import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.PasswordPolicy;
 import com.assemblade.client.model.User;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -35,15 +30,13 @@ import static org.junit.Assert.fail;
 public class UserWithForceResetPolicyHasToChangePasswordBeforeLoggingIn extends AbstractApiTest {
     @Test
     public void userCanChangeTheirPassword() throws ClientException {
-        PasswordPolicy policy = new PasswordPolicy();
-        policy.setName("Change on reset");
+        PasswordPolicy policy = policies.getLocalPasswordPolicy();
         policy.setForceChangeOnReset(true);
-        policies.addAuthenticationPolicy(policy);
+        policies.updateLocalPasswordPolicy(policy);
 
         User user = new User();
         user.setUserId("test");
         user.setFullName("Test User");
-        user.setAuthenticationPolicy("Change On Reset");
         user.setPassword("changeme");
         user = users.addUser(user);
 

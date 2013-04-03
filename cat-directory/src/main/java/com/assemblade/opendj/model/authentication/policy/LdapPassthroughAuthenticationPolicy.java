@@ -18,12 +18,15 @@ package com.assemblade.opendj.model.authentication.policy;
 
 import com.assemblade.opendj.model.ConfigurationDecorator;
 import com.assemblade.opendj.LdapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
 import org.opends.server.types.Entry;
+import org.opends.server.types.Modification;
 import org.opends.server.types.ObjectClass;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -32,11 +35,12 @@ import java.util.Map;
 public class LdapPassthroughAuthenticationPolicy extends AuthenticationPolicy {
 
     private String primaryRemoteServer = "localhost:1389";
-    private String secondaryRemoteServer;
     private String searchBase;
+    private String searchAttribute = "uid";
+    private String nameAttribute = "cn";
+    private String mailAttribute = "mail";
     private String bindDn;
     private String bindPassword;
-    private String mappingAttribute;
 
     @Override
     public String getJavaClass() {
@@ -80,19 +84,23 @@ public class LdapPassthroughAuthenticationPolicy extends AuthenticationPolicy {
     }
 
     @Override
-    public Map<AttributeType, List<Attribute>> getUserAttributes() {
-        Map<AttributeType, List<Attribute>> attributeMap = super.getUserAttributes();
+    public boolean requiresUpdate(Entry currentEntry) {
+        return super.requiresUpdate(currentEntry)
+            || !StringUtils.equals(getPrimaryRemoteServer(), LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("ds-cfg-primary-remote-ldap-server")))
+            || !StringUtils.equals(getSearchCriteria(), LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("ds-cfg-mapped-search-base-dn")))
+            || !StringUtils.equals(getBindDn(), LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("ds-cfg-mapped-search-bind-dn")))
+            || !StringUtils.equals(getBindPassword(), LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("ds-cfg-mapped-search-bind-password")));
+    }
 
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-mapping-policy", "mapped-search");
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-use-password-caching", "false");
+    @Override
+    public List<Modification> getModifications(Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(currentEntry);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "ds-cfg-primary-remote-ldap-server", getPrimaryRemoteServer());
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "ds-cfg-mapped-search-base-dn", getSearchCriteria());
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "ds-cfg-mapped-search-bind-dn", getBindDn());
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "ds-cfg-mapped-search-bind-password", getBindPassword());
 
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-primary-remote-ldap-server", primaryRemoteServer);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-mapped-search-base-dn", searchBase);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-mapped-search-bind-dn", bindDn);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-mapped-search-bind-password", bindPassword);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-mapped-attribute", mappingAttribute);
-
-        return attributeMap;
+        return modifications;
     }
 
     @Override
@@ -111,13 +119,25 @@ public class LdapPassthroughAuthenticationPolicy extends AuthenticationPolicy {
             LdapPassthroughAuthenticationPolicy policy = super.decorate(entry);
 
             policy.primaryRemoteServer = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-primary-remote-ldap-server"));
-            policy.searchBase = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-mapped-search-base-dn"));
+            String searchCriteria = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-mapped-search-base-dn"));
+            int commaIndex = searchCriteria.indexOf(',');
+            policy.searchAttribute = searchCriteria.substring(0, commaIndex - 2);
+            searchCriteria = searchCriteria.substring(commaIndex + 1);
+            commaIndex = searchCriteria.indexOf(',');
+            policy.nameAttribute = searchCriteria.substring(0, commaIndex - 2);
+            searchCriteria = searchCriteria.substring(commaIndex + 1);
+            commaIndex = searchCriteria.indexOf(',');
+            policy.mailAttribute = searchCriteria.substring(0, commaIndex - 2);
+            policy.searchBase = searchCriteria.substring(commaIndex + 1);
             policy.bindDn = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-mapped-search-bind-dn"));
             policy.bindPassword = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-mapped-search-bind-password"));
-            policy.mappingAttribute = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-cfg-mapped-attribute"));
 
             return policy;
         }
+    }
+
+    public String getName() {
+        return "Remote User Authentication Policy";
     }
 
     public String getPrimaryRemoteServer() {
@@ -126,14 +146,6 @@ public class LdapPassthroughAuthenticationPolicy extends AuthenticationPolicy {
 
     public void setPrimaryRemoteServer(String primaryRemoteServer) {
         this.primaryRemoteServer = primaryRemoteServer;
-    }
-
-    public String getSecondaryRemoteServer() {
-        return secondaryRemoteServer;
-    }
-
-    public void setSecondaryRemoteServer(String secondaryRemoteServer) {
-        this.secondaryRemoteServer = secondaryRemoteServer;
     }
 
     public String getSearchBase() {
@@ -160,11 +172,31 @@ public class LdapPassthroughAuthenticationPolicy extends AuthenticationPolicy {
         this.bindPassword = bindPassword;
     }
 
-    public String getMappingAttribute() {
-        return mappingAttribute;
+    public String getSearchAttribute() {
+        return searchAttribute;
     }
 
-    public void setMappingAttribute(String mappingAttribute) {
-        this.mappingAttribute = mappingAttribute;
+    public void setSearchAttribute(String searchAttribute) {
+        this.searchAttribute = searchAttribute;
+    }
+
+    public String getMailAttribute() {
+        return mailAttribute;
+    }
+
+    public void setMailAttribute(String mailAttribute) {
+        this.mailAttribute = mailAttribute;
+    }
+
+    public String getNameAttribute() {
+        return nameAttribute;
+    }
+
+    public void setNameAttribute(String nameAttribute) {
+        this.nameAttribute = nameAttribute;
+    }
+
+    private String getSearchCriteria() {
+        return searchAttribute + "=a," + nameAttribute + "=b," + mailAttribute + "=c," + searchBase;
     }
 }

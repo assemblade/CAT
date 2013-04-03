@@ -1,11 +1,19 @@
 package com.assemblade.client.model;
 
-public class PasswordPolicy extends AuthenticationPolicy {
+import java.io.Serializable;
+
+public class PasswordPolicy implements Serializable {
+    private static final long serialVersionUID = -5364038640494616148L;
+
+    private String url;
     private boolean forceChangeOnReset;
 
-    @Override
-    public String getType() {
-        return "password";
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public boolean isForceChangeOnReset() {

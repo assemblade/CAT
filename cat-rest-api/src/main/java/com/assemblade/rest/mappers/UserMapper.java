@@ -28,7 +28,7 @@ public class UserMapper {
         clientUser.setEmailAddress(serverUser.getEmailAddress());
         clientUser.setGlobalAdministrator(serverUser.isGlobalAdministrator());
         clientUser.setGroupAdministrator(serverUser.isGroupAdministrator());
-        clientUser.setAuthenticationPolicy(serverUser.getAuthenticationPolicy());
+        clientUser.setRemoteUser(serverUser.isRemoteUser());
         clientUser.setWritable(serverUser.isWritable());
         clientUser.setDeletable(serverUser.isDeletable());
         return clientUser;
@@ -41,7 +41,7 @@ public class UserMapper {
         serverUser.setParentDn(com.assemblade.server.model.User.ROOT);
         serverUser.setFullName(clientUser.getFullName());
         serverUser.setEmailAddress(clientUser.getEmailAddress());
-        serverUser.setAuthenticationPolicy(clientUser.getAuthenticationPolicy());
+        serverUser.setRemoteUser(clientUser.isRemoteUser());
         serverUser.setPassword(clientUser.getPassword());
         return serverUser;
     }

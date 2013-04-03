@@ -18,6 +18,8 @@ package com.assemblade.server.configuration;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.opendj.model.Configuration;
 import com.assemblade.opendj.model.authentication.policy.AuthenticationPolicy;
+import com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy;
+import com.assemblade.opendj.model.authentication.policy.PasswordPolicy;
 import com.assemblade.server.users.UserManager;
 
 import java.util.List;
@@ -30,25 +32,39 @@ public class ConfigurationManager {
         this.userManager = userManager;
     }
 
-    public List<Configuration> getAuthenticationPolicies() throws StorageException {
-        return  userManager.getUserSession().getConfigurationItems("(objectClass=ds-cfg-authentication-policy)");
+//    public List<Configuration> getAuthenticationPolicies() throws StorageException {
+//        return  userManager.getUserSession().getConfigurationItems("(objectClass=ds-cfg-authentication-policy)");
+//    }
+
+    public PasswordPolicy getLocalUserPasswordPolicy() throws StorageException {
+        return (PasswordPolicy)userManager.getUserSession().getConfigurationByDn("cn=Local User Password Policy," + AuthenticationPolicy.ROOT);
     }
 
-    public Configuration getAuthenticationPolicy(String name) throws StorageException {
-        return userManager.getUserSession().getConfigurationByDn("cn=" + name + "," + AuthenticationPolicy.ROOT);
+    public PasswordPolicy updateLocalUserPasswordPolicy(PasswordPolicy policy) throws StorageException {
+        userManager.getUserSession().update(policy);
+        return getLocalUserPasswordPolicy();
     }
 
-    public Configuration addConfiguration(Configuration configuration) throws StorageException {
-        userManager.getUserSession().add(configuration);
-        return userManager.getUserSession().get(configuration);
+    public LdapPassthroughAuthenticationPolicy getRemoteUserAuthenticationPolicy() throws StorageException {
+        return (LdapPassthroughAuthenticationPolicy)userManager.getUserSession().getConfigurationByDn("cn=Remote User Authentication Policy," + AuthenticationPolicy.ROOT);
     }
 
-    public Configuration updateConfiguration(Configuration configuration) throws StorageException {
-        userManager.getUserSession().update(configuration);
-        return userManager.getUserSession().get(configuration);
+    public LdapPassthroughAuthenticationPolicy updateRemoteUserAuthenticationPolicy(LdapPassthroughAuthenticationPolicy policy) throws StorageException {
+        userManager.getUserSession().update(policy);
+        return getRemoteUserAuthenticationPolicy();
     }
 
-    public void deleteConfiguration(String name) throws StorageException {
-        userManager.getUserSession().delete("cn=" + name + ",cn=Password Policies,cn=config", false);
-    }
+//    public Configuration addConfiguration(Configuration configuration) throws StorageException {
+//        userManager.getUserSession().add(configuration);
+//        return userManager.getUserSession().get(configuration);
+//    }
+//
+//    public Configuration updateConfiguration(Configuration configuration) throws StorageException {
+//        userManager.getUserSession().update(configuration);
+//        return userManager.getUserSession().get(configuration);
+//    }
+
+//    public void deleteConfiguration(String name) throws StorageException {
+//        userManager.getUserSession().delete("cn=" + name + ",cn=Password Policies,cn=config", false);
+//    }
 }

@@ -15,54 +15,46 @@
  */
 package com.assemblade.rest.mappers;
 
-import com.assemblade.client.model.AuthenticationPolicy;
 import com.assemblade.client.model.LdapPassthroughPolicy;
 import com.assemblade.client.model.PasswordPolicy;
-import com.assemblade.opendj.model.Configuration;
 import com.assemblade.server.security.AuthenticationHolder;
 
 public class AuthenticationPolicyMapper {
-    public AuthenticationPolicy toClient(Configuration configuration) {
-        if (configuration instanceof com.assemblade.opendj.model.authentication.policy.PasswordPolicy) {
-            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = (com.assemblade.opendj.model.authentication.policy.PasswordPolicy)configuration;
-            PasswordPolicy passwordPolicy = new PasswordPolicy();
-            passwordPolicy.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/policies/name/" + serverPasswordPolicy.getName());
-            passwordPolicy.setName(serverPasswordPolicy.getName());
-            passwordPolicy.setForceChangeOnReset(serverPasswordPolicy.isForceChangeOnReset());
-            return passwordPolicy;
-        } else {
-            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = (com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy)configuration;
-            LdapPassthroughPolicy ldapPassthroughPolicy = new LdapPassthroughPolicy();
-            ldapPassthroughPolicy.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/policies/name/" + ldapPassthroughPolicy.getName());
-            ldapPassthroughPolicy.setName(serverLdapPassthroughPolicy.getName());
-            ldapPassthroughPolicy.setPrimaryRemoteServer(serverLdapPassthroughPolicy.getPrimaryRemoteServer());
-            ldapPassthroughPolicy.setSecondaryRemoteServer(serverLdapPassthroughPolicy.getSecondaryRemoteServer());
-            ldapPassthroughPolicy.setSearchBase(serverLdapPassthroughPolicy.getSearchBase());
-            ldapPassthroughPolicy.setBindDn(serverLdapPassthroughPolicy.getBindDn());
-            ldapPassthroughPolicy.setBindPassword(serverLdapPassthroughPolicy.getBindPassword());
-            ldapPassthroughPolicy.setMappingAttribute(serverLdapPassthroughPolicy.getMappingAttribute());
-            return ldapPassthroughPolicy;
-        }
+    public PasswordPolicy toClient(com.assemblade.opendj.model.authentication.policy.PasswordPolicy policy) {
+        PasswordPolicy passwordPolicy = new PasswordPolicy();
+        passwordPolicy.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/policies/local");
+        passwordPolicy.setForceChangeOnReset(policy.isForceChangeOnReset());
+        return passwordPolicy;
     }
 
-    public Configuration toServer(AuthenticationPolicy authenticationPolicy) {
-        if (authenticationPolicy instanceof PasswordPolicy) {
-            com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = new com.assemblade.opendj.model.authentication.policy.PasswordPolicy();
-            PasswordPolicy passwordPolicy = (PasswordPolicy)authenticationPolicy;
-            serverPasswordPolicy.setName(passwordPolicy.getName());
-            serverPasswordPolicy.setForceChangeOnReset(passwordPolicy.isForceChangeOnReset());
-            return serverPasswordPolicy;
-        } else {
-            com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = new com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy();
-            LdapPassthroughPolicy ldapPassthroughPolicy = (LdapPassthroughPolicy)authenticationPolicy;
-            serverLdapPassthroughPolicy.setName(ldapPassthroughPolicy.getName());
-            serverLdapPassthroughPolicy.setPrimaryRemoteServer(ldapPassthroughPolicy.getPrimaryRemoteServer());
-            serverLdapPassthroughPolicy.setSecondaryRemoteServer(ldapPassthroughPolicy.getSecondaryRemoteServer());
-            serverLdapPassthroughPolicy.setSearchBase(ldapPassthroughPolicy.getSearchBase());
-            serverLdapPassthroughPolicy.setBindDn(ldapPassthroughPolicy.getBindDn());
-            serverLdapPassthroughPolicy.setBindPassword(ldapPassthroughPolicy.getBindPassword());
-            serverLdapPassthroughPolicy.setMappingAttribute(ldapPassthroughPolicy.getMappingAttribute());
-            return serverLdapPassthroughPolicy;
-        }
+    public LdapPassthroughPolicy toClient(com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy policy) {
+        LdapPassthroughPolicy ldapPassthroughPolicy = new LdapPassthroughPolicy();
+        ldapPassthroughPolicy.setUrl(AuthenticationHolder.getAuthentication().getBaseUrl() + "/policies/remote");
+        ldapPassthroughPolicy.setPrimaryRemoteServer(policy.getPrimaryRemoteServer());
+        ldapPassthroughPolicy.setSearchBase(policy.getSearchBase());
+        ldapPassthroughPolicy.setBindDn(policy.getBindDn());
+        ldapPassthroughPolicy.setBindPassword(policy.getBindPassword());
+        ldapPassthroughPolicy.setNameAttribute(policy.getNameAttribute());
+        ldapPassthroughPolicy.setMailAttribute(policy.getMailAttribute());
+        ldapPassthroughPolicy.setSearchAttribute(policy.getSearchAttribute());
+        return ldapPassthroughPolicy;
+    }
+
+    public com.assemblade.opendj.model.authentication.policy.PasswordPolicy toServer(PasswordPolicy policy) {
+        com.assemblade.opendj.model.authentication.policy.PasswordPolicy serverPasswordPolicy = new com.assemblade.opendj.model.authentication.policy.PasswordPolicy();
+        serverPasswordPolicy.setForceChangeOnReset(policy.isForceChangeOnReset());
+        return serverPasswordPolicy;
+    }
+
+    public com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy toServer(LdapPassthroughPolicy policy) {
+        com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy serverLdapPassthroughPolicy = new com.assemblade.opendj.model.authentication.policy.LdapPassthroughAuthenticationPolicy();
+        serverLdapPassthroughPolicy.setPrimaryRemoteServer(policy.getPrimaryRemoteServer());
+        serverLdapPassthroughPolicy.setSearchBase(policy.getSearchBase());
+        serverLdapPassthroughPolicy.setBindDn(policy.getBindDn());
+        serverLdapPassthroughPolicy.setBindPassword(policy.getBindPassword());
+        serverLdapPassthroughPolicy.setNameAttribute(policy.getNameAttribute());
+        serverLdapPassthroughPolicy.setMailAttribute(policy.getMailAttribute());
+        serverLdapPassthroughPolicy.setSearchAttribute(policy.getSearchAttribute());
+        return serverLdapPassthroughPolicy;
     }
 }

@@ -18,10 +18,12 @@ package com.assemblade.opendj.model.authentication.policy;
 
 import com.assemblade.opendj.model.ConfigurationDecorator;
 import com.assemblade.opendj.LdapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.opends.server.core.DirectoryServer;
 import org.opends.server.types.Attribute;
 import org.opends.server.types.AttributeType;
 import org.opends.server.types.Entry;
+import org.opends.server.types.Modification;
 import org.opends.server.types.ObjectClass;
 
 import java.util.Arrays;
@@ -105,6 +107,25 @@ public class PasswordPolicy extends AuthenticationPolicy {
         return attributeMap;
     }
 
+    @Override
+    public boolean requiresUpdate(Entry currentEntry) {
+        return super.requiresUpdate(currentEntry)
+                || (isForceChangeOnReset() != LdapUtils.getSingleAttributeBooleanValue(currentEntry.getAttribute("ds-cfg-force-change-on-add")));
+    }
+
+    @Override
+    public List<Modification> getModifications(Entry currentEntry) {
+        List<Modification> modifications = super.getModifications(currentEntry);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "ds-cfg-force-change-on-add", isForceChangeOnReset());
+
+        return modifications;
+    }
+
+
+    @Override
+    public String getName() {
+        return "Local User Password Policy";
+    }
 
     @Override
     public ConfigurationDecorator getDecorator() {

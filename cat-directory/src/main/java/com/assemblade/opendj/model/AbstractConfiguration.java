@@ -105,7 +105,7 @@ public abstract class AbstractConfiguration implements Configuration, Serializab
     public Map<AttributeType, List<Attribute>> getUserAttributes() {
         Map<AttributeType, List<Attribute>> attributeMap = new HashMap<AttributeType, List<Attribute>>();
 
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", getName());
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "ds-cfg-java-class", getJavaClass());
 
         return attributeMap;
@@ -120,7 +120,7 @@ public abstract class AbstractConfiguration implements Configuration, Serializab
 
     @Override
     public String getRDN() {
-        return "cn=" + name;
+        return "cn=" + getName();
     }
 
     @Override
@@ -133,7 +133,7 @@ public abstract class AbstractConfiguration implements Configuration, Serializab
 
     @Override
     public boolean requiresRename(Entry currentEntry) {
-        return !StringUtils.equals(name, LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
+        return !StringUtils.equals(getName(), LdapUtils.getSingleAttributeStringValue(currentEntry.getAttribute("cn")));
     }
 
     @Override

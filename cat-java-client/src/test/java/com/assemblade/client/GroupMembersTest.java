@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 public class GroupMembersTest extends AbstractApiTest {
     @Test
     public void addMemberToGroupTest() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group = groups.addGroup(createGroup("group", "group description"));
 
         GroupMember groupMember = createGroupMember(group, user);
@@ -46,7 +46,7 @@ public class GroupMembersTest extends AbstractApiTest {
 
     @Test
     public void getGroupMembersTest() throws Exception {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group = groups.addGroup(createGroup("group", "group description"));
 
         groups.addMemberToGroup(createGroupMember(group, user));
@@ -58,7 +58,7 @@ public class GroupMembersTest extends AbstractApiTest {
 
     @Test
     public void removeGroupMemberTest() throws ClientException {
-        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", null, "password"));
+        User user = users.addUser(createUser("user", "User Name", "user@assemblade.com", "password"));
         Group group = groups.addGroup(createGroup("group", "group description"));
 
         GroupMember groupMember = createGroupMember(group, user);

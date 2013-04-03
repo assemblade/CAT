@@ -46,7 +46,7 @@ ds-cfg-lookthrough-limit: 5000
 ds-cfg-writability-mode: enabled
 ds-cfg-bind-with-dn-requires-password: true
 ds-cfg-reject-unauthenticated-requests: false
-ds-cfg-default-password-policy: cn=Default Password Policy,cn=Password Policies,cn=config
+ds-cfg-default-password-policy: cn=Local User Password Policy,cn=Password Policies,cn=config
 ds-cfg-return-bind-error-messages: true
 ds-cfg-idle-time-limit: 0 seconds
 ds-cfg-save-config-on-successful-startup: true
@@ -1448,12 +1448,12 @@ objectClass: top
 objectClass: ds-cfg-branch
 cn: Password Policies
 
-dn: cn=Default Password Policy,cn=Password Policies,cn=config
+dn: cn=Local User Password Policy,cn=Password Policies,cn=config
 objectClass: top
 objectClass: ds-cfg-authentication-policy
 objectClass: ds-cfg-password-policy
 ds-cfg-java-class: org.opends.server.core.PasswordPolicyFactory
-cn: Default Password Policy
+cn: Local User Password Policy
 ds-cfg-password-attribute: userPassword
 ds-cfg-default-password-storage-scheme: cn=Salted SHA-512,cn=Password Storage Schemes,cn=config
 ds-cfg-allow-expired-password-changes: false
@@ -1480,6 +1480,20 @@ ds-cfg-skip-validation-for-administrators: false
 ds-cfg-state-update-failure-policy: reactive
 ds-cfg-password-history-count: 0
 ds-cfg-password-history-duration: 0 seconds
+
+dn: cn=Remote User Authentication Policy,cn=Password Policies,cn=config
+objectClass: top
+objectClass: ds-cfg-authentication-policy
+objectClass: ds-cfg-ldap-pass-through-authentication-policy
+ds-cfg-java-class: org.opends.server.extensions.LDAPPassThroughAuthenticationPolicyFactory
+cn: Remote User Authentication Policy
+ds-cfg-primary-remote-ldap-server: localhost:389
+ds-cfg-mapping-policy: mapped-bind
+ds-cfg-use-password-caching: false
+ds-cfg-mapped-attribute: 2.5.4.13
+ds-cfg-mapped-search-bind-dn: cn=AdminUser
+ds-cfg-mapped-search-bind-password: password
+ds-cfg-mapped-search-base-dn: uid=a,cn=b,mail=c,ou=users,dc=example,dc=com
 
 dn: cn=Password Storage Schemes,cn=config
 objectClass: top
@@ -1874,7 +1888,7 @@ ds-rlim-size-limit: 0
 ds-rlim-time-limit: 0
 ds-rlim-idle-time-limit: 0
 ds-rlim-lookthrough-limit: 0
-ds-pwp-password-policy-dn: cn=Default Password Policy,cn=Password Policies,cn=config
+ds-pwp-password-policy-dn: cn=Local User Password Policy,cn=Password Policies,cn=config
 
 dn: cn=Root DSE,cn=config
 objectClass: top

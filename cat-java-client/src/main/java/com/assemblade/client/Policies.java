@@ -16,48 +16,29 @@
 package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
-import com.assemblade.client.model.AuthenticationPolicy;
-import com.assemblade.client.model.User;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.util.URIUtil;
+import com.assemblade.client.model.LdapPassthroughPolicy;
+import com.assemblade.client.model.PasswordPolicy;
 import org.codehaus.jackson.type.TypeReference;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Policies extends AbstractClient {
     public Policies(Authentication authentication) {
         super(authentication);
     }
 
-    public List<AuthenticationPolicy> getAuthenticationPolicies() throws ClientException {
-        return get("/policies", new TypeReference<List<AuthenticationPolicy>>() {});
+    public PasswordPolicy getLocalPasswordPolicy() throws ClientException {
+        return get("/policies/local", new TypeReference<PasswordPolicy>() {});
     }
 
-    public AuthenticationPolicy addAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
-        return add("/policies", policy, new TypeReference<AuthenticationPolicy>() {});
+    public LdapPassthroughPolicy getRemoteAuthenticationPolicy() throws ClientException {
+        return get("/policies/remote", new TypeReference<LdapPassthroughPolicy>() {
+        });
     }
 
-    public AuthenticationPolicy updateAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
-        try {
-            return add("/policies/name/" + URIUtil.encode(policy.getName(), URI.allowed_fragment), policy, new TypeReference<AuthenticationPolicy>() {});
-        } catch (URIException e) {
-            throw new CallFailedException("Failed to encode request path", e);
-        }
+    public PasswordPolicy updateLocalPasswordPolicy(PasswordPolicy policy) throws ClientException {
+        return update("/policies/local", policy, new TypeReference<PasswordPolicy>() {});
     }
 
-    public void deleteAuthenticationPolicy(AuthenticationPolicy policy) throws ClientException {
-        try {
-            delete("/policies/name/" + URIUtil.encode(policy.getName(), URI.allowed_fragment));
-        } catch (URIException e) {
-            throw new CallFailedException("Failed to encode request path", e);
-        }
+    public LdapPassthroughPolicy updateRemoteAuthenticationPolicy(LdapPassthroughPolicy policy) throws ClientException {
+        return update("/policies/remote", policy, new TypeReference<LdapPassthroughPolicy>() {});
     }
 }

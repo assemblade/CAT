@@ -18,26 +18,36 @@ package com.assemblade.client.scenarios.users;
 import com.assemblade.client.AbstractApiTest;
 import com.assemblade.client.model.LdapPassthroughPolicy;
 import com.assemblade.client.model.User;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class CanAuthenticateUserAgainstRemoteLdap extends AbstractApiTest {
     @Test
     public void userCanAuthenticateAgainstRemoteLdap() throws Exception {
-        LdapPassthroughPolicy policy = new LdapPassthroughPolicy();
-        policy.setName("Passthrough");
+        LdapPassthroughPolicy policy = policies.getRemoteAuthenticationPolicy();
         policy.setPrimaryRemoteServer("localhost:1389");
         policy.setSearchBase("ou=users,dc=example,dc=com");
         policy.setBindDn("cn=AdminUser");
         policy.setBindPassword("password");
-        policy.setMappingAttribute("uid");
+        policy.setSearchAttribute("uid");
+        policy.setNameAttribute("cn");
+        policy.setMailAttribute("mail");
 
-        policies.addAuthenticationPolicy(policy);
+        policy = policies.updateRemoteAuthenticationPolicy(policy);
 
-        User user = createUser("test1", "Test User", "test1@example.com", "Passthrough", null);
+        assertEquals("uid", policy.getSearchAttribute());
+        assertEquals("cn", policy.getNameAttribute());
+        assertEquals("mail", policy.getMailAttribute());
 
-        users.addUser(user);
+        User user = createRemoteUser("test1");
+
+        user = users.addUser(user);
+
+        assertEquals("Test1 User", user.getFullName());
+        assertEquals("test1@example.com", user.getEmailAddress());
 
         assertNotNull(login.login("test1", "password"));
     }
