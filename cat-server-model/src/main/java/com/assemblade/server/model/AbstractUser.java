@@ -77,7 +77,7 @@ public abstract class AbstractUser extends AbstractStorable {
     @Override
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
-        attributeNames.addAll(Arrays.asList("uid", "cn", "userPassword", "mail", "isMemberOf", "aclRights", "pwdPolicySubEntry"));
+        attributeNames.addAll(Arrays.asList("uid", "cn", "userPassword", "mail", "isMemberOf", "aclRights", "ds-pwp-password-policy-dn"));
         return attributeNames;
     }
 
@@ -238,7 +238,7 @@ public abstract class AbstractUser extends AbstractStorable {
                     }
                 }
             }
-            String authenticationPolicy = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("pwdpolicysubentry"));
+            String authenticationPolicy = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ds-pwp-password-policy-dn"));
             user.remoteUser = StringUtils.isNotEmpty(authenticationPolicy) && authenticationPolicy.equals("cn=Remote User Authentication Policy,cn=Password Policies,cn=config");
             user.remoteDn = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
             EntryPermissions permissions = LdapUtils.getEntryPermissions(entry.getAttributes());

@@ -31,3 +31,69 @@ cn: Test2 User
 sn: User
 mail: test2@example.com
 userPassword: password
+
+dn: uid=test3,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: test3
+cn: Test3 User
+sn: User
+mail: test3@example.com
+userPassword: password
+
+dn: uid=mike,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: mike
+cn: Mike Adamson
+sn: Adamson
+mail: mike@example.com
+userPassword: password
+
+dn: uid=hayato,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: hayato
+cn: Hayato Shimizu
+sn: Shimizu
+mail: hayato@example.com
+userPassword: password
+
+dn: uid=dev1,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: dev1
+cn: Dev1 User
+sn: User
+mail: dev1@example.com
+userPassword: password
+
+dn: uid=dev2,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: dev2
+cn: Dev2 User
+sn: User
+mail: dev2@example.com
+userPassword: password
+
+dn: uid=dev3,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: dev3
+cn: Dev3 User
+sn: User
+mail: dev3@example.com
+userPassword: password

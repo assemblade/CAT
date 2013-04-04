@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CanAuthenticateUserAgainstRemoteLdap extends AbstractApiTest {
     @Test
@@ -48,6 +49,7 @@ public class CanAuthenticateUserAgainstRemoteLdap extends AbstractApiTest {
 
         assertEquals("Test1 User", user.getFullName());
         assertEquals("test1@example.com", user.getEmailAddress());
+        assertTrue(user.isRemoteUser());
 
         assertNotNull(login.login("test1", "password"));
     }
