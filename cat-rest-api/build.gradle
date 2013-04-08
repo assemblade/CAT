@@ -254,3 +254,4 @@ task buildDistribution(dependsOn: deployApplication) {
 
 deployApplication.dependsOn war
 assemble.dependsOn startTomcat
+clean.dependsOn stopTomcat

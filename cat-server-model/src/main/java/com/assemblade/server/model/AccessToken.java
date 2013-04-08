@@ -47,7 +47,13 @@ public class AccessToken extends AbstractStorable {
     private String uid;
     private String secret;
     private String baseUrl;
-    private String ipAddress;
+
+    public enum AccessTokenType {
+        userLogin,
+        persistent
+    }
+
+    private AccessTokenType type;
 
     public static AccessToken createAccessToken(User user) {
         AccessToken token = new AccessToken();
@@ -77,7 +83,7 @@ public class AccessToken extends AbstractStorable {
     @Override
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
-        attributeNames.addAll(new ArrayList<String>(Arrays.asList("asb-token", "uid", "asb-secret", "asb-baseurl", "ipNetworkNumber")));
+        attributeNames.addAll(new ArrayList<String>(Arrays.asList("asb-token", "uid", "asb-secret", "asb-baseurl", "asb-type")));
         return attributeNames;
     }
 
@@ -94,10 +100,8 @@ public class AccessToken extends AbstractStorable {
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "uid", uid);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-secret", secret);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-baseurl", baseUrl);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-type", type.name());
 
-        if (StringUtils.isNotEmpty(ipAddress)) {
-            LdapUtils.addSingleValueAttributeToMap(attributeMap, "ipNetworkNumber", ipAddress);
-        }
         return attributeMap;
     }
 
@@ -113,10 +117,6 @@ public class AccessToken extends AbstractStorable {
         this.baseUrl = baseUrl;
     }
 
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
     public String getToken() {
         return token;
     }
@@ -127,6 +127,14 @@ public class AccessToken extends AbstractStorable {
 
     public String getSecret() {
         return secret;
+    }
+
+    public AccessTokenType getType() {
+        return type;
+    }
+
+    public void setType(AccessTokenType type) {
+        this.type = type;
     }
 
     private class Decorator extends AbstractStorable.Decorator<AccessToken> {
@@ -143,7 +151,7 @@ public class AccessToken extends AbstractStorable {
             token.uid = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("uid"));
             token.secret = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-secret"));
             token.baseUrl = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-baseurl"));
-            token.ipAddress = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("ipnetworknumber"));
+            token.type = AccessTokenType.valueOf(LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-type")));
 
             return token;
         }

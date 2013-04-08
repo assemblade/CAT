@@ -66,7 +66,7 @@ public class AuthenticationFilter implements Filter {
                 ((HttpServletResponse)servletResponse).setStatus(401);
             } else {
                 try {
-                    AccessToken accessToken = accessTokenManager.getExistingAccessToken(token);
+                    AccessToken accessToken = accessTokenManager.getAccessToken(token);
                     if (accessToken == null) {
                         ((HttpServletResponse)servletResponse).setStatus(401);
                     } else {

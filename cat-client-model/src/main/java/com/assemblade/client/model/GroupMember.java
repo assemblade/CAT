@@ -13,6 +13,7 @@ public class GroupMember implements Identifiable,Serializable {
     private String fullName;
     private String emailAddress;
     private boolean administrator;
+    private boolean deletable;
 
     public String getUrl() {
         return url;
@@ -73,6 +74,14 @@ public class GroupMember implements Identifiable,Serializable {
 
     public void setAdministrator(boolean administrator) {
         this.administrator = administrator;
+    }
+
+    public boolean isDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
     }
 
     @Override

@@ -88,7 +88,7 @@ public abstract class AbstractFolder extends AbstractStorable {
     public Collection<String> getAttributeNames() {
         Collection<String> attributeNames = super.getAttributeNames();
 
-        attributeNames.addAll(Arrays.asList("cn", "description", "asb-template", "aclRights", "aci"));
+        attributeNames.addAll(Arrays.asList("cn", "description", "asb-type", "aclRights", "aci"));
 
         return attributeNames;
     }
@@ -98,7 +98,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "cn", name);
         LdapUtils.addSingleValueAttributeToMap(attributeMap, "description", description);
-        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-template", template);
+        LdapUtils.addSingleValueAttributeToMap(attributeMap, "asb-type", template);
 
         return attributeMap;
     }
@@ -114,7 +114,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
     public List<Modification> getModifications(Session session, Entry currentEntry) throws StorageException {
         List<Modification> modifications = super.getModifications(session, currentEntry);
-        LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-template", template);
+        LdapUtils.createSingleEntryModification(modifications, currentEntry, "asb-type", template);
         LdapUtils.createSingleEntryModification(modifications, currentEntry, "description", description);
         LdapUtils.createMultipleEntryModification(modifications, currentEntry, "aci", generatePermissionAcis());
         return modifications;
@@ -237,7 +237,7 @@ public abstract class AbstractFolder extends AbstractStorable {
 
             folder.name = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("cn"));
             folder.description = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("description"));
-            folder.template = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-template"));
+            folder.template = LdapUtils.getSingleAttributeStringValue(entry.getAttribute("asb-type"));
 
             Collection<String> acis = LdapUtils.getMultipleAttributeStringValues(entry.getAttribute("aci"));
 

@@ -16,6 +16,7 @@
 package com.assemblade.rest;
 
 import com.assemblade.client.model.Authentication;
+import com.assemblade.opendj.AssembladeErrorCode;
 import com.assemblade.opendj.StorageException;
 import com.assemblade.server.model.AccessToken;
 import com.assemblade.server.model.User;
@@ -25,8 +26,11 @@ import com.assemblade.server.security.ChangePasswordException;
 import com.assemblade.server.users.UserManager;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -43,9 +47,9 @@ public class Login {
         this.userManager = userManager;
     }
 
-    @POST
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response doLogin(@Context HttpServletRequest servletRequest, @QueryParam(value = "username") String username, @QueryParam(value = "password") String password) {
+    public Response login(@Context HttpServletRequest servletRequest, @QueryParam(value = "username") String username, @QueryParam(value = "password") String password) {
         try {
             String requestUrl = servletRequest.getRequestURL().toString();
             String baseUrl = requestUrl.substring(0, requestUrl.lastIndexOf('/'));

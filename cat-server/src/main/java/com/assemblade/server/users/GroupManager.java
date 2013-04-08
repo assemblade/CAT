@@ -67,9 +67,10 @@ public class GroupManager {
     }
 
     public GroupMember addMemberToGroup(GroupMember groupMember) throws StorageException {
-        groupMember.getGroup().setGroupId(userManager.getUserSession().getByEntryId(groupMember.getGroup(), groupMember.getGroup().getId()).getGroupId());
-        groupMember.getGroup().addMember(groupMember);
-        userManager.getUserSession().update(groupMember.getGroup());
+        Group group = userManager.getUserSession().getByEntryId(groupMember.getGroup(), groupMember.getGroup().getId());
+        group.addMember(groupMember);
+        userManager.getUserSession().update(group);
+        groupMember.setGroup(group);
         return userManager.getUserSession().get(groupMember);
     }
 

@@ -137,3 +137,4 @@ sourceSets {
 }
 
 compileJava.dependsOn startOpenDJ
+clean.dependsOn stopOpenDJ

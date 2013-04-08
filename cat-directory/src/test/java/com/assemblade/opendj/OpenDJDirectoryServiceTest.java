@@ -35,7 +35,6 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		storable.searchFilter = "(objectClass=asb-folder)";
 		storable.addUserAttribute("cn", "test");
 		storable.addObjectClasses("asb-folder");
-		storable.addOperationalAttribute("asb-deleted", "false");
 
 		Session session = directoryService.getSession(ADMIN_DN);
 		
@@ -47,4 +46,24 @@ public class OpenDJDirectoryServiceTest extends AbstractDirectoryServiceTest {
 		assertTrue(result.get(0) instanceof TestStorable);
 		
 	}
+
+    @Test
+    public void addAnAccessToken() throws Exception {
+        TestStorable storable = new TestStorable();
+
+        storable.rdn = "asb-token=1";
+        storable.setParentDn("ou=accesstokens,dc=assemblade,dc=com");
+        storable.addObjectClasses("asb-access-token");
+        storable.addUserAttribute("asb-token", "1");
+        storable.addUserAttribute("uid", "admin");
+        storable.addUserAttribute("asb-secret", "2");
+        storable.addUserAttribute("asb-baseurl", "http://localhost:11080");
+        storable.addUserAttribute("asb-type", "persistent");
+
+        Session session = directoryService.getSession(ADMIN_DN);
+
+        session.add(storable);
+
+        System.out.println();
+    }
 }

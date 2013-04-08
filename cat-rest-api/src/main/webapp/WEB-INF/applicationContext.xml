@@ -34,6 +34,7 @@
 
     <bean id="accessTokenManager" class="com.assemblade.server.security.AccessTokenManager">
         <constructor-arg ref="directoryService"/>
+        <constructor-arg ref="userManager"/>
     </bean>
 
     <bean id="authenticationFilter" class="com.assemblade.rest.AuthenticationFilter">
@@ -123,4 +124,9 @@
         <constructor-arg ref="viewMapper"/>
         <constructor-arg ref="propertyMapper"/>
     </bean>
+
+    <bean id="tokens" class="com.assemblade.rest.Tokens">
+        <constructor-arg ref="accessTokenManager"/>
+    </bean>
+
 </beans>

@@ -17,6 +17,7 @@ package com.assemblade.client;
 
 import com.assemblade.client.model.Authentication;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class Login extends AbstractClient {
     }
 
     public Authentication login(String username, String password) throws ChangePasswordException, CallFailedException {
-        PostMethod method = new PostMethod(baseUrl + "/login");
+        GetMethod method = new GetMethod(baseUrl + "/login");
         try {
             method.setQueryString(new NameValuePair[]{new NameValuePair("username", username), new NameValuePair("password", password)});
             int status = executeMethod(method);

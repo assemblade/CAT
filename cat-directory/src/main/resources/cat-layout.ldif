@@ -19,12 +19,6 @@ aci: (targetattr="objectclass || uid || entryUUID || cn || userPassword || mail 
 aci: (target="ldap:///ou=properties,dc=assemblade,dc=com")(targetscope="base")(targetattr="objectclass || entryUUID || cn || description || aci || aclRights || asb-no-inheritance")(version 3.0; acl "Allow anyone to read and search properties"; allow(read,search) userdn="ldap:///anyone";)
 aci: (target="ldap:///ou=properties,dc=assemblade,dc=com")(targetscope="base")(version 3.0; acl "Stop root properties folder being edited or deleted"; deny(write,delete,export) userdn="ldap:///anyone";)
 
-dn: cn=config,dc=assemblade,dc=com
-changetype: add
-cn: config
-objectClass: top
-objectClass: asb-cfg-root-cfg
-
 dn: ou=users,dc=assemblade,dc=com
 changetype: add
 ou: users
@@ -107,12 +101,6 @@ objectClass: subentry
 cn: Users Acl Privilege
 ds-privilege-name;collective: modify-acl
 subtreeSpecification: {base "ou=users" , specificationFilter "(isMemberOf=cn=user,ou=groups,dc=assemblade,dc=com)" }
-
-dn: ou=remembermetokens,dc=assemblade,dc=com
-changetype: add
-ou: remembermetokens
-objectClass: top
-objectClass: organizationalUnit
 
 dn: ou=accesstokens,dc=assemblade,dc=com
 changetype: add

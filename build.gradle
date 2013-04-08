@@ -17,7 +17,7 @@ allprojects {
     apply plugin: 'eclipse'
 
     group = 'com.assemblade.cat'
-    version = '0.0.3'
+    version = '0.0.4'
 
     ext {
         springVersion = '3.1.1.RELEASE'

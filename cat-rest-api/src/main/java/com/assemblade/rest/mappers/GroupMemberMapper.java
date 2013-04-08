@@ -36,6 +36,7 @@ public class GroupMemberMapper {
         clientGroupMember.setFullName(serverGroupMember.getFullName());
         clientGroupMember.setEmailAddress(serverGroupMember.getEmailAddress());
         clientGroupMember.setAdministrator(serverGroupMember.isAdministrator());
+        clientGroupMember.setDeletable(serverGroupMember.isDeletable());
 
         return clientGroupMember;
     }
