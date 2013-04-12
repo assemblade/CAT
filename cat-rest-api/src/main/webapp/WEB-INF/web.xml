@@ -39,6 +39,17 @@
 	</filter-mapping>
 
     <servlet>
+        <display-name>PathHandler</display-name>
+        <servlet-name>pathHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>pathHandler</servlet-name>
+        <url-pattern>/path/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>jersey</servlet-name>
         <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
 
@@ -55,7 +66,7 @@
 
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
 
     <!-- General config -->

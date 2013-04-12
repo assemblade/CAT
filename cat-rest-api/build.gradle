@@ -59,6 +59,7 @@ ext {
     tomcatZipFile = file("${tomcatZipDestination}")
     distDir = "${buildDir}/distributions"
     installDir = "${buildDir}/install"
+    rootUrl = "cat";
 }
 
 idea.module.excludeDirs = [ file('.gradle') ]
@@ -166,16 +167,16 @@ task clearDatastore() {
 
 task deployApplication(dependsOn: [initialiseTomcat, clearDatastore]) {
     inputs.file  "${buildDir}/libs/${project.name}-${version}.war"
-    outputs.file  "${tomcatHome}/webapps/${project.name}.war"
+    outputs.file  "${tomcatHome}/webapps/${rootUrl}.war"
 
     doLast {
         stopTomcat.execute()
-        ant.delete(dir: "${tomcatHome}/webapps/${project.name}")
+        ant.delete(dir: "${tomcatHome}/webapps/${rootUrl}")
 
         copy {
             from "${buildDir}/libs/${project.name}-${version}.war"
             into "${tomcatHome}/webapps"
-            rename "${project.name}-${version}.war", "${project.name}.war"
+            rename "${project.name}-${version}.war", "${rootUrl}.war"
         }
     }
 }
@@ -195,7 +196,7 @@ task startTomcat(dependsOn: deployApplication) {
                 ant.waitfor (maxwait: 60, maxwaitunit: 'second') {
                     ant.and {
                         ant.socket (server: 'localhost', port: 11080)
-                        ant.http(url: 'http://localhost:11080/cat-rest-api', errorsBeginAt: 402)
+                        ant.http(url: 'http://localhost:11080/cat/api', errorsBeginAt: 402)
 
                     }
                 }

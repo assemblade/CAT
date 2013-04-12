@@ -36,4 +36,12 @@ public class Tokens extends AbstractClient {
     public void deleteAccessToken(Authentication token) throws ClientException {
         delete("/token/" + token.getToken());
     }
+
+    public static Authentication getLocalAccessToken() throws ClientException {
+        return getLocalAccessToken("");
+    }
+
+    public static Authentication getLocalAccessToken(String location) throws ClientException {
+        return new Authentication();
+    }
 }

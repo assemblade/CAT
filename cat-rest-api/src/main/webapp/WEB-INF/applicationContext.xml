@@ -42,6 +42,9 @@
         <constructor-arg ref="accessTokenManager"/>
     </bean>
 
+    <bean id="pathHandler" class="com.assemblade.rest.PathHandler">
+    </bean>
+
     <bean id="userManager" class="com.assemblade.server.users.UserManager">
         <constructor-arg ref="directoryService"/>
     </bean>

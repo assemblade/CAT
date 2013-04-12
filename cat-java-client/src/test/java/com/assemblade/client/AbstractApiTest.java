@@ -29,7 +29,7 @@ import org.junit.Before;
 import java.util.Arrays;
 
 public class AbstractApiTest {
-    protected static final String baseUrl = "http://localhost:11080/cat-rest-api";
+    protected static final String baseUrl = "http://localhost:11080/cat/api";
     protected Login login;
     protected Policies policies;
     protected Users users;
