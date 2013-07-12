@@ -52,7 +52,7 @@ dependencies {
 }
 
 ext {
-    tomcatVersion = "6.0.36"
+    tomcatVersion = "6.0.37"
     tomcatDownloadURL = "http://apache.mirror.anlx.net/tomcat/tomcat-6/v${tomcatVersion}/bin/apache-tomcat-${tomcatVersion}.zip"
     tomcatZipDestination = "${buildDir}/apache-tomcat-${tomcatVersion}.zip"
     tomcatHome = "${buildDir}/apache-tomcat-${tomcatVersion}"

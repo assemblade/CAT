@@ -35,7 +35,8 @@
 
 	<filter-mapping>
 		<filter-name>authenticationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
+        <url-pattern>/path/*</url-pattern>
 	</filter-mapping>
 
     <servlet>
